@@ -4,6 +4,13 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <CodeAnalysisRuleSet>..\..\VainBotDiscord.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00838" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-alpha-build-00838" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00838" />
+  </ItemGroup>
 
 </Project>
