@@ -12,6 +12,7 @@
 libsodium.dll
 opus.dll
 launchSettings.json
+config.json
 
 # Build results
 [Dd]ebug/

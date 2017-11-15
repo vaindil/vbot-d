@@ -1,0 +1,11 @@
+{
+  "connection_string": "",
+  "discord_api_token": "",
+  "twitch_client_id": "",
+  "youtube_api_key": "",
+  "twitter_consumer_key": "",
+  "twitter_consumer_secret": "",
+  "twitter_access_token": "",
+  "twitter_access_token_secret": "",
+  "imgur_client_id": ""
+}

@@ -6,4 +6,17 @@
     <CodeAnalysisRuleSet>..\..\VainBotDiscord.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00848" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-alpha-build-00848" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00848" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0.1" />
+  </ItemGroup>
+
 </Project>
