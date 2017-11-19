@@ -82,8 +82,8 @@ namespace VainBotDiscord.Services
             var token = JsonConvert.DeserializeObject<TwitchTokenResponse>(await tokenResponse.Content.ReadAsStringAsync());
             _accessToken = token.AccessToken;
 
-            // schedule the token refresh 4 days early just to be safe
-            var jobId = BackgroundJob.Schedule(() => RefreshAccessTokenAsync(), TimeSpan.FromSeconds(token.ExpiresInSeconds - 345600));
+            // schedule the token refresh 7 days early
+            var jobId = BackgroundJob.Schedule(() => RefreshAccessTokenAsync(), TimeSpan.FromSeconds(token.ExpiresInSeconds - 604800));
 
             using (var db = _provider.GetRequiredService<VbContext>())
             {

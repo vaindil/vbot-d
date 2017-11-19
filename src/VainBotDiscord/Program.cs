@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using VainBotDiscord.Classes;
 using VainBotDiscord.Services;
+using VainBotDiscord.Utils;
 
 namespace VainBotDiscord
 {
@@ -33,9 +34,12 @@ namespace VainBotDiscord
             _client = new DiscordSocketClient();
             _config = BuildConfig();
 
-            GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(_config["hangfire_connection_string"]));
-
             var services = ConfigureServices();
+
+            GlobalConfiguration.Configuration
+                .UseStorage(new MySqlStorage(_config["hangfire_connection_string"]))
+                .UseActivator(new HangfireActivator(services));
+
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             await services.GetRequiredService<TwitchService>().InitializeAsync(services);
