@@ -1,12 +1,18 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hangfire;
+using Hangfire.MySql.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading.Tasks;
+using VainBotDiscord.Classes;
 using VainBotDiscord.Services;
 
 namespace VainBotDiscord
@@ -27,25 +33,40 @@ namespace VainBotDiscord
             _client = new DiscordSocketClient();
             _config = BuildConfig();
 
+            GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(_config["hangfire_connection_string"]));
+
             var services = ConfigureServices();
+            await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+            await services.GetRequiredService<TwitchService>().InitializeAsync(services);
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
 
-            await Task.Delay(-1);
+            using (var server = new BackgroundJobServer())
+            {
+                await Task.Delay(-1);
+            }
         }
 
         IServiceProvider ConfigureServices()
         {
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.Clear();
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
+
+            var dbContextOptions = new DbContextOptionsBuilder().UseMySql(_config["connection_string"]).Options;
+
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton<TwitchService>()
+                .AddSingleton(httpClient)
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
-                .AddDbContext<VbContext>(options => options.UseMySql(_config["connection_string"]))
+                .AddDbContext<VbContext>(o => o.UseMySql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
         }
 
@@ -55,6 +76,24 @@ namespace VainBotDiscord
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
+        }
+
+        async Task SetUpDB(VbContext db)
+        {
+            // https://stackoverflow.com/a/15228558/1672458
+            foreach (var key in typeof(KeyValueKeys).GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (key.IsLiteral && !key.IsInitOnly)
+                {
+                    var val = (string)key.GetRawConstantValue();
+                    var kv = await db.FindAsync<KeyValue>(val);
+                    if (kv == null)
+                    {
+                        db.Add(new KeyValue(val, ""));
+                        await db.SaveChangesAsync();
+                    }
+                }
+            }
         }
     }
 }

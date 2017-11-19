@@ -1,20 +1,29 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using VainBotDiscord.Classes;
 
 namespace VainBotDiscord
 {
     public class VbContext : DbContext
     {
-        public VbContext(DbContextOptions<VbContext> options)
+        public VbContext(DbContextOptions options)
             : base(options)
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        public DbSet<KeyValue> KeyValues { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<KeyValue>(e =>
+            {
+                e.ToTable("key_value");
+                e.HasKey(kv => kv.Key);
+
+                e.Property(kv => kv.Key).HasColumnName("key").IsRequired().HasMaxLength(100);
+                e.Property(kv => kv.Value).HasColumnName("value").IsRequired().HasMaxLength(250);
+            });
         }
     }
 }
