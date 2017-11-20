@@ -38,13 +38,13 @@ namespace VainBotDiscord.Modules
             }
 
             var users = JsonConvert.DeserializeObject<TwitchUserResponse>(await response.Content.ReadAsStringAsync());
-            if (users.Data.Count == 0)
+            if (users.Users.Count == 0)
             {
                 await ReplyAsync($"The user **{username}** does not exist.");
                 return;
             }
 
-            await ReplyAsync($"**{users.Data[0].DisplayName}**: {users.Data[0].Id}");
+            await ReplyAsync($"**{users.Users[0].DisplayName}**: {users.Users[0].Id}");
         }
     }
 }
