@@ -46,12 +46,12 @@ namespace VainBotDiscord
             modelBuilder.Entity<TwitchLiveStream>(e =>
             {
                 e.ToTable("twitch_live_stream");
-                e.HasKey(t => t.TwitchStreamId);
+                e.HasKey(t => t.TwitchUserId);
 
+                e.Property(t => t.TwitchUserId).HasColumnName("twitch_user_id").IsRequired().HasMaxLength(50);
                 e.Property(t => t.StartedAt).HasColumnName("started_at").IsRequired();
                 e.Property(t => t.FirstOfflineAt).HasColumnName("first_offline_at");
                 e.Property(t => t.TwitchStreamId).HasColumnName("twitch_stream_id").IsRequired().HasMaxLength(50);
-                e.Property(t => t.TwitchUserId).HasColumnName("twitch_user_id").IsRequired().HasMaxLength(50);
                 e.Property(t => t.TwitchLogin).HasColumnName("twitch_login").IsRequired().HasMaxLength(50);
                 e.Property(t => t.TwitchDisplayName).HasColumnName("twitch_display_name").IsRequired().HasMaxLength(50);
                 e.Property(t => t.ViewerCount).HasColumnName("viewer_count").IsRequired();

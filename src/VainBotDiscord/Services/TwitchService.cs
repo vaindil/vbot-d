@@ -90,52 +90,54 @@ namespace VainBotDiscord.Services
 
             var liveStreams =
                 JsonConvert.DeserializeObject<TwitchStreamResponse>(await streamResponse.Content.ReadAsStringAsync()).Streams;
-            if (liveStreams.Count == 0)
-                return;
 
-            var gameIds = liveStreams
-                .GroupBy(s => s.GameId)
-                .Select(s => s.First().GameId);
+            var games = new List<TwitchGame>();
+            var users = new List<TwitchUser>();
 
-            var gameIdString = string.Join("&id=", gameIds);
-
-            var gameRequest = GetRequestMessage();
-            gameRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/games?id={gameIdString}");
-            gameRequest.Method = HttpMethod.Get;
-            var gameResponse = await _httpClient.SendAsync(gameRequest);
-            try
+            if (liveStreams.Count > 0)
             {
-                await ThrowIfResponseInvalidAsync(gameResponse);
+                var gameIds = liveStreams
+                    .GroupBy(s => s.GameId)
+                    .Select(s => s.First().GameId);
+
+                var gameIdString = string.Join("&id=", gameIds);
+
+                var gameRequest = GetRequestMessage();
+                gameRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/games?id={gameIdString}");
+                gameRequest.Method = HttpMethod.Get;
+                var gameResponse = await _httpClient.SendAsync(gameRequest);
+                try
+                {
+                    await ThrowIfResponseInvalidAsync(gameResponse);
+                }
+                catch
+                {
+                    return;
+                }
+
+                games = JsonConvert.DeserializeObject<TwitchGameResponse>(await gameResponse.Content.ReadAsStringAsync()).Games;
+
+                userIds = liveStreams
+                    .GroupBy(s => s.UserId)
+                    .Select(s => s.First().UserId);
+
+                var userIdUserString = string.Join("&id=", userIds);
+
+                var userRequest = GetRequestMessage();
+                userRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/users?id={userIdUserString}");
+                userRequest.Method = HttpMethod.Get;
+                var userResponse = await _httpClient.SendAsync(userRequest);
+                try
+                {
+                    await ThrowIfResponseInvalidAsync(userResponse);
+                }
+                catch
+                {
+                    return;
+                }
+
+                users = JsonConvert.DeserializeObject<TwitchUserResponse>(await userResponse.Content.ReadAsStringAsync()).Users;
             }
-            catch
-            {
-                return;
-            }
-
-            var games =
-                JsonConvert.DeserializeObject<TwitchGameResponse>(await gameResponse.Content.ReadAsStringAsync()).Games;
-
-            userIds = liveStreams
-                .GroupBy(s => s.UserId)
-                .Select(s => s.First().UserId);
-
-            var userIdUserString = string.Join("&id=", userIds);
-
-            var userRequest = GetRequestMessage();
-            userRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/users?id={userIdUserString}");
-            userRequest.Method = HttpMethod.Get;
-            var userResponse = await _httpClient.SendAsync(userRequest);
-            try
-            {
-                await ThrowIfResponseInvalidAsync(userResponse);
-            }
-            catch
-            {
-                return;
-            }
-
-            var users =
-                JsonConvert.DeserializeObject<TwitchUserResponse>(await userResponse.Content.ReadAsStringAsync()).Users;
 
             var newlyOnline = new List<TwitchLiveStream>();
             var newlyOffline = new List<TwitchLiveStream>(_liveStreams);

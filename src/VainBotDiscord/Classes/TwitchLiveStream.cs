@@ -4,13 +4,13 @@ namespace VainBotDiscord.Classes
 {
     public class TwitchLiveStream
     {
+        public string TwitchUserId { get; set; }
+
         public DateTimeOffset StartedAt { get; set; }
 
         public DateTimeOffset? FirstOfflineAt { get; set; }
 
         public string TwitchStreamId { get; set; }
-
-        public string TwitchUserId { get; set; }
 
         public string TwitchLogin { get; set; }
 
