@@ -40,6 +40,7 @@ namespace VainBotDiscord
                 .UseStorage(new MySqlStorage(_config["hangfire_connection_string"]))
                 .UseActivator(new HangfireActivator(services));
 
+            services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             await services.GetRequiredService<TwitchService>().InitializeAsync(services);
