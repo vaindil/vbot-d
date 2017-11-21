@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00848" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.0-alpha-build-00848" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00848" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00850" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-alpha-build-00850" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00850" />
     <PackageReference Include="HangFire.Core" Version="1.6.17" />
     <PackageReference Include="Hangfire.MySql.Core" Version="2.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.1" />
@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1-preview1-final" />
   </ItemGroup>
 
   <ItemGroup>
