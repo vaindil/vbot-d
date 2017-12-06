@@ -41,9 +41,6 @@ namespace VainBotDiscord
                 .UseStorage(new MySqlStorage(_config["hangfire_connection_string"]))
                 .UseActivator(new HangfireActivator(services));
 
-            // need to figure out why, but Hangfire freaks out sometimes. this fixes it. i hope.
-            ClearRecurringJobs();
-
             services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
@@ -104,17 +101,6 @@ namespace VainBotDiscord
                         db.Add(new KeyValue(val, ""));
                         await db.SaveChangesAsync();
                     }
-                }
-            }
-        }
-
-        void ClearRecurringJobs()
-        {
-            using (var conn = JobStorage.Current.GetConnection())
-            {
-                foreach (var recurringJob in conn.GetRecurringJobs())
-                {
-                    RecurringJob.RemoveIfExists(recurringJob.Id);
                 }
             }
         }
