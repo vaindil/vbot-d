@@ -13,6 +13,7 @@ namespace VainBotDiscord
         public DbSet<KeyValue> KeyValues { get; set; }
         public DbSet<TwitchStreamToCheck> StreamsToCheck { get; set; }
         public DbSet<TwitchLiveStream> TwitchLiveStreams { get; set; }
+        public DbSet<YouTubeChannelToCheck> YouTubeChannelsToCheck { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,21 @@ namespace VainBotDiscord
                 e.Property(t => t.GameId).HasColumnName("game_id").IsRequired().HasMaxLength(50);
                 e.Property(t => t.ThumbnailUrl).HasColumnName("thumbnail_url").IsRequired().HasMaxLength(350);
                 e.Property(t => t.ProfileImageUrl).HasColumnName("profile_image_url").IsRequired().HasMaxLength(350);
+            });
+
+            modelBuilder.Entity<YouTubeChannelToCheck>(e =>
+            {
+                e.ToTable("youtube_channel_to_check");
+                e.HasKey(y => y.Id);
+
+                e.Property(y => y.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
+                e.Property(y => y.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
+                e.Property(y => y.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
+                e.Property(y => y.DiscordMessageToPost).HasColumnName("discord_message_to_post").IsRequired().HasMaxLength(200);
+                e.Property(y => y.YouTubeChannelId).HasColumnName("youtube_channel_id").IsRequired().HasMaxLength(40);
+                e.Property(y => y.YouTubePlaylistId).HasColumnName("youtube_playlist_id").IsRequired().HasMaxLength(40);
+                e.Property(y => y.LatestVideoId).HasColumnName("latest_video_id").HasMaxLength(40);
+                e.Property(y => y.LatestVideoUploadedAt).HasColumnName("latest_video_uploaded_at");
             });
         }
     }

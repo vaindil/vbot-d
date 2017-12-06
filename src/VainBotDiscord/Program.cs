@@ -48,6 +48,7 @@ namespace VainBotDiscord
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             await services.GetRequiredService<TwitchService>().InitializeAsync(services);
+            await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
@@ -71,6 +72,7 @@ namespace VainBotDiscord
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()
+                .AddSingleton<YouTubeService>()
                 .AddSingleton(httpClient)
                 .AddLogging()
                 .AddSingleton<LogService>()
