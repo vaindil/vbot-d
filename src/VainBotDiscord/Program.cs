@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hangfire;
 using Hangfire.MySql.Core;
-using Hangfire.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
