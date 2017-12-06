@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hangfire;
 using Hangfire.MySql.Core;
+using Hangfire.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,9 @@ namespace VainBotDiscord
             GlobalConfiguration.Configuration
                 .UseStorage(new MySqlStorage(_config["hangfire_connection_string"]))
                 .UseActivator(new HangfireActivator(services));
+
+            // existing jobs can trigger before the services are initialized, so clear them and start fresh
+            ClearRecurringJobs();
 
             services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
@@ -100,6 +104,17 @@ namespace VainBotDiscord
                         db.Add(new KeyValue(val, ""));
                         await db.SaveChangesAsync();
                     }
+                }
+            }
+        }
+
+        void ClearRecurringJobs()
+        {
+            using (var conn = JobStorage.Current.GetConnection())
+            {
+                foreach (var recurringJob in conn.GetRecurringJobs())
+                {
+                    RecurringJob.RemoveIfExists(recurringJob.Id);
                 }
             }
         }
