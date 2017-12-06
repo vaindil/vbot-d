@@ -44,7 +44,6 @@ namespace VainBotDiscord.Services
             }
 
             RecurringJob.AddOrUpdate("YouTubeCheck", () => CheckYouTubeAsync(), Cron.Minutely);
-            RecurringJob.Trigger("YouTubeCheck");
         }
 
         public async Task CheckYouTubeAsync()

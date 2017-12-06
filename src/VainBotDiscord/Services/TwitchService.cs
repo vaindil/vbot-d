@@ -56,7 +56,6 @@ namespace VainBotDiscord.Services
                 await RefreshAccessTokenAsync();
 
             RecurringJob.AddOrUpdate("TwitchCheck", () => CheckStreamsAsync(), Cron.Minutely);
-            RecurringJob.Trigger("TwitchCheck");
         }
 
         /// <summary>
