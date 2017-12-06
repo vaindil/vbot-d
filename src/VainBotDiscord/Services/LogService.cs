@@ -52,7 +52,7 @@ namespace VainBotDiscord.Services
 
         ILoggerFactory ConfigureLogging(ILoggerFactory factory)
         {
-            factory.AddConsole();
+            factory.AddConsole(LogLevel.Warning);
             return factory;
         }
 
