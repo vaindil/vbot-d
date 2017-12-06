@@ -22,39 +22,50 @@ namespace VainBotDiscord.Modules
         [Command]
         public async Task GetCoins([Remainder]string unused = null)
         {
-            // Bitfenix's API isn't exactly the greatest, so I want some indication that the bot is trying
+            // Bitfinex's API isn't exactly the greatest, so I want some indication that the bot is trying
             await Context.Channel.TriggerTypingAsync();
 
-            var response = await _httpClient.GetAsync(
-                "https://api.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tIOTUSD,tXMRUSD");
-            if (!response.IsSuccessStatusCode)
+            var bfResponse = await _httpClient.GetAsync(
+                "https://api.bitfinex.com/v2/tickers?symbols=tIOTUSD,tXMRUSD");
+            if (!bfResponse.IsSuccessStatusCode)
             {
-                await ReplyAsync("Bitfenix's API crapped out. Not my fault, sorry. Try again in a few seconds.");
+                await ReplyAsync("Bitfinex's API crapped out. Not my fault, sorry. Try again in a few seconds.");
                 return;
             }
 
-            // Bitfenix's API is terrible, they don't use key/value pairs because that would make too much sense
+            // Bitfinex's API is terrible, they don't use key/value pairs because that would make too much sense
             // https://bitfinex.readme.io/v2/reference#rest-public-tickers
-            var results = JsonConvert.DeserializeObject<List<List<object>>>(await response.Content.ReadAsStringAsync());
-            var coins = ConvertToCoins(results);
+            var results = JsonConvert.DeserializeObject<List<List<object>>>(await bfResponse.Content.ReadAsStringAsync());
+            var coins = ConvertToBitfinexCoins(results);
 
-            var btc = coins.Find(c => c.Symbol == "tBTCUSD");
-            var eth = coins.Find(c => c.Symbol == "tETHUSD");
-            var ltc = coins.Find(c => c.Symbol == "tLTCUSD");
             var iot = coins.Find(c => c.Symbol == "tIOTUSD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
+            var btcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/BTC-USD/ticker");
+            var ethResponse = await _httpClient.GetAsync("https://api.gdax.com/products/ETH-USD/ticker");
+            var ltcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/LTC-USD/ticker");
+
+            if (!btcResponse.IsSuccessStatusCode || !ethResponse.IsSuccessStatusCode || !ltcResponse.IsSuccessStatusCode)
+            {
+                await ReplyAsync("GDAX's API crapped out. Not my fault, sorry. Try again in a few seconds.");
+                return;
+            }
+
+            var btc = JsonConvert.DeserializeObject<GdaxCoin>(await btcResponse.Content.ReadAsStringAsync());
+            var eth = JsonConvert.DeserializeObject<GdaxCoin>(await ethResponse.Content.ReadAsStringAsync());
+            var ltc = JsonConvert.DeserializeObject<GdaxCoin>(await ltcResponse.Content.ReadAsStringAsync());
+
             var message = new StringBuilder();
             message.Append("BTC: ");
-            message.Append(btc.LastPrice.ToString("#.00#"));
+            message.Append(btc.Price.ToString("#.00#"));
             message.Append("\n");
 
             message.Append("ETH: ");
-            message.Append(eth.LastPrice.ToString("#.00#"));
+            message.Append(eth.Price.ToString("#.00#"));
             message.Append("\n");
 
             message.Append("LTC: ");
-            message.Append(ltc.LastPrice.ToString("#.00#"));
+            message.Append(ltc.Price.ToString("#.00#"));
             message.Append("\n");
 
             message.Append("IOT: ");
@@ -67,13 +78,13 @@ namespace VainBotDiscord.Modules
             await ReplyAsync(message.ToString());
         }
 
-        List<Coin> ConvertToCoins(List<List<object>> obj)
+        List<BitfinexCoin> ConvertToBitfinexCoins(List<List<object>> obj)
         {
-            var coins = new List<Coin>();
+            var coins = new List<BitfinexCoin>();
 
             foreach (var coin in obj)
             {
-                coins.Add(new Coin
+                coins.Add(new BitfinexCoin
                 {
                     Symbol = (string)coin[0],
                     Bid = Convert.ToDecimal(coin[1]),
@@ -92,7 +103,17 @@ namespace VainBotDiscord.Modules
             return coins;
         }
 
-        class Coin
+        class GdaxCoin
+        {
+            public decimal Price { get; set; }
+            public decimal Size { get; set; }
+            public decimal Bid { get; set; }
+            public decimal Ask { get; set; }
+            public decimal Volume { get; set; }
+            public DateTime Time { get; set; }
+        }
+
+        class BitfinexCoin
         {
             public string Symbol { get; set; }
             public decimal Bid { get; set; }
