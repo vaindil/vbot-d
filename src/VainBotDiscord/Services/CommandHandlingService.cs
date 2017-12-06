@@ -37,7 +37,7 @@ namespace VainBotDiscord.Services
                 return;
 
             int argPos = 0;
-            if (!message.HasCharPrefix('+', ref argPos))
+            if (!message.HasCharPrefix('!', ref argPos))
                 return;
 
             var context = new SocketCommandContext(_discord, message);
