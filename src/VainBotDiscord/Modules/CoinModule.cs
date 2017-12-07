@@ -22,11 +22,22 @@ namespace VainBotDiscord.Modules
         [Command]
         public async Task GetCoins([Remainder]string unused = null)
         {
-            // Bitfinex's API isn't exactly the greatest, so I want some indication that the bot is trying
-            await Context.Channel.TriggerTypingAsync();
+            HttpResponseMessage bfResponse;
+            HttpResponseMessage btcResponse;
+            HttpResponseMessage ethResponse;
+            HttpResponseMessage ltcResponse;
 
-            var bfResponse = await _httpClient.GetAsync(
-                "https://api.bitfinex.com/v2/tickers?symbols=tIOTUSD,tXMRUSD");
+            await Context.Channel.TriggerTypingAsync();
+            try
+            {
+                bfResponse = await _httpClient.GetAsync("https://api.bitfinex.com/v2/tickers?symbols=tIOTUSD,tXMRUSD");
+            }
+            catch
+            {
+                await ReplyAsync("Bitfinex's API crapped out. Not my fault, sorry. Try again in a few seconds.");
+                return;
+            }
+
             if (!bfResponse.IsSuccessStatusCode)
             {
                 await ReplyAsync("Bitfinex's API crapped out. Not my fault, sorry. Try again in a few seconds.");
@@ -41,9 +52,17 @@ namespace VainBotDiscord.Modules
             var iot = coins.Find(c => c.Symbol == "tIOTUSD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
-            var btcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/BTC-USD/ticker");
-            var ethResponse = await _httpClient.GetAsync("https://api.gdax.com/products/ETH-USD/ticker");
-            var ltcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/LTC-USD/ticker");
+            try
+            {
+                btcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/BTC-USD/ticker");
+                ethResponse = await _httpClient.GetAsync("https://api.gdax.com/products/ETH-USD/ticker");
+                ltcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/LTC-USD/ticker");
+            }
+            catch
+            {
+                await ReplyAsync("GDAX's API crapped out. Not my fault, sorry. Try again in a few seconds.");
+                return;
+            }
 
             if (!btcResponse.IsSuccessStatusCode || !ethResponse.IsSuccessStatusCode || !ltcResponse.IsSuccessStatusCode)
             {

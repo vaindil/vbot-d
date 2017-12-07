@@ -65,6 +65,7 @@ namespace VainBotDiscord
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.UserAgent.Clear();
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
+            httpClient.Timeout = TimeSpan.FromSeconds(5);
 
             var dbContextOptions = new DbContextOptionsBuilder().UseMySql(_config["connection_string"]).Options;
 
