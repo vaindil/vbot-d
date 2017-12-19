@@ -14,6 +14,7 @@ namespace VainBotDiscord
         public DbSet<TwitchStreamToCheck> StreamsToCheck { get; set; }
         public DbSet<TwitchLiveStream> TwitchLiveStreams { get; set; }
         public DbSet<YouTubeChannelToCheck> YouTubeChannelsToCheck { get; set; }
+        public DbSet<TwitterToCheck> TwittersToCheck { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,6 +77,18 @@ namespace VainBotDiscord
                 e.Property(y => y.YouTubePlaylistId).HasColumnName("youtube_playlist_id").IsRequired().HasMaxLength(40);
                 e.Property(y => y.LatestVideoId).HasColumnName("latest_video_id").HasMaxLength(40);
                 e.Property(y => y.LatestVideoUploadedAt).HasColumnName("latest_video_uploaded_at");
+            });
+
+            modelBuilder.Entity<TwitterToCheck>(e =>
+            {
+                e.ToTable("twitter_to_check");
+                e.HasKey(t => t.Id);
+
+                e.Property(t => t.TwitterUsername).HasColumnName("twitter_username").IsRequired().HasMaxLength(100);
+                e.Property(t => t.TwitterId).HasColumnName("twitter_id").IsRequired();
+                e.Property(t => t.IncludeRetweets).HasColumnName("include_retweets").IsRequired();
+                e.Property(t => t.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
+                e.Property(t => t.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
             });
         }
     }

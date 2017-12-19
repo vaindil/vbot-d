@@ -4,5 +4,9 @@
   "discord_api_token": "",
   "twitch_client_id": "",
   "twitch_client_secret": "",
-  "youtube_api_key": ""
+  "youtube_api_key": "",
+  "twitter_consumer_key": "",
+  "twitter_consumer_secret": "",
+  "twitter_access_token": "",
+  "twitter_access_token_secret": ""
 }
