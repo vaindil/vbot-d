@@ -55,6 +55,7 @@ namespace VainBotDiscord
             {
                 await services.GetRequiredService<TwitchService>().InitializeAsync(services);
                 await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
+                await services.GetRequiredService<TwitterService>().InitializeAsync(services);
 
                 await Task.Delay(-1);
             }
@@ -75,6 +76,7 @@ namespace VainBotDiscord
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()
                 .AddSingleton<YouTubeService>()
+                .AddSingleton<TwitterService>()
                 .AddSingleton(httpClient)
                 .AddLogging()
                 .AddSingleton<LogService>()
