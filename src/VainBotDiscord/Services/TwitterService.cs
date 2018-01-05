@@ -77,12 +77,22 @@ namespace VainBotDiscord.Services
 
         void HandleDisconnect(object sender, DisconnectedEventArgs e)
         {
+            if (e == null || e.DisconnectMessage == null)
+                throw new Exception("TWITTER DISCONNECTED: args null, no further info");
+
             throw new Exception($"TWITTER DISCONNECTED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
         }
 
         void HandleStopped(object sender, StreamExceptionEventArgs e)
         {
-            throw new Exception($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
+            if (e == null)
+                throw new Exception("TWITTER STOPPED: args null, no further info");
+            else if (e.DisconnectMessage == null && e.Exception != null)
+                throw new Exception($"TWITTER STOPPED: {e.Exception.Message}");
+            else if (e.DisconnectMessage != null)
+                throw new Exception($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
+            else
+                throw new Exception("TWITTER STOPPED: idk what happened");
         }
     }
 }
