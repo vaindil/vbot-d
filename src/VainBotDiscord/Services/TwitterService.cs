@@ -86,13 +86,13 @@ namespace VainBotDiscord.Services
         void HandleStopped(object sender, StreamExceptionEventArgs e)
         {
             if (e == null)
-                throw new Exception("TWITTER STOPPED: args null, no further info");
+                Console.Error.WriteLine("TWITTER STOPPED: args null, no further info");
             else if (e.DisconnectMessage == null && e.Exception != null)
-                throw new Exception($"TWITTER STOPPED: {e.Exception.Message}");
+                Console.Error.WriteLine($"TWITTER STOPPED: {e.Exception.Message}");
             else if (e.DisconnectMessage != null)
-                throw new Exception($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
+                Console.Error.WriteLine($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
             else
-                throw new Exception("TWITTER STOPPED: idk what happened");
+                Console.Error.WriteLine("TWITTER STOPPED: idk what happened");
         }
     }
 }
