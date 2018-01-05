@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord.Rest;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,8 @@ namespace VainBotDiscord.Services
             }
 
             _stream.MatchingTweetReceived += HandleMatchingTweet;
+            _stream.DisconnectMessageReceived += HandleDisconnect;
+            _stream.StreamStopped += HandleStopped;
             await _stream.StartStreamMatchingAnyConditionAsync();
         }
 
@@ -70,6 +73,16 @@ namespace VainBotDiscord.Services
 
             var channel = _discord.GetChannel(toCheck.DiscordChannelId) as SocketTextChannel;
             await channel.SendMessageAsync(e.Tweet.Url);
+        }
+
+        void HandleDisconnect(object sender, DisconnectedEventArgs e)
+        {
+            throw new Exception($"TWITTER DISCONNECTED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
+        }
+
+        void HandleStopped(object sender, StreamExceptionEventArgs e)
+        {
+            throw new Exception($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
         }
     }
 }
