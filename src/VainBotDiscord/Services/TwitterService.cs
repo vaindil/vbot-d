@@ -75,24 +75,28 @@ namespace VainBotDiscord.Services
             await channel.SendMessageAsync(e.Tweet.Url);
         }
 
-        void HandleDisconnect(object sender, DisconnectedEventArgs e)
+        async void HandleDisconnect(object sender, DisconnectedEventArgs e)
         {
-            if (e == null || e.DisconnectMessage == null)
-                throw new Exception("TWITTER DISCONNECTED: args null, no further info");
+            var errorMsg = "TWITTER DISCONNECTED: args null, no further info";
+            if (e?.DisconnectMessage != null)
+                errorMsg = $"TWITTER DISCONNECTED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}";
 
-            throw new Exception($"TWITTER DISCONNECTED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
+            var dm = await _discord.GetUser(132714099241910273).GetOrCreateDMChannelAsync();
+            await dm.SendMessageAsync(errorMsg);
         }
 
-        void HandleStopped(object sender, StreamExceptionEventArgs e)
+        async void HandleStopped(object sender, StreamExceptionEventArgs e)
         {
+            var errorMsg = "TWITTER STOPPED: idk what happened";
             if (e == null)
-                Console.Error.WriteLine("TWITTER STOPPED: args null, no further info");
+                errorMsg = "TWITTER STOPPED: args null, no further info";
             else if (e.DisconnectMessage == null && e.Exception != null)
-                Console.Error.WriteLine($"TWITTER STOPPED: {e.Exception.Message}");
+                errorMsg = $"TWITTER STOPPED: {e.Exception.Message}";
             else if (e.DisconnectMessage != null)
-                Console.Error.WriteLine($"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}");
-            else
-                Console.Error.WriteLine("TWITTER STOPPED: idk what happened");
+                errorMsg = $"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}";
+
+            var dm = await _discord.GetUser(132714099241910273).GetOrCreateDMChannelAsync();
+            await dm.SendMessageAsync(errorMsg);
         }
     }
 }
