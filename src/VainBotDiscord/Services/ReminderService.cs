@@ -16,6 +16,8 @@ namespace VainBotDiscord.Services
 
         public void CreateReminder(ulong userId, ulong channelId, bool isDM, string message, TimeSpan remindIn)
         {
+            message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
+
             var wrapper = new ReminderWrapper(userId, channelId, isDM, message);
             BackgroundJob.Schedule(() => SendReminderAsync(wrapper), remindIn);
         }
