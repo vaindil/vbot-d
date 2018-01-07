@@ -91,7 +91,7 @@ namespace VainBotDiscord.Services
             if (e == null)
                 errorMsg = "TWITTER STOPPED: args null, no further info";
             else if (e.DisconnectMessage == null && e.Exception != null)
-                errorMsg = $"TWITTER STOPPED: {e.Exception.Message}";
+                errorMsg = $"TWITTER STOPPED: {e.Exception.Message} || {e.Exception.InnerException?.Message}";
             else if (e.DisconnectMessage != null)
                 errorMsg = $"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}";
 
