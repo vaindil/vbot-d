@@ -65,7 +65,7 @@ namespace VainBotDiscord.Services
         /// <returns></returns>
         public async Task CheckStreamsAsync()
         {
-            if (_streamsToCheck.Count == 0)
+            if (_streamsToCheck == null || _streamsToCheck.Count == 0)
                 return;
 
             var userIds = _streamsToCheck

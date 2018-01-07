@@ -49,7 +49,7 @@ namespace VainBotDiscord.Services
 
         public async Task CheckYouTubeAsync()
         {
-            if (_channels.Count == 0)
+            if (_channels == null || _channels.Count == 0)
                 return;
 
             var channelChanged = false;

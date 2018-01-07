@@ -21,17 +21,13 @@ namespace VainBotDiscord
 {
     public class Program
     {
-        static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
+        public static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
         DiscordSocketClient _client;
         IConfiguration _config;
 
         public async Task MainAsync()
         {
-            // this is used for the TTS commands in the audio module
-            if (!Directory.Exists("TTSTemp"))
-                Directory.CreateDirectory("TTSTemp");
-
             _client = new DiscordSocketClient();
             _config = BuildConfig();
 
@@ -77,6 +73,7 @@ namespace VainBotDiscord
                 .AddSingleton<TwitchService>()
                 .AddSingleton<YouTubeService>()
                 .AddSingleton<TwitterService>()
+                .AddSingleton<ReminderService>()
                 .AddSingleton(httpClient)
                 .AddLogging()
                 .AddSingleton<LogService>()
