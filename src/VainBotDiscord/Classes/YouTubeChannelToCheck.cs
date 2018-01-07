@@ -18,8 +18,12 @@ namespace VainBotDiscord.Classes
 
         public string YouTubePlaylistId { get; set; }
 
+        public bool IsDeleted { get; set; }
+
         public string LatestVideoId { get; set; }
 
         public DateTime? LatestVideoUploadedAt { get; set; }
+
+        public ulong? DiscordMessageId { get; set; }
     }
 }

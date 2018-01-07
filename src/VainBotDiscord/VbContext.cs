@@ -75,8 +75,10 @@ namespace VainBotDiscord
                 e.Property(y => y.DiscordMessageToPost).HasColumnName("discord_message_to_post").IsRequired().HasMaxLength(200);
                 e.Property(y => y.YouTubeChannelId).HasColumnName("youtube_channel_id").IsRequired().HasMaxLength(40);
                 e.Property(y => y.YouTubePlaylistId).HasColumnName("youtube_playlist_id").IsRequired().HasMaxLength(40);
+                e.Property(y => y.IsDeleted).HasColumnName("is_deleted").IsRequired();
                 e.Property(y => y.LatestVideoId).HasColumnName("latest_video_id").HasMaxLength(40);
                 e.Property(y => y.LatestVideoUploadedAt).HasColumnName("latest_video_uploaded_at");
+                e.Property(y => y.DiscordMessageId).HasColumnName("discord_message_id");
             });
 
             modelBuilder.Entity<TwitterToCheck>(e =>

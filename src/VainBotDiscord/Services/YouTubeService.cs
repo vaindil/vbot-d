@@ -100,8 +100,25 @@ namespace VainBotDiscord.Services
         public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, YouTubeVideoSnippet video)
         {
             var discordChannel = _discord.GetChannel(channel.DiscordChannelId) as SocketTextChannel;
-            await discordChannel.SendMessageAsync(
+            var newMsg = await discordChannel.SendMessageAsync(
                 $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
+
+            if (channel.IsDeleted)
+            {
+                if (channel.DiscordMessageId.HasValue)
+                {
+                    var oldMsg = await discordChannel.GetMessageAsync(channel.DiscordMessageId.Value);
+                    await oldMsg.DeleteAsync();
+                }
+
+                channel.DiscordMessageId = newMsg.Id;
+
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.YouTubeChannelsToCheck.Update(channel);
+                    await db.SaveChangesAsync();
+                }
+            }
         }
     }
 }
