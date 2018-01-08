@@ -64,6 +64,9 @@ namespace VainBotDiscord.Services
 
         async void HandleMatchingTweet(object sender, MatchedTweetReceivedEventArgs e)
         {
+            if (e.Tweet.InReplyToUserId.HasValue)
+                return;
+
             var toCheck = _twittersToCheck.Find(t => t.TwitterId == e.Tweet.CreatedBy.Id);
             if (toCheck == null)
                 return;
