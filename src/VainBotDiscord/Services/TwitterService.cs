@@ -64,6 +64,9 @@ namespace VainBotDiscord.Services
 
         async void HandleMatchingTweet(object sender, MatchedTweetReceivedEventArgs e)
         {
+            if (e.Tweet.InReplyToUserId.HasValue)
+                return;
+
             var toCheck = _twittersToCheck.Find(t => t.TwitterId == e.Tweet.CreatedBy.Id);
             if (toCheck == null)
                 return;
@@ -77,26 +80,12 @@ namespace VainBotDiscord.Services
 
         async void HandleDisconnect(object sender, DisconnectedEventArgs e)
         {
-            var errorMsg = "TWITTER DISCONNECTED: args null, no further info";
-            if (e?.DisconnectMessage != null)
-                errorMsg = $"TWITTER DISCONNECTED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}";
-
-            var dm = await _discord.GetUser(132714099241910273).GetOrCreateDMChannelAsync();
-            await dm.SendMessageAsync(errorMsg);
+            await _stream.StartStreamMatchingAnyConditionAsync();
         }
 
         async void HandleStopped(object sender, StreamExceptionEventArgs e)
         {
-            var errorMsg = "TWITTER STOPPED: idk what happened";
-            if (e == null)
-                errorMsg = "TWITTER STOPPED: args null, no further info";
-            else if (e.DisconnectMessage == null && e.Exception != null)
-                errorMsg = $"TWITTER STOPPED: {e.Exception.Message} || {e.Exception.InnerException?.Message}";
-            else if (e.DisconnectMessage != null)
-                errorMsg = $"TWITTER STOPPED: {e.DisconnectMessage.Code} | {e.DisconnectMessage.Reason}";
-
-            var dm = await _discord.GetUser(132714099241910273).GetOrCreateDMChannelAsync();
-            await dm.SendMessageAsync(errorMsg);
+            await _stream.StartStreamMatchingAnyConditionAsync();
         }
     }
 }

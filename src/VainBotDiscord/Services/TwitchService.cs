@@ -146,7 +146,7 @@ namespace VainBotDiscord.Services
             foreach (var stream in liveStreams)
             {
                 // first, check if the streamer WAS online as of the last check.
-                var existingStream = _liveStreams.Find(l => l.TwitchUserId == stream.UserId);
+                var existingStream = _liveStreams.Find(l => l.TwitchUserId == stream.UserId || l.TwitchStreamId == stream.Id);
 
                 var user = users.Find(u => u.Id == stream.UserId);
                 var game = games.Find(g => g.Id == stream.GameId);
@@ -155,7 +155,7 @@ namespace VainBotDiscord.Services
                 // they also belong in stillOnline.
                 if (existingStream != null)
                 {
-                    newlyOffline.RemoveAll(t => t.TwitchUserId == stream.UserId);
+                    newlyOffline.RemoveAll(t => t.TwitchUserId == stream.UserId || t.TwitchStreamId == stream.Id);
 
                     existingStream.TwitchStreamId = stream.Id;
                     existingStream.TwitchDisplayName = user.DisplayName;
@@ -169,7 +169,7 @@ namespace VainBotDiscord.Services
                 }
 
                 // the streamer WAS NOT online, so they're newly online. also verify that it's not a vodcast.
-                else if (stream.Type != TwitchStreamType.Vodcast)
+                else if (stream.Type != TwitchStreamType.Vodcast && !_liveStreams.Any(l => l.TwitchStreamId == stream.Id))
                 {
                     var liveStream = new TwitchLiveStream
                     {
@@ -217,7 +217,7 @@ namespace VainBotDiscord.Services
             }
 
             await HandleNewlyOnlineStreamsAsync(newlyOnline);
-            await HandleStillOnlineStreamsAsync(stillOnline);
+            // await HandleStillOnlineStreamsAsync(stillOnline);
             await HandleNewlyOfflineStreamsAsync(actuallyNewlyOffline);
         }
 
@@ -239,7 +239,7 @@ namespace VainBotDiscord.Services
                     embed = CreateEmbed(stream);
 
                 var channel = _discord.GetChannel(toCheck.ChannelId) as SocketTextChannel;
-                var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
+                var message = await channel.SendMessageAsync(toCheck.MessageToPost/*, embed: embed*/);
                 toCheck.CurrentMessageId = message.Id;
 
                 toCheckUpdated.Add(toCheck);
