@@ -25,7 +25,7 @@ namespace VainBotDiscord.Services
         public async Task InitializeAsync(IServiceProvider provider)
         {
             _provider = provider;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
         }
 
         async Task MessageReceived(SocketMessage rawMessage)
