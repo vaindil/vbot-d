@@ -2,7 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Hangfire;
-using Hangfire.MySql.Core;
+using Hangfire.PostgreSql;
 using Hangfire.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,8 +34,8 @@ namespace VainBotDiscord
             var services = ConfigureServices();
 
             GlobalConfiguration.Configuration
-                .UseStorage(new MySqlStorage(_config["hangfire_connection_string"]))
-                .UseActivator(new HangfireActivator(services));
+                .UseActivator(new HangfireActivator(services))
+                .UsePostgreSqlStorage(_config["hangfire_connection_string"]);
 
             // existing jobs can trigger before the services are initialized, so clear them and start fresh
             ClearRecurringJobs();
@@ -64,7 +64,7 @@ namespace VainBotDiscord
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
-            var dbContextOptions = new DbContextOptionsBuilder().UseMySql(_config["connection_string"]).Options;
+            var dbContextOptions = new DbContextOptionsBuilder().UseNpgsql(_config["connection_string"]).Options;
 
             return new ServiceCollection()
                 .AddSingleton(_client)
@@ -78,7 +78,7 @@ namespace VainBotDiscord
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
-                .AddDbContext<VbContext>(o => o.UseMySql(_config["connection_string"]), ServiceLifetime.Transient)
+                .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
         }
 

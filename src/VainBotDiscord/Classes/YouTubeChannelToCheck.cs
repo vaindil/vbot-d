@@ -8,9 +8,9 @@ namespace VainBotDiscord.Classes
 
         public string Username { get; set; }
 
-        public ulong DiscordGuildId { get; set; }
+        public long DiscordGuildId { get; set; }
 
-        public ulong DiscordChannelId { get; set; }
+        public long DiscordChannelId { get; set; }
 
         public string DiscordMessageToPost { get; set; }
 
@@ -24,6 +24,6 @@ namespace VainBotDiscord.Classes
 
         public DateTime? LatestVideoUploadedAt { get; set; }
 
-        public ulong? DiscordMessageId { get; set; }
+        public long? DiscordMessageId { get; set; }
     }
 }

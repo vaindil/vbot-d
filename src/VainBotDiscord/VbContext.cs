@@ -69,6 +69,7 @@ namespace VainBotDiscord
                 e.ToTable("youtube_channel_to_check");
                 e.HasKey(y => y.Id);
 
+                e.Property(y => y.Id).HasColumnName("id");
                 e.Property(y => y.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
                 e.Property(y => y.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
                 e.Property(y => y.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
@@ -86,6 +87,7 @@ namespace VainBotDiscord
                 e.ToTable("twitter_to_check");
                 e.HasKey(t => t.Id);
 
+                e.Property(t => t.Id).HasColumnName("id");
                 e.Property(t => t.TwitterUsername).HasColumnName("twitter_username").IsRequired().HasMaxLength(100);
                 e.Property(t => t.TwitterId).HasColumnName("twitter_id").IsRequired();
                 e.Property(t => t.IncludeRetweets).HasColumnName("include_retweets").IsRequired();

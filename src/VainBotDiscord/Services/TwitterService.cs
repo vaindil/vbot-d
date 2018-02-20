@@ -74,7 +74,7 @@ namespace VainBotDiscord.Services
             if (e.Tweet.IsRetweet && !toCheck.IncludeRetweets)
                 return;
 
-            var channel = _discord.GetChannel(toCheck.DiscordChannelId) as SocketTextChannel;
+            var channel = _discord.GetChannel((ulong)toCheck.DiscordChannelId) as SocketTextChannel;
             await channel.SendMessageAsync(e.Tweet.Url);
         }
 

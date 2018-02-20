@@ -10,8 +10,8 @@
 
         public bool IncludeRetweets { get; set; }
 
-        public ulong DiscordGuildId { get; set; }
+        public long DiscordGuildId { get; set; }
 
-        public ulong DiscordChannelId { get; set; }
+        public long DiscordChannelId { get; set; }
     }
 }

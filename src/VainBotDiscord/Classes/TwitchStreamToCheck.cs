@@ -10,14 +10,14 @@
 
         public string MessageToPost { get; set; }
 
-        public ulong ChannelId { get; set; }
+        public long ChannelId { get; set; }
 
-        public ulong GuildId { get; set; }
+        public long GuildId { get; set; }
 
         public bool IsEmbedded { get; set; }
 
         public bool IsDeleted { get; set; }
 
-        public ulong? CurrentMessageId { get; set; }
+        public long? CurrentMessageId { get; set; }
     }
 }

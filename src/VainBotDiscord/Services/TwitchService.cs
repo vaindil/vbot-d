@@ -238,9 +238,9 @@ namespace VainBotDiscord.Services
                 if (toCheck.IsEmbedded)
                     embed = CreateEmbed(stream);
 
-                var channel = _discord.GetChannel(toCheck.ChannelId) as SocketTextChannel;
+                var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
                 var message = await channel.SendMessageAsync(toCheck.MessageToPost/*, embed: embed*/);
-                toCheck.CurrentMessageId = message.Id;
+                toCheck.CurrentMessageId = (long)message.Id;
 
                 toCheckUpdated.Add(toCheck);
             }
@@ -264,8 +264,8 @@ namespace VainBotDiscord.Services
                     continue;
 
                 var embed = CreateEmbed(stream);
-                var channel = _discord.GetChannel(toCheck.ChannelId) as SocketTextChannel;
-                var message = await channel.GetMessageAsync(toCheck.CurrentMessageId.Value) as RestUserMessage;
+                var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
+                var message = await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) as RestUserMessage;
                 await message.ModifyAsync(m => m.Embed = embed);
             }
         }
@@ -285,8 +285,8 @@ namespace VainBotDiscord.Services
 
                 if (toCheck.IsDeleted)
                 {
-                    var channel = _discord.GetChannel(toCheck.ChannelId) as SocketTextChannel;
-                    var message = await channel.GetMessageAsync(toCheck.CurrentMessageId.Value) as RestUserMessage;
+                    var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
+                    var message = await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) as RestUserMessage;
                     await message.DeleteAsync();
                 }
 
