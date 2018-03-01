@@ -1,36 +1,93 @@
 ﻿using Discord.WebSocket;
-using Hangfire;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using VainBotDiscord.Classes;
 
 namespace VainBotDiscord.Services
 {
     public class ReminderService
     {
         readonly DiscordSocketClient _discord;
+        readonly IServiceProvider _provider;
 
-        public ReminderService(DiscordSocketClient discord)
+        readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
+
+        public ReminderService(
+            DiscordSocketClient discord,
+            IServiceProvider provider)
         {
             _discord = discord;
+            _provider = provider;
         }
 
-        public void CreateReminder(ulong userId, ulong channelId, bool isDM, string message, TimeSpan remindIn)
+        public async Task InitializeAsync()
+        {
+            List<Reminder> reminders;
+            using (var db = _provider.GetRequiredService<VbContext>())
+            {
+                reminders = await db.Reminders.ToListAsync();
+            }
+
+            var now = DateTimeOffset.UtcNow;
+
+            foreach (var r in reminders)
+            {
+                if (r.FireAt <= now)
+                {
+                    await SendReminderAsync(r);
+                }
+                else
+                {
+                    var timeSpan = r.FireAt - now;
+                    _timers.Add(
+                        new TimerWrapper(
+                            r.Id,
+                            new Timer(async (e) => await SendReminderAsync(e), r, timeSpan, TimeSpan.FromMilliseconds(-1))));
+                }
+            }
+        }
+
+        public async Task CreateReminderAsync(ulong userId, ulong channelId, bool isDM, string message, TimeSpan remindIn)
         {
             message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
 
-            var wrapper = new ReminderWrapper(userId, channelId, isDM, message);
-            BackgroundJob.Schedule(() => SendReminderAsync(wrapper), remindIn);
+            var reminder = new Reminder
+            {
+                CreatedAt = DateTimeOffset.UtcNow,
+                FireAt = DateTimeOffset.UtcNow.Add(remindIn),
+                UserId = (long)userId,
+                ChannelId = (long)channelId,
+                IsDM = isDM,
+                Message = message
+            };
+
+            using (var db = _provider.GetRequiredService<VbContext>())
+            {
+                db.Reminders.Add(reminder);
+                await db.SaveChangesAsync();
+            }
+
+            _timers.Add(
+                new TimerWrapper(
+                    reminder.Id,
+                    new Timer(async (e) => await SendReminderAsync(e), reminder, remindIn, TimeSpan.FromMilliseconds(-1))));
         }
 
-        public async Task SendReminderAsync(ReminderWrapper wrapper)
+        public async Task SendReminderAsync(object reminderIn)
         {
-            var user = _discord.GetUser(wrapper.UserId);
+            var reminder = (Reminder)reminderIn;
+
+            var user = _discord.GetUser((ulong)reminder.UserId);
             if (user == null)
                 return;
 
-            var message = $"{user.Mention} asked for a reminder: {wrapper.Message}";
+            var message = $"{user.Mention} asked for a reminder: {reminder.Message}";
 
-            if (wrapper.IsDM)
+            if (reminder.IsDM)
             {
                 var channel = await user.GetOrCreateDMChannelAsync();
                 if (channel == null)
@@ -40,31 +97,44 @@ namespace VainBotDiscord.Services
             }
             else
             {
-                var channel = _discord.GetChannel(wrapper.ChannelId) as SocketTextChannel;
+                var channel = _discord.GetChannel((ulong)reminder.ChannelId) as SocketTextChannel;
                 if (channel == null)
                     return;
 
                 await channel.SendMessageAsync(message);
             }
-        }
 
-        public class ReminderWrapper
-        {
-            public ReminderWrapper(ulong userId, ulong channelId, bool isDM, string message)
+            using (var db = _provider.GetRequiredService<VbContext>())
             {
-                UserId = userId;
-                ChannelId = channelId;
-                IsDM = isDM;
-                Message = message;
+                var thisReminder = await db.Reminders.FindAsync(reminder.Id);
+                if (thisReminder != null)
+                {
+                    db.Reminders.Remove(thisReminder);
+                    await db.SaveChangesAsync();
+                }
             }
 
-            public ulong UserId { get; set; }
+            var wrapper = _timers.Find(t => t.ReminderId == reminder.Id);
+            if (wrapper == null)
+                return;
 
-            public ulong ChannelId { get; set; }
+            wrapper.Timer.Dispose();
+            wrapper.Timer = null;
 
-            public bool IsDM { get; set; }
+            _timers.Remove(wrapper);
+        }
 
-            public string Message { get; set; }
+        private class TimerWrapper
+        {
+            public TimerWrapper(int reminderId, Timer timer)
+            {
+                ReminderId = reminderId;
+                Timer = timer;
+            }
+
+            public int ReminderId { get; set; }
+
+            public Timer Timer { get; set; }
         }
     }
 }

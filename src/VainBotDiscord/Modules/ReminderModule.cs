@@ -74,7 +74,7 @@ namespace VainBotDiscord.Modules
                 return;
             }
 
-            _reminderSvc.CreateReminder(Context.Message.Author.Id, Context.Channel.Id, isDM, message, delayTs);
+            await _reminderSvc.CreateReminderAsync(Context.Message.Author.Id, Context.Channel.Id, isDM, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";

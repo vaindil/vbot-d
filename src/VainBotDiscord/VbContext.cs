@@ -15,6 +15,7 @@ namespace VainBotDiscord
         public DbSet<TwitchLiveStream> TwitchLiveStreams { get; set; }
         public DbSet<YouTubeChannelToCheck> YouTubeChannelsToCheck { get; set; }
         public DbSet<TwitterToCheck> TwittersToCheck { get; set; }
+        public DbSet<Reminder> Reminders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,6 +94,20 @@ namespace VainBotDiscord
                 e.Property(t => t.IncludeRetweets).HasColumnName("include_retweets").IsRequired();
                 e.Property(t => t.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
                 e.Property(t => t.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
+            });
+
+            modelBuilder.Entity<Reminder>(e =>
+            {
+                e.ToTable("reminder");
+                e.HasKey(r => r.Id);
+
+                e.Property(r => r.Id).HasColumnName("id");
+                e.Property(r => r.CreatedAt).HasColumnName("created_at").IsRequired();
+                e.Property(r => r.FireAt).HasColumnName("fire_at").IsRequired();
+                e.Property(r => r.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(r => r.ChannelId).HasColumnName("channel_id").IsRequired();
+                e.Property(r => r.IsDM).HasColumnName("is_dm").IsRequired();
+                e.Property(r => r.Message).HasColumnName("message").IsRequired().HasMaxLength(500);
             });
         }
     }
