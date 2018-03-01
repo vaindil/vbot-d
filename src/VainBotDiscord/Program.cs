@@ -22,13 +22,8 @@ namespace VainBotDiscord
         DiscordSocketClient _client;
         IConfiguration _config;
 
-        bool _isDev;
-
         public async Task MainAsync()
         {
-            if (Environment.GetEnvironmentVariable("VAINBOT_ISDEV") != null)
-                _isDev = true;
-
             _client = new DiscordSocketClient();
             _config = BuildConfig();
 
@@ -41,12 +36,10 @@ namespace VainBotDiscord
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
 
-            if (!_isDev)
-            {
-                await services.GetRequiredService<TwitchService>().InitializeAsync(services);
-                await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
-                await services.GetRequiredService<TwitterService>().InitializeAsync(services);
-            }
+            await services.GetRequiredService<ReminderService>().InitializeAsync();
+            await services.GetRequiredService<TwitchService>().InitializeAsync(services);
+            await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
+            await services.GetRequiredService<TwitterService>().InitializeAsync(services);
 
             await Task.Delay(-1);
         }
