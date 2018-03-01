@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VainBotDiscord.Classes;
@@ -32,6 +33,9 @@ namespace VainBotDiscord.Services
                 reminders = await db.Reminders.ToListAsync();
             }
 
+            var guilds = reminders.Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
+            await _discord.DownloadUsersAsync(guilds);
+
             var now = DateTimeOffset.UtcNow;
 
             foreach (var r in reminders)
@@ -51,7 +55,7 @@ namespace VainBotDiscord.Services
             }
         }
 
-        public async Task CreateReminderAsync(ulong userId, ulong channelId, bool isDM, string message, TimeSpan remindIn)
+        public async Task CreateReminderAsync(ulong userId, ulong channelId, ulong guildId, bool isDM, string message, TimeSpan remindIn)
         {
             message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
 
@@ -61,6 +65,7 @@ namespace VainBotDiscord.Services
                 FireAt = DateTimeOffset.UtcNow.Add(remindIn),
                 UserId = (long)userId,
                 ChannelId = (long)channelId,
+                GuildId = (long)guildId,
                 IsDM = isDM,
                 Message = message
             };

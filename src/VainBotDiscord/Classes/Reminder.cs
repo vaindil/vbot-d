@@ -14,6 +14,8 @@ namespace VainBotDiscord.Classes
 
         public long ChannelId { get; set; }
 
+        public long GuildId { get; set; }
+
         public bool IsDM { get; set; }
 
         public string Message { get; set; }

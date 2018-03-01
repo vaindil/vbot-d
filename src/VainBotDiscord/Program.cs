@@ -33,13 +33,16 @@ namespace VainBotDiscord
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
 
+            _client.Ready += async () =>
+            {
+                await services.GetRequiredService<ReminderService>().InitializeAsync();
+                await services.GetRequiredService<TwitchService>().InitializeAsync(services);
+                await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
+                await services.GetRequiredService<TwitterService>().InitializeAsync(services);
+            };
+
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
-
-            await services.GetRequiredService<ReminderService>().InitializeAsync();
-            await services.GetRequiredService<TwitchService>().InitializeAsync(services);
-            await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
-            await services.GetRequiredService<TwitterService>().InitializeAsync(services);
 
             await Task.Delay(-1);
         }

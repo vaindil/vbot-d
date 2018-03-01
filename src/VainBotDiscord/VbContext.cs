@@ -106,6 +106,7 @@ namespace VainBotDiscord
                 e.Property(r => r.FireAt).HasColumnName("fire_at").IsRequired();
                 e.Property(r => r.UserId).HasColumnName("user_id").IsRequired();
                 e.Property(r => r.ChannelId).HasColumnName("channel_id").IsRequired();
+                e.Property(r => r.GuildId).HasColumnName("guild_id").IsRequired();
                 e.Property(r => r.IsDM).HasColumnName("is_dm").IsRequired();
                 e.Property(r => r.Message).HasColumnName("message").IsRequired().HasMaxLength(500);
             });
