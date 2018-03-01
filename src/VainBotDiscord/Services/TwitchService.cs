@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hangfire;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using VainBotDiscord.Classes;
 
@@ -24,9 +24,11 @@ namespace VainBotDiscord.Services
         IServiceProvider _provider;
 
         string _accessToken;
-        string _accessTokenJobId;
         List<TwitchStreamToCheck> _streamsToCheck;
         List<TwitchLiveStream> _liveStreams;
+
+        Timer _accessTokenTimer;
+        Timer _pollTimer;
 
         public TwitchService(
             DiscordSocketClient discord,
@@ -47,7 +49,6 @@ namespace VainBotDiscord.Services
             using (var db = _provider.GetRequiredService<VbContext>())
             {
                 _accessToken = await db.KeyValues.GetValueAsync(KeyValueKeys.TwitchAccessToken);
-                _accessTokenJobId = await db.KeyValues.GetValueAsync(KeyValueKeys.TwitchAccessTokenJobId);
                 _streamsToCheck = await db.StreamsToCheck.ToListAsync();
                 _liveStreams = await db.TwitchLiveStreams.ToListAsync();
             }
@@ -55,8 +56,7 @@ namespace VainBotDiscord.Services
             if (string.IsNullOrEmpty(_accessToken))
                 await RefreshAccessTokenAsync();
 
-            RecurringJob.AddOrUpdate("TwitchCheck", () => CheckStreamsAsync(), Cron.Minutely);
-            RecurringJob.Trigger("TwitchCheck");
+            _pollTimer = new Timer(async (e) => await CheckStreamsAsync(), null, 0, 60000);
         }
 
         /// <summary>
@@ -374,6 +374,12 @@ namespace VainBotDiscord.Services
         /// </summary>
         public async Task RefreshAccessTokenAsync()
         {
+            if (_accessTokenTimer != null)
+            {
+                _accessTokenTimer.Dispose();
+                _accessTokenTimer = null;
+            }
+
             var url = QueryHelpers.AddQueryString(
                 "https://api.twitch.tv/kraken/oauth2/token",
                 new Dictionary<string, string>
@@ -390,21 +396,11 @@ namespace VainBotDiscord.Services
             _accessToken = token.AccessToken;
 
             // schedule the token refresh 7 days early
-            var jobId = BackgroundJob.Schedule(() => RefreshAccessTokenAsync(), TimeSpan.FromSeconds(token.ExpiresInSeconds - 604800));
-
-            using (var db = _provider.GetRequiredService<VbContext>())
-            {
-                var accessToken = await db.KeyValues.FindAsync(KeyValueKeys.TwitchAccessToken);
-                accessToken.Value = _accessToken;
-
-                var accessTokenJobId = await db.KeyValues.FindAsync(KeyValueKeys.TwitchAccessTokenJobId);
-                if (!string.IsNullOrEmpty(accessTokenJobId.Value))
-                    BackgroundJob.Delete(accessTokenJobId.Value);
-
-                accessTokenJobId.Value = jobId;
-
-                await db.SaveChangesAsync();
-            }
+            _accessTokenTimer = new Timer(
+                async (e) => await RefreshAccessTokenAsync(),
+                null,
+                TimeSpan.FromSeconds(token.ExpiresInSeconds - 604800),
+                TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
