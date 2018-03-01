@@ -1,6 +1,5 @@
 {
   "connection_string": "",
-  "hangfire_connection_string": "",
   "discord_api_token": "",
   "twitch_client_id": "",
   "twitch_client_secret": "",

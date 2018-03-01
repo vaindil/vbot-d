@@ -1,9 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hangfire;
-using Hangfire.PostgreSql;
-using Hangfire.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +12,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using VainBotDiscord.Classes;
 using VainBotDiscord.Services;
-using VainBotDiscord.Utils;
 
 namespace VainBotDiscord
 {
@@ -38,13 +34,6 @@ namespace VainBotDiscord
 
             var services = ConfigureServices();
 
-            GlobalConfiguration.Configuration
-                .UseActivator(new HangfireActivator(services))
-                .UsePostgreSqlStorage(_config["hangfire_connection_string"]);
-
-            // existing jobs can trigger before the services are initialized, so clear them and start fresh
-            ClearRecurringJobs();
-
             services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
@@ -52,17 +41,14 @@ namespace VainBotDiscord
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
 
-            using (var server = new BackgroundJobServer())
+            if (!_isDev)
             {
-                if (!_isDev)
-                {
-                    await services.GetRequiredService<TwitchService>().InitializeAsync(services);
-                    await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
-                    await services.GetRequiredService<TwitterService>().InitializeAsync(services);
-                }
-
-                await Task.Delay(-1);
+                await services.GetRequiredService<TwitchService>().InitializeAsync(services);
+                await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
+                await services.GetRequiredService<TwitterService>().InitializeAsync(services);
             }
+
+            await Task.Delay(-1);
         }
 
         IServiceProvider ConfigureServices()
@@ -98,9 +84,9 @@ namespace VainBotDiscord
                 .Build();
         }
 
+        // https://stackoverflow.com/a/15228558/1672458
         async Task SetUpDB(VbContext db)
         {
-            // https://stackoverflow.com/a/15228558/1672458
             foreach (var key in typeof(KeyValueKeys).GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (key.IsLiteral && !key.IsInitOnly)
@@ -112,17 +98,6 @@ namespace VainBotDiscord
                         db.Add(new KeyValue(val, ""));
                         await db.SaveChangesAsync();
                     }
-                }
-            }
-        }
-
-        void ClearRecurringJobs()
-        {
-            using (var conn = JobStorage.Current.GetConnection())
-            {
-                foreach (var recurringJob in conn.GetRecurringJobs())
-                {
-                    RecurringJob.RemoveIfExists(recurringJob.Id);
                 }
             }
         }
