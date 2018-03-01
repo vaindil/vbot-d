@@ -1,5 +1,4 @@
-﻿using Discord.Rest;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

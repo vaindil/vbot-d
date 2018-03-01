@@ -1,5 +1,4 @@
 ﻿using Discord.WebSocket;
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using VainBotDiscord.Classes;
 
@@ -21,6 +21,8 @@ namespace VainBotDiscord.Services
         IServiceProvider _provider;
 
         List<YouTubeChannelToCheck> _channels;
+
+        Timer _pollTimer;
 
         public YouTubeService(
             DiscordSocketClient discord,
@@ -43,8 +45,7 @@ namespace VainBotDiscord.Services
                 _channels = await db.YouTubeChannelsToCheck.ToListAsync();
             }
 
-            RecurringJob.AddOrUpdate("YouTubeCheck", () => CheckYouTubeAsync(), Cron.Minutely);
-            RecurringJob.Trigger("YouTubeCheck");
+            _pollTimer = new Timer(async (e) => await CheckYouTubeAsync(), null, 0, 60000);
         }
 
         public async Task CheckYouTubeAsync()
