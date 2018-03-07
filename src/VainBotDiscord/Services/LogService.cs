@@ -35,7 +35,7 @@ namespace VainBotDiscord.Services
                 0,
                 message,
                 message.Exception,
-                (_1, _2) => message.ToString(prependTimestamp: false));
+                (_1, _2) => message.ToString());
             return Task.CompletedTask;
         }
 
@@ -46,7 +46,7 @@ namespace VainBotDiscord.Services
                 0,
                 message,
                 message.Exception,
-                (_1, _2) => message.ToString(prependTimestamp: false));
+                (_1, _2) => message.ToString());
             return Task.CompletedTask;
         }
 

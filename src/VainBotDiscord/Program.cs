@@ -24,7 +24,12 @@ namespace VainBotDiscord
 
         public async Task MainAsync()
         {
-            _client = new DiscordSocketClient();
+            _client = new DiscordSocketClient(
+                new DiscordSocketConfig
+                {
+                    LogLevel = LogSeverity.Info
+                });
+
             _config = BuildConfig();
 
             var services = ConfigureServices();
