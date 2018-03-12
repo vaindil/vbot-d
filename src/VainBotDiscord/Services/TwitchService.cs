@@ -239,6 +239,13 @@ namespace VainBotDiscord.Services
                     embed = CreateEmbed(stream);
 
                 var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
+                if (channel == null)
+                {
+                    await RemoveStreamByIdAsync(toCheck.Id);
+                    Console.Error.WriteLine($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. Removing entry.");
+                    return;
+                }
+
                 var message = await channel.SendMessageAsync(toCheck.MessageToPost/*, embed: embed*/);
                 toCheck.CurrentMessageId = (long)message.Id;
 
@@ -349,6 +356,56 @@ namespace VainBotDiscord.Services
         }
 
         /// <summary>
+        /// Gets all streams for the given guild
+        /// </summary>
+        /// <param name="guildId">ID of the guild</param>
+        /// <returns>List of streams</returns>
+        public List<TwitchStreamToCheck> GetStreamsByGuild(ulong guildId)
+        {
+            return _streamsToCheck
+                .Where(s => s.GuildId == (long)guildId)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Adds a stream to be checked
+        /// </summary>
+        /// <param name="stream">Stream to add</param>
+        public async Task AddStreamAsync(TwitchStreamToCheck stream)
+        {
+            _streamsToCheck.Add(stream);
+
+            using (var db = _provider.GetRequiredService<VbContext>())
+            {
+                db.StreamsToCheck.Add(stream);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes a stream that's currently being checked
+        /// </summary>
+        /// <param name="id">ID of the entry to remove</param>
+        public async Task RemoveStreamByIdAsync(int id)
+        {
+            var stream = _streamsToCheck.Find(s => s.Id == id);
+            if (stream == null)
+                return;
+
+            _streamsToCheck.Remove(stream);
+
+            using (var db = _provider.GetRequiredService<VbContext>())
+            {
+                var s = await db.StreamsToCheck.FindAsync(id);
+                if (s != null)
+                {
+                    db.StreamsToCheck.Remove(s);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the current access token stored in memory.
         /// </summary>
         /// <returns>Twitch access token</returns>
@@ -419,6 +476,34 @@ namespace VainBotDiscord.Services
             throw new InvalidOperationException(
                 $"Twitch token refresh failed with error code {error.Status}, {error.Error}. " +
                 $"Message: {error.Message}");
+        }
+
+        /// <summary>
+        /// Gets the display name and ID of the given Twitch username.
+        /// </summary>
+        /// <param name="username">Username to look up</param>
+        /// <returns>ID and display name of user. ID will be "-1" on error.</returns>
+        public async Task<(string Id, string DisplayName)> GetUserIdAsync(string username)
+        {
+            var request = GetRequestMessage();
+            request.RequestUri = new Uri($"https://api.twitch.tv/helix/users?login={username}");
+            request.Method = HttpMethod.Get;
+
+            var response = await _httpClient.SendAsync(request);
+            try
+            {
+                await ThrowIfResponseInvalidAsync(response);
+            }
+            catch
+            {
+                return ("-1", "An error occurred when getting the ID. Please try again, or yell at vaindil.");
+            }
+
+            var users = JsonConvert.DeserializeObject<TwitchUserResponse>(await response.Content.ReadAsStringAsync());
+            if (users.Users.Count == 0)
+                return ("-1", $"The user **{username}** does not exist.");
+
+            return (users.Users[0].Id, users.Users[0].DisplayName);
         }
     }
 }

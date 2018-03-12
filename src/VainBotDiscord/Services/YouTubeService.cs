@@ -101,6 +101,13 @@ namespace VainBotDiscord.Services
         public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, YouTubeVideoSnippet video)
         {
             var discordChannel = _discord.GetChannel((ulong)channel.DiscordChannelId) as SocketTextChannel;
+            //if (discordChannel == null)
+            //{
+            //    await RemoveStreamByIdAsync(toCheck.Id);
+            //    Console.Error.WriteLine($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. Removing entry.");
+            //    return;
+            //}
+
             var newMsg = await discordChannel.SendMessageAsync(
                 $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
 
