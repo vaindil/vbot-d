@@ -10,10 +10,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using VainBotDiscord.Classes;
-using VainBotDiscord.Services;
+using VainBot.Classes;
+using VainBot.Services;
 
-namespace VainBotDiscord
+namespace VainBot
 {
     public class Program
     {

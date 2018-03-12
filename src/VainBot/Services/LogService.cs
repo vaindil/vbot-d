@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace VainBotDiscord.Services
+namespace VainBot.Services
 {
     public class LogService
     {

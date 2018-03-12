@@ -9,9 +9,9 @@ using Tweetinvi;
 using Tweetinvi.Events;
 using Tweetinvi.Models;
 using Tweetinvi.Streaming;
-using VainBotDiscord.Classes;
+using VainBot.Classes;
 
-namespace VainBotDiscord.Services
+namespace VainBot.Services
 {
     public class TwitterService
     {

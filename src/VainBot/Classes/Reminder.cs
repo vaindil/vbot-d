@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VainBotDiscord.Classes
+namespace VainBot.Classes
 {
     public class Reminder
     {

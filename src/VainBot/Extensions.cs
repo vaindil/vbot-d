@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using VainBotDiscord.Classes;
+using VainBot.Classes;
 
-namespace VainBotDiscord
+namespace VainBot
 {
     public static class Extensions
     {

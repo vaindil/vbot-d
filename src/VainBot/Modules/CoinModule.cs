@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VainBotDiscord.Modules
+namespace VainBot.Modules
 {
     [Group("coins")]
     [Alias("coin", "btc", "eth", "ltc", "iot")]

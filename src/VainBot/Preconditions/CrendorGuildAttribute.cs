@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace VainBotDiscord.Preconditions
+namespace VainBot.Preconditions
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
     public class CrendorGuildAttribute : PreconditionAttribute

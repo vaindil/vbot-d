@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using VainBotDiscord.Classes;
+using VainBot.Classes;
 
-namespace VainBotDiscord
+namespace VainBot
 {
     public class VbContext : DbContext
     {

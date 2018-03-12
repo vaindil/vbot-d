@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <CodeAnalysisRuleSet>..\..\VainBotDiscord.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\VainBot.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

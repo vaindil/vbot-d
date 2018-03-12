@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VainBotDiscord.Preconditions;
+using VainBot.Preconditions;
 
-namespace VainBotDiscord.Modules
+namespace VainBot.Modules
 {
     [Group("crenguild")]
     [Alias("guild")]

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VainBotDiscord.Classes;
+using VainBot.Classes;
 
-namespace VainBotDiscord.Services
+namespace VainBot.Services
 {
     public class ReminderService
     {

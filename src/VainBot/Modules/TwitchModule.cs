@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using VainBotDiscord.Classes;
-using VainBotDiscord.Services;
+using VainBot.Classes;
+using VainBot.Services;
 
-namespace VainBotDiscord.Modules
+namespace VainBot.Modules
 {
     [Group("twitch")]
     [Alias("stream")]

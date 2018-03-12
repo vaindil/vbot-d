@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VainBotDiscord.Classes
+namespace VainBot.Classes
 {
     public class YouTubePlaylistItemsResponse
     {

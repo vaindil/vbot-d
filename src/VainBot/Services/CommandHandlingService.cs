@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace VainBotDiscord.Services
+namespace VainBot.Services
 {
     public class CommandHandlingService
     {

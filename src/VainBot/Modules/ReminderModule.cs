@@ -3,9 +3,9 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VainBotDiscord.Services;
+using VainBot.Services;
 
-namespace VainBotDiscord.Modules
+namespace VainBot.Modules
 {
     [Group("reminder")]
     [Alias("remindme", "remind")]

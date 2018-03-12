@@ -1,4 +1,4 @@
-﻿namespace VainBotDiscord.Classes
+﻿namespace VainBot.Classes
 {
     public class KeyValue
     {
