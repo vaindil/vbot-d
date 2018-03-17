@@ -92,13 +92,13 @@ namespace VainBot.Services
 
         async void HandleDisconnect(object sender, DisconnectedEventArgs e)
         {
-            await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream disconnected. Restarting.");
+            //await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream disconnected. Restarting.");
             await _stream.StartStreamMatchingAnyConditionAsync();
         }
 
         async void HandleStopped(object sender, StreamExceptionEventArgs e)
         {
-            await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream stopped. Restarting.");
+            //await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream stopped. Restarting.");
             await _stream.StartStreamMatchingAnyConditionAsync();
         }
     }
