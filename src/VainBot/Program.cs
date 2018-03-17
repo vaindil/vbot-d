@@ -66,8 +66,6 @@ namespace VainBot
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
-            var dbContextOptions = new DbContextOptionsBuilder().UseNpgsql(_config["connection_string"]).Options;
-
             return new ServiceCollection()
                 .Configure<Configs.RollbarConfig>(_config.GetSection("Rollbar"))
                 .AddSingleton(_client)
