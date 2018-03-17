@@ -60,6 +60,6 @@ CREATE TABLE youtube_channel_to_check (
 	youtube_playlist_id varchar(40) NOT NULL,
 	is_deleted bool NOT NULL,
 	latest_video_id varchar(40) NULL,
-	latest_video_uploaded_at timetz NULL,
+	latest_video_uploaded_at timestamptz NULL,
 	discord_message_id int8 NULL
 );
