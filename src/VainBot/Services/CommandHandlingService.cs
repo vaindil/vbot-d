@@ -22,10 +22,9 @@ namespace VainBot.Services
             _discord.MessageReceived += MessageReceived;
         }
 
-        public async Task InitializeAsync(IServiceProvider provider)
+        public async Task InitializeAsync()
         {
-            _provider = provider;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         }
 
         async Task MessageReceived(SocketMessage rawMessage)
@@ -44,7 +43,27 @@ namespace VainBot.Services
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
 
             if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
-                await context.Channel.SendMessageAsync(result.ErrorReason);
+            {
+                var msg = "An unknown error occurred while running that command.";
+
+                switch (result.Error)
+                {
+                    case CommandError.BadArgCount:
+                        msg = "You didn't specify the right number of parameters for that command. " +
+                            "It's possible that you don't have permission to use the command you tried to use.";
+                        break;
+
+                    case CommandError.MultipleMatches:
+                        msg = "Your command matches multiple possible commands.";
+                        break;
+
+                    case CommandError.UnmetPrecondition:
+                        msg = "You can't use that command.";
+                        break;
+                }
+
+                await context.Channel.SendMessageAsync($"{context.User.Mention}: {msg}");
+            }
         }
     }
 }

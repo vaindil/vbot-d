@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rollbar;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -25,30 +26,31 @@ namespace VainBot
 
         public async Task MainAsync()
         {
+            _config = BuildConfig();
+            ConfigureRollbar();
+
             _isDev = Environment.GetEnvironmentVariable("VB_DEV") != null;
 
             _client = new DiscordSocketClient(
                 new DiscordSocketConfig
                 {
-                    LogLevel = LogSeverity.Info
+                    LogLevel = LogSeverity.Warning
                 });
-
-            _config = BuildConfig();
 
             var services = ConfigureServices();
 
             services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
-            await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
             _client.Ready += async () =>
             {
                 await services.GetRequiredService<ReminderService>().InitializeAsync();
-                await services.GetRequiredService<TwitchService>().InitializeAsync(services);
-                await services.GetRequiredService<YouTubeService>().InitializeAsync(services);
+                await services.GetRequiredService<TwitchService>().InitializeAsync();
+                await services.GetRequiredService<YouTubeService>().InitializeAsync();
 
                 if (!_isDev)
-                    await services.GetRequiredService<TwitterService>().InitializeAsync(services);
+                    await services.GetRequiredService<TwitterService>().InitializeAsync();
             };
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
@@ -67,6 +69,7 @@ namespace VainBot
             var dbContextOptions = new DbContextOptionsBuilder().UseNpgsql(_config["connection_string"]).Options;
 
             return new ServiceCollection()
+                .Configure<Configs.RollbarConfig>(_config.GetSection("Rollbar"))
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
@@ -88,6 +91,20 @@ namespace VainBot
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
+        }
+
+        void ConfigureRollbar()
+        {
+            if (!bool.Parse(_config["Rollbar:UseRollbar"]))
+                return;
+
+            var config = new RollbarConfig(_config["Rollbar:AccessToken"])
+            {
+                Environment = _config["Rollbar:Environment"],
+                LogLevel = ErrorLevel.Warning
+            };
+
+            RollbarLocator.RollbarInstance.Configure(config);
         }
 
         // https://stackoverflow.com/a/15228558/1672458

@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,40 +20,47 @@ namespace VainBot.Services
         readonly DiscordSocketClient _discord;
         readonly HttpClient _httpClient;
         readonly IConfiguration _config;
-        IServiceProvider _provider;
+
+        readonly LogService _logSvc;
+        readonly IServiceProvider _provider;
 
         string _accessToken;
         List<TwitchStreamToCheck> _streamsToCheck;
         List<TwitchLiveStream> _liveStreams;
 
-        Timer _accessTokenTimer;
         Timer _pollTimer;
 
         public TwitchService(
             DiscordSocketClient discord,
             HttpClient httpClient,
             IConfiguration config,
+            LogService logSvc,
             IServiceProvider provider)
         {
             _discord = discord;
             _httpClient = httpClient;
             _config = config;
+
+            _logSvc = logSvc;
             _provider = provider;
         }
 
-        public async Task InitializeAsync(IServiceProvider provider)
+        public async Task InitializeAsync()
         {
-            _provider = provider;
-
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                _accessToken = await db.KeyValues.GetValueAsync(KeyValueKeys.TwitchAccessToken);
-                _streamsToCheck = await db.StreamsToCheck.ToListAsync();
-                _liveStreams = await db.TwitchLiveStreams.ToListAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    _accessToken = await db.KeyValues.GetValueAsync(KeyValueKeys.TwitchAccessToken);
+                    _streamsToCheck = await db.StreamsToCheck.ToListAsync();
+                    _liveStreams = await db.TwitchLiveStreams.ToListAsync();
+                }
             }
-
-            if (string.IsNullOrEmpty(_accessToken))
-                await RefreshAccessTokenAsync();
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
+                return;
+            }
 
             _pollTimer = new Timer(async (e) => await CheckStreamsAsync(), null, 0, 60000);
         }
@@ -79,12 +85,14 @@ namespace VainBot.Services
             streamRequest.Method = HttpMethod.Get;
 
             var streamResponse = await _httpClient.SendAsync(streamRequest);
+
             try
             {
                 await ThrowIfResponseInvalidAsync(streamResponse);
             }
-            catch
+            catch (Exception ex)
             {
+                await _logSvc.LogExceptionAsync(ex);
                 return;
             }
 
@@ -105,13 +113,16 @@ namespace VainBot.Services
                 var gameRequest = GetRequestMessage();
                 gameRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/games?id={gameIdString}");
                 gameRequest.Method = HttpMethod.Get;
+
                 var gameResponse = await _httpClient.SendAsync(gameRequest);
+
                 try
                 {
                     await ThrowIfResponseInvalidAsync(gameResponse);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    await _logSvc.LogExceptionAsync(ex);
                     return;
                 }
 
@@ -126,13 +137,16 @@ namespace VainBot.Services
                 var userRequest = GetRequestMessage();
                 userRequest.RequestUri = new Uri($"https://api.twitch.tv/helix/users?id={userIdUserString}");
                 userRequest.Method = HttpMethod.Get;
+
                 var userResponse = await _httpClient.SendAsync(userRequest);
+
                 try
                 {
                     await ThrowIfResponseInvalidAsync(userResponse);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    await _logSvc.LogExceptionAsync(ex);
                     return;
                 }
 
@@ -206,14 +220,22 @@ namespace VainBot.Services
                 }
             }
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                db.TwitchLiveStreams.AddRange(newlyOnline);
-                db.TwitchLiveStreams.UpdateRange(stillOnline);
-                db.TwitchLiveStreams.UpdateRange(newlyOffline);
-                db.TwitchLiveStreams.RemoveRange(actuallyNewlyOffline);
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.TwitchLiveStreams.AddRange(newlyOnline);
+                    db.TwitchLiveStreams.UpdateRange(stillOnline);
+                    db.TwitchLiveStreams.UpdateRange(newlyOffline);
+                    db.TwitchLiveStreams.RemoveRange(actuallyNewlyOffline);
 
-                await db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
+                return;
             }
 
             await HandleNewlyOnlineStreamsAsync(newlyOnline);
@@ -242,7 +264,9 @@ namespace VainBot.Services
                 if (channel == null)
                 {
                     await RemoveStreamByIdAsync(toCheck.Id);
-                    Console.Error.WriteLine($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. Removing entry.");
+                    await _logSvc.LogMessageAsync(LogSeverity.Warning,
+                        $"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. " +
+                        "Removing entry.");
                     return;
                 }
 
@@ -252,10 +276,17 @@ namespace VainBot.Services
                 toCheckUpdated.Add(toCheck);
             }
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                db.StreamsToCheck.UpdateRange(toCheckUpdated);
-                await db.SaveChangesAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.StreamsToCheck.UpdateRange(toCheckUpdated);
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
         }
 
@@ -301,10 +332,17 @@ namespace VainBot.Services
                 toCheckUpdated.Add(toCheck);
             }
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                db.StreamsToCheck.UpdateRange(toCheckUpdated);
-                await db.SaveChangesAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.StreamsToCheck.UpdateRange(toCheckUpdated);
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
         }
 
@@ -375,10 +413,17 @@ namespace VainBot.Services
         {
             _streamsToCheck.Add(stream);
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                db.StreamsToCheck.Add(stream);
-                await db.SaveChangesAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.StreamsToCheck.Add(stream);
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
         }
 
@@ -394,14 +439,21 @@ namespace VainBot.Services
 
             _streamsToCheck.Remove(stream);
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                var s = await db.StreamsToCheck.FindAsync(id);
-                if (s != null)
+                using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    db.StreamsToCheck.Remove(s);
-                    await db.SaveChangesAsync();
+                    var s = await db.StreamsToCheck.FindAsync(id);
+                    if (s != null)
+                    {
+                        db.StreamsToCheck.Remove(s);
+                        await db.SaveChangesAsync();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
         }
 
@@ -422,42 +474,7 @@ namespace VainBot.Services
         {
             var request = new HttpRequestMessage();
             request.Headers.Add("Client-ID", _config["twitch_client_id"]);
-            request.Headers.Add("Authorization", $"Bearer {_accessToken}");
             return request;
-        }
-
-        /// <summary>
-        /// Refreshes the access token.
-        /// </summary>
-        public async Task RefreshAccessTokenAsync()
-        {
-            if (_accessTokenTimer != null)
-            {
-                _accessTokenTimer.Dispose();
-                _accessTokenTimer = null;
-            }
-
-            var url = QueryHelpers.AddQueryString(
-                "https://api.twitch.tv/kraken/oauth2/token",
-                new Dictionary<string, string>
-                {
-                    ["client_id"] = _config["twitch_client_id"],
-                    ["client_secret"] = _config["twitch_client_secret"],
-                    ["grant_type"] = "client_credentials"
-                });
-
-            var tokenResponse = await _httpClient.PostAsync(url, null);
-            await ThrowIfResponseInvalidAsync(tokenResponse);
-
-            var token = JsonConvert.DeserializeObject<TwitchTokenResponse>(await tokenResponse.Content.ReadAsStringAsync());
-            _accessToken = token.AccessToken;
-
-            // schedule the token refresh 7 days early
-            _accessTokenTimer = new Timer(
-                async (e) => await RefreshAccessTokenAsync(),
-                null,
-                TimeSpan.FromSeconds(token.ExpiresInSeconds - 604800),
-                TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
@@ -474,7 +491,7 @@ namespace VainBot.Services
             var error = JsonConvert.DeserializeObject<TwitchErrorResponse>(body);
 
             throw new InvalidOperationException(
-                $"Twitch token refresh failed with error code {error.Status}, {error.Error}. " +
+                $"Twitch request failed with error code {error.Status}, {error.Error}. " +
                 $"Message: {error.Message}");
         }
 
@@ -494,8 +511,9 @@ namespace VainBot.Services
             {
                 await ThrowIfResponseInvalidAsync(response);
             }
-            catch
+            catch (Exception ex)
             {
+                await _logSvc.LogExceptionAsync(ex);
                 return ("-1", "An error occurred when getting the ID. Please try again, or yell at vaindil.");
             }
 

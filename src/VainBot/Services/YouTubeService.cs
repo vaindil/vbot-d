@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,9 @@ namespace VainBot.Services
         readonly DiscordSocketClient _discord;
         readonly HttpClient _httpClient;
         readonly IConfiguration _config;
-        IServiceProvider _provider;
+
+        readonly LogService _logSvc;
+        readonly IServiceProvider _provider;
 
         List<YouTubeChannelToCheck> _channels;
 
@@ -28,21 +31,30 @@ namespace VainBot.Services
             DiscordSocketClient discord,
             HttpClient httpClient,
             IConfiguration config,
+            LogService logSvc,
             IServiceProvider provider)
         {
             _discord = discord;
             _httpClient = httpClient;
             _config = config;
+
+            _logSvc = logSvc;
             _provider = provider;
         }
 
-        public async Task InitializeAsync(IServiceProvider provider)
+        public async Task InitializeAsync()
         {
-            _provider = provider;
-
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                _channels = await db.YouTubeChannelsToCheck.ToListAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    _channels = await db.YouTubeChannelsToCheck.ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
+                return;
             }
 
             _pollTimer = new Timer(async (e) => await CheckYouTubeAsync(), null, 0, 60000);
@@ -66,8 +78,9 @@ namespace VainBot.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new InvalidOperationException(
+                    await _logSvc.LogMessageAsync(LogSeverity.Critical,
                         $"YouTube check failed for playlist ID {channel.YouTubePlaylistId}, user {channel.Username}");
+                    continue;
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -90,10 +103,17 @@ namespace VainBot.Services
 
             if (channelChanged)
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
+                try
                 {
-                    db.YouTubeChannelsToCheck.UpdateRange(_channels);
-                    await db.SaveChangesAsync();
+                    using (var db = _provider.GetRequiredService<VbContext>())
+                    {
+                        db.YouTubeChannelsToCheck.UpdateRange(_channels);
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _logSvc.LogExceptionAsync(ex);
                 }
             }
         }
@@ -101,12 +121,14 @@ namespace VainBot.Services
         public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, YouTubeVideoSnippet video)
         {
             var discordChannel = _discord.GetChannel((ulong)channel.DiscordChannelId) as SocketTextChannel;
-            //if (discordChannel == null)
-            //{
-            //    await RemoveStreamByIdAsync(toCheck.Id);
-            //    Console.Error.WriteLine($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. Removing entry.");
-            //    return;
-            //}
+            if (discordChannel == null)
+            {
+                await RemoveChannelByIdAsync(channel.Id);
+                await _logSvc.LogMessageAsync(LogSeverity.Warning,
+                    $"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
+                    $"for YouTube channel {channel.Username} ({channel.YouTubeChannelId}). Removing entry.");
+                return;
+            }
 
             var newMsg = await discordChannel.SendMessageAsync(
                 $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
@@ -121,11 +143,44 @@ namespace VainBot.Services
 
                 channel.DiscordMessageId = (long)newMsg.Id;
 
+                try
+                {
+                    using (var db = _provider.GetRequiredService<VbContext>())
+                    {
+                        db.YouTubeChannelsToCheck.Update(channel);
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _logSvc.LogExceptionAsync(ex);
+                }
+            }
+        }
+
+        public async Task RemoveChannelByIdAsync(int id)
+        {
+            var channel = _channels.Find(s => s.Id == id);
+            if (channel == null)
+                return;
+
+            _channels.Remove(channel);
+
+            try
+            {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    db.YouTubeChannelsToCheck.Update(channel);
-                    await db.SaveChangesAsync();
+                    var c = await db.YouTubeChannelsToCheck.FindAsync(id);
+                    if (c != null)
+                    {
+                        db.YouTubeChannelsToCheck.Remove(c);
+                        await db.SaveChangesAsync();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
         }
     }

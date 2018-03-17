@@ -2,6 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Rollbar;
 using System;
 using System.Threading.Tasks;
 
@@ -9,54 +11,126 @@ namespace VainBot.Services
 {
     public class LogService
     {
+        readonly Configs.RollbarConfig _config;
+
         readonly DiscordSocketClient _discord;
         readonly CommandService _commands;
-        readonly ILoggerFactory _loggerFactory;
-        readonly ILogger _discordLogger;
-        readonly ILogger _commandsLogger;
 
-        public LogService(DiscordSocketClient discord, CommandService commands, ILoggerFactory loggerFactory)
+        public LogService(
+            IOptions<Configs.RollbarConfig> options,
+            DiscordSocketClient discord,
+            CommandService commands,
+            ILoggerFactory loggerFactory)
         {
+            _config = options.Value;
+
             _discord = discord;
             _commands = commands;
 
-            _loggerFactory = ConfigureLogging(loggerFactory);
-            _discordLogger = _loggerFactory.CreateLogger("discord");
-            _commandsLogger = _loggerFactory.CreateLogger("commands");
-
-            _discord.Log += LogDiscord;
-            _commands.Log += LogCommand;
+            _discord.Log += OnLog;
+            _commands.Log += OnLog;
         }
 
-        Task LogDiscord(LogMessage message)
+        public async Task LogExceptionAsync(Exception ex)
         {
-            _discordLogger.Log(
-                LogLevelFromSeverity(message.Severity),
-                0,
-                message,
-                message.Exception,
-                (_1, _2) => message.ToString());
-            return Task.CompletedTask;
+            await Task.Run(async () =>
+            {
+                if (_config.UseRollbar)
+                {
+                    LogRollbarException(ex);
+                    return;
+                }
+
+                await LogConsoleExceptionAsync(ex);
+            });
         }
 
-        Task LogCommand(LogMessage message)
+        public async Task LogMessageAsync(LogSeverity severity, string msg)
         {
-            _commandsLogger.Log(
-                LogLevelFromSeverity(message.Severity),
-                0,
-                message,
-                message.Exception,
-                (_1, _2) => message.ToString());
-            return Task.CompletedTask;
+            await Task.Run(async () =>
+            {
+                if (_config.UseRollbar)
+                {
+                    LogRollbarMessage(severity, msg);
+                    return;
+                }
+
+                await LogConsoleMessageAsync(severity, msg);
+            });
         }
 
-        ILoggerFactory ConfigureLogging(ILoggerFactory factory)
+        void LogRollbarException(Exception ex)
         {
-            factory.AddConsole(LogLevel.Warning);
-            return factory;
+            RollbarLocator.RollbarInstance.Critical(ex);
         }
 
-        static LogLevel LogLevelFromSeverity(LogSeverity severity)
-            => (LogLevel)(Math.Abs((int)severity - 5));
+        Task LogConsoleExceptionAsync(Exception ex)
+        {
+            return Console.Out.WriteLineAsync(
+                $"{DateTime.UtcNow.ToString("yy-MM-dd hh:mm:ss")}: [Critical] {ex.Source}: " +
+                (ex?.ToString() ?? ex.Message));
+        }
+
+        void LogRollbarMessage(LogSeverity severity, string msg)
+        {
+            var errorLevel = ErrorLevelFromSeverity(severity);
+            if (!errorLevel.HasValue)
+                return;
+
+            RollbarLocator.RollbarInstance.Log(errorLevel.Value, msg);
+        }
+
+        Task LogConsoleMessageAsync(LogSeverity severity, string msg)
+        {
+            return Console.Out.WriteLineAsync(
+                $"{DateTime.UtcNow.ToString("yy-MM-dd hh:mm:ss")}: [{severity}]: {msg}");
+        }
+
+        Task OnLog(LogMessage msg)
+        {
+            return Task.Run(() =>
+            {
+                if (_config.UseRollbar)
+                {
+                    DiscordLogRollbar(msg);
+                    return Task.CompletedTask;
+                }
+
+                return DiscordLogConsoleAsync(msg);
+            });
+        }
+
+        void DiscordLogRollbar(LogMessage msg)
+        {
+            var errorLevel = ErrorLevelFromSeverity(msg.Severity);
+            if (!errorLevel.HasValue)
+                return;
+
+            RollbarLocator.RollbarInstance.Log(
+                errorLevel.Value,
+                $"{msg.Source}: {msg.Exception?.ToString() ?? msg.Message}");
+        }
+
+        Task DiscordLogConsoleAsync(LogMessage msg)
+        {
+            return Console.Out.WriteLineAsync(
+                $"{DateTime.UtcNow.ToString("yy-MM-dd hh:mm:ss")}: [{msg.Severity}] {msg.Source}: " +
+                (msg.Exception?.ToString() ?? msg.Message));
+        }
+
+        static ErrorLevel? ErrorLevelFromSeverity(LogSeverity severity)
+        {
+            switch (severity)
+            {
+                case LogSeverity.Verbose:
+                    return null;
+
+                case LogSeverity.Debug:
+                    return ErrorLevel.Debug;
+
+                default:
+                    return (ErrorLevel)severity;
+            }
+        }
     }
 }

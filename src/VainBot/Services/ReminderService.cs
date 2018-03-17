@@ -13,24 +13,38 @@ namespace VainBot.Services
     public class ReminderService
     {
         readonly DiscordSocketClient _discord;
+
+        readonly LogService _logSvc;
         readonly IServiceProvider _provider;
 
         readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
 
         public ReminderService(
             DiscordSocketClient discord,
+            LogService logSvc,
             IServiceProvider provider)
         {
             _discord = discord;
+
+            _logSvc = logSvc;
             _provider = provider;
         }
 
         public async Task InitializeAsync()
         {
             List<Reminder> reminders;
-            using (var db = _provider.GetRequiredService<VbContext>())
+
+            try
             {
-                reminders = await db.Reminders.ToListAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    reminders = await db.Reminders.ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
+                return;
             }
 
             var guilds = reminders.Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
@@ -70,10 +84,17 @@ namespace VainBot.Services
                 Message = message
             };
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                db.Reminders.Add(reminder);
-                await db.SaveChangesAsync();
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.Reminders.Add(reminder);
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
             }
 
             _timers.Add(
@@ -109,14 +130,22 @@ namespace VainBot.Services
                 await channel.SendMessageAsync(message);
             }
 
-            using (var db = _provider.GetRequiredService<VbContext>())
+            try
             {
-                var thisReminder = await db.Reminders.FindAsync(reminder.Id);
-                if (thisReminder != null)
+                using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    db.Reminders.Remove(thisReminder);
-                    await db.SaveChangesAsync();
+                    var thisReminder = await db.Reminders.FindAsync(reminder.Id);
+                    if (thisReminder != null)
+                    {
+                        db.Reminders.Remove(thisReminder);
+                        await db.SaveChangesAsync();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                await _logSvc.LogExceptionAsync(ex);
+                return;
             }
 
             var wrapper = _timers.Find(t => t.ReminderId == reminder.Id);
