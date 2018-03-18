@@ -16,6 +16,5 @@
 
     public static class KeyValueKeys
     {
-        public const string TwitchAccessToken = "twitch_access_token";
     }
 }
