@@ -138,7 +138,8 @@ namespace VainBot.Services
                 if (channel.DiscordMessageId.HasValue)
                 {
                     var oldMsg = await discordChannel.GetMessageAsync((ulong)channel.DiscordMessageId.Value);
-                    await oldMsg.DeleteAsync();
+                    if (oldMsg != null)
+                        await oldMsg.DeleteAsync();
                 }
 
                 channel.DiscordMessageId = (long)newMsg.Id;
