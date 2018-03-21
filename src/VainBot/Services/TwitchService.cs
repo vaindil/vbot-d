@@ -24,7 +24,6 @@ namespace VainBot.Services
         readonly LogService _logSvc;
         readonly IServiceProvider _provider;
 
-        string _accessToken;
         List<TwitchStreamToCheck> _streamsToCheck;
         List<TwitchLiveStream> _liveStreams;
 
@@ -51,7 +50,6 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    _accessToken = await db.KeyValues.GetValueAsync(KeyValueKeys.TwitchAccessToken);
                     _streamsToCheck = await db.StreamsToCheck.ToListAsync();
                     _liveStreams = await db.TwitchLiveStreams.ToListAsync();
                 }
@@ -455,15 +453,6 @@ namespace VainBot.Services
             {
                 await _logSvc.LogExceptionAsync(ex);
             }
-        }
-
-        /// <summary>
-        /// Gets the current access token stored in memory.
-        /// </summary>
-        /// <returns>Twitch access token</returns>
-        public string GetAccessToken()
-        {
-            return _accessToken;
         }
 
         /// <summary>
