@@ -68,6 +68,7 @@ namespace VainBot
 
             return new ServiceCollection()
                 .Configure<Configs.RollbarConfig>(_config.GetSection("Rollbar"))
+                .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()

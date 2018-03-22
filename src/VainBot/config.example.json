@@ -3,10 +3,12 @@
   "discord_api_token": "",
   "twitch_client_id": "",
   "youtube_api_key": "",
-  "twitter_consumer_key": "",
-  "twitter_consumer_secret": "",
-  "twitter_access_token": "",
-  "twitter_access_token_secret": "",
+  "Twitter": {
+    "ConsumerKey": "",
+    "ConsumerSecret": "",
+    "AccessToken": "",
+    "AccessTokenSecret": ""
+  },
   "Rollbar": {
     "UseRollbar": false,
     "AccessToken": "can be blank if above is false",

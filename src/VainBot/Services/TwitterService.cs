@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,15 +12,16 @@ using Tweetinvi.Events;
 using Tweetinvi.Models;
 using Tweetinvi.Streaming;
 using VainBot.Classes;
+using VainBot.Configs;
 
 namespace VainBot.Services
 {
     public class TwitterService
     {
         readonly DiscordSocketClient _discord;
-        readonly IConfiguration _config;
 
         readonly LogService _logSvc;
+        readonly TwitterConfig _config;
         readonly IServiceProvider _provider;
 
         List<TwitterToCheck> _twittersToCheck;
@@ -27,12 +29,12 @@ namespace VainBot.Services
 
         public TwitterService(
             DiscordSocketClient discord,
-            IConfiguration config,
             LogService logSvc,
+            IOptions<TwitterConfig> options,
             IServiceProvider provider)
         {
             _discord = discord;
-            _config = config;
+            _config = options.Value;
 
             _logSvc = logSvc;
             _provider = provider;
@@ -41,8 +43,8 @@ namespace VainBot.Services
         public async Task InitializeAsync()
         {
             Auth.ApplicationCredentials = new TwitterCredentials(
-                _config["twitter_consumer_key"], _config["twitter_consumer_secret"],
-                _config["twitter_access_token"], _config["twitter_access_token_secret"]);
+                _config.ConsumerKey, _config.ConsumerSecret,
+                _config.AccessToken, _config.AccessTokenSecret);
 
             try
             {
