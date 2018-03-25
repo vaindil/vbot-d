@@ -50,6 +50,12 @@ namespace VainBot.Modules
         [Priority(2)]
         public async Task CreateReminder(string delay, [Remainder]string message)
         {
+            if (Context.Message.Author.Id == 121390139405500418)
+            {
+                await ReplyAsync("No.");
+                return;
+            }
+
             var isDM = Context.Guild == null;
             if (isDM)
             {
