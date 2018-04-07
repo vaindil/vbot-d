@@ -237,7 +237,7 @@ namespace VainBot.Services
             }
 
             await HandleNewlyOnlineStreamsAsync(newlyOnline);
-            // await HandleStillOnlineStreamsAsync(stillOnline);
+            await HandleStillOnlineStreamsAsync(stillOnline);
             await HandleNewlyOfflineStreamsAsync(actuallyNewlyOffline);
         }
 
@@ -268,7 +268,7 @@ namespace VainBot.Services
                     return;
                 }
 
-                var message = await channel.SendMessageAsync(toCheck.MessageToPost/*, embed: embed*/);
+                var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
                 toCheck.CurrentMessageId = (long)message.Id;
 
                 toCheckUpdated.Add(toCheck);
