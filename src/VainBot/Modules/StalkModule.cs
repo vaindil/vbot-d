@@ -53,7 +53,7 @@ namespace VainBot.Modules
         private static string GenerateReply(string username, string channel)
         {
             return $"If user `{username}` has chatted in channel `{channel}`, " +
-                $"their logs will be at https://www.overrustlelogs.net/stalk?channel={channel}&nick={username}.";
+                $"their logs will be at https://ttv.overrustlelogs.net/{channel}/{username}.";
         }
     }
 }
