@@ -61,16 +61,18 @@ namespace VainBot.Modules
         [Alias("reset")]
         public async Task Clear()
         {
-            var success = await SendApiCallAsync(0, RecordType.wins);
-            success &= await SendApiCallAsync(0, RecordType.losses);
-            success &= await SendApiCallAsync(0, RecordType.draws);
+            var success = await SendApiCallAsync(0, RecordType.clear);
 
             await HandleReply(success);
         }
 
         private async Task<bool> SendApiCallAsync(int num, RecordType type)
         {
-            var request = new HttpRequestMessage(HttpMethod.Put, $"{_config.ApiBaseUrl}/{type}/{num}");
+            var url = $"{_config.ApiBaseUrl}/{type}";
+            if (type != RecordType.clear)
+                url += $"/{num}";
+
+            var request = new HttpRequestMessage(HttpMethod.Put, url);
             request.Headers.Authorization = new AuthenticationHeaderValue(_config.ApiSecret);
 
             var response = await _httpClient.SendAsync(request);
@@ -108,7 +110,8 @@ namespace VainBot.Modules
         {
             wins,
             losses,
-            draws
+            draws,
+            clear
         }
     }
 }
