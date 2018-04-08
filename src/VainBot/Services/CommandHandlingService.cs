@@ -11,7 +11,7 @@ namespace VainBot.Services
     {
         readonly DiscordSocketClient _discord;
         readonly CommandService _commands;
-        IServiceProvider _provider;
+        readonly IServiceProvider _provider;
 
         public CommandHandlingService(DiscordSocketClient discord, CommandService commands, IServiceProvider provider)
         {
