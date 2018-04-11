@@ -10,13 +10,14 @@
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00921" />
     <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00921" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00921" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.0-preview1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview1-final" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview2-final" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.0.1" />
     <PackageReference Include="Rollbar" Version="1.1.1" />
     <PackageReference Include="TweetinviAPI" Version="3.0.0" />

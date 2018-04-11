@@ -1,7 +1,6 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -24,6 +23,8 @@ namespace VainBot.Services
         readonly TwitterConfig _config;
         readonly IServiceProvider _provider;
 
+        readonly IMemoryCache _cache;
+
         List<TwitterToCheck> _twittersToCheck;
         IFilteredStream _stream;
 
@@ -38,6 +39,8 @@ namespace VainBot.Services
 
             _logSvc = logSvc;
             _provider = provider;
+
+            _cache = new MemoryCache(new MemoryCacheOptions());
         }
 
         public async Task InitializeAsync()
@@ -78,6 +81,11 @@ namespace VainBot.Services
 
         async void HandleMatchingTweet(object sender, MatchedTweetReceivedEventArgs e)
         {
+            if (_cache.TryGetValue(e.Tweet.Id, out _))
+                return;
+
+            _cache.Set(e.Tweet.Id, true, CacheEntryOptions);
+
             if (e.Tweet.InReplyToUserId.HasValue)
                 return;
 
@@ -102,6 +110,18 @@ namespace VainBot.Services
         {
             //await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream stopped. Restarting.");
             await _stream.StartStreamMatchingAnyConditionAsync();
+        }
+
+        static MemoryCacheEntryOptions CacheEntryOptions
+        {
+            get
+            {
+                return new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2),
+                    Priority = CacheItemPriority.NeverRemove
+                };
+            }
         }
     }
 }
