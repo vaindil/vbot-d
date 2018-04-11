@@ -24,6 +24,9 @@ namespace VainBot.Modules
         {
             await ReplyAsync("Handles Twitch stream checking. Must be a server administrator to list/add/remove.\n" +
                 "\n" +
+                "**NOTE:** To add a mention of `@everyone` or `@here` to a message, use EVERYONE or HERE in all caps. The bot will " +
+                "internally replace those so that people are only mentioned when it matters.\n" +
+                "\n" +
                 "`!twitch id username`: Gets the Twitch ID for the user with the provided username.\n" +
                 "`!twitch list`: Lists all streams being checked.\n" +
                 "`!twitch add twitch_username channel message`: Adds a new stream to check.\n" +
@@ -54,7 +57,7 @@ namespace VainBot.Modules
             foreach (var s in streams)
             {
                 var channel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)s.ChannelId);
-                reply += $"{s.Id}: {s.Username} {channel?.Mention} {s.MessageToPost}\n";
+                reply += $"{s.Id}: {s.Username} {channel?.Mention} `{s.MessageToPost}`\n";
             }
 
             reply.TrimEnd('\\', 'n');
@@ -105,7 +108,7 @@ namespace VainBot.Modules
             {
                 TwitchId = id,
                 Username = displayName,
-                MessageToPost = message,
+                MessageToPost = message.Replace("EVERYONE", "@everyone").Replace("HERE", "@here"),
                 ChannelId = (long)channel.Id,
                 GuildId = (long)Context.Guild.Id,
                 IsEmbedded = false,

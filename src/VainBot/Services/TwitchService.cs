@@ -258,8 +258,7 @@ namespace VainBot.Services
                 if (toCheck.IsEmbedded)
                     embed = CreateEmbed(stream);
 
-                var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
-                if (channel == null)
+                if (!(_discord.GetChannel((ulong)toCheck.ChannelId) is SocketTextChannel channel))
                 {
                     await RemoveStreamByIdAsync(toCheck.Id);
                     await _logSvc.LogMessageAsync(LogSeverity.Warning,
