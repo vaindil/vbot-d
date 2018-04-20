@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview2-final" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.0.1" />
-    <PackageReference Include="Rollbar" Version="1.1.1" />
+    <PackageReference Include="Rollbar" Version="1.2.0" />
     <PackageReference Include="TweetinviAPI" Version="3.0.0" />
   </ItemGroup>
 
