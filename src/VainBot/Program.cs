@@ -24,8 +24,6 @@ namespace VainBot
         IConfiguration _config;
         bool _isDev;
 
-        IServiceProvider _services;
-
         public async Task MainAsync()
         {
             _config = BuildConfig();
@@ -39,13 +37,21 @@ namespace VainBot
                     LogLevel = LogSeverity.Warning
                 });
 
-            _services = ConfigureServices();
+            var services = ConfigureServices();
 
-            _services.GetRequiredService<LogService>();
-            await SetUpDB(_services.GetRequiredService<VbContext>());
-            await _services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+            services.GetRequiredService<LogService>();
+            await SetUpDB(services.GetRequiredService<VbContext>());
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            _client.Ready += InitServices;
+            _client.Ready += async () =>
+            {
+                await services.GetRequiredService<ReminderService>().InitializeAsync();
+                await services.GetRequiredService<TwitchService>().InitializeAsync();
+                await services.GetRequiredService<YouTubeService>().InitializeAsync();
+
+                if (!_isDev)
+                    await services.GetRequiredService<TwitterService>().InitializeAsync();
+            };
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
@@ -77,18 +83,6 @@ namespace VainBot
                 .AddSingleton(_config)
                 .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
-        }
-
-        async Task InitServices()
-        {
-            _client.Ready -= InitServices;
-
-            await _services.GetRequiredService<ReminderService>().InitializeAsync();
-            await _services.GetRequiredService<TwitchService>().InitializeAsync();
-            await _services.GetRequiredService<YouTubeService>().InitializeAsync();
-
-            if (!_isDev)
-                await _services.GetRequiredService<TwitterService>().InitializeAsync();
         }
 
         IConfiguration BuildConfig()

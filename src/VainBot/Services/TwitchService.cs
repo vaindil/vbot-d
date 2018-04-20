@@ -62,6 +62,12 @@ namespace VainBot.Services
                 return;
             }
 
+            if (_pollTimer != null)
+            {
+                _pollTimer.Dispose();
+                _pollTimer = null;
+            }
+
             _pollTimer = new Timer(async (e) => await CheckStreamsAsync(), null, 0, 60000);
         }
 

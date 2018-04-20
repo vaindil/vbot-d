@@ -57,6 +57,12 @@ namespace VainBot.Services
                 return;
             }
 
+            if (_pollTimer != null)
+            {
+                _pollTimer.Dispose();
+                _pollTimer = null;
+            }
+
             _pollTimer = new Timer(async (e) => await CheckYouTubeAsync(), null, 0, 60000);
         }
 

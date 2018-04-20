@@ -45,6 +45,16 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            if (_stream != null)
+            {
+                _stream.MatchingTweetReceived -= HandleMatchingTweet;
+                _stream.DisconnectMessageReceived -= HandleDisconnect;
+                _stream.StreamStopped -= HandleStopped;
+
+                _stream.StopStream();
+                _stream = null;
+            }
+
             Auth.ApplicationCredentials = new TwitterCredentials(
                 _config.ConsumerKey, _config.ConsumerSecret,
                 _config.AccessToken, _config.AccessTokenSecret);

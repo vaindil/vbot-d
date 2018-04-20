@@ -52,6 +52,13 @@ namespace VainBot.Services
 
             var now = DateTimeOffset.UtcNow;
 
+            for (var i = _timers.Count - 1; i >= 0; i--)
+            {
+                var t = _timers[i];
+                t.Timer.Dispose();
+                _timers.RemoveAt(i);
+            }
+
             foreach (var r in reminders)
             {
                 if (r.FireAt <= now)
@@ -123,8 +130,7 @@ namespace VainBot.Services
             }
             else
             {
-                var channel = _discord.GetChannel((ulong)reminder.ChannelId) as SocketTextChannel;
-                if (channel == null)
+                if (!(_discord.GetChannel((ulong)reminder.ChannelId) is SocketTextChannel channel))
                     return;
 
                 await channel.SendMessageAsync(message);
