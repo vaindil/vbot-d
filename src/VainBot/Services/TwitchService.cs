@@ -29,6 +29,8 @@ namespace VainBot.Services
 
         Timer _pollTimer;
 
+        const string NOGAMESETURL = "https://vaindil.xyz/misc/nogame.png";
+
         public TwitchService(
             DiscordSocketClient discord,
             HttpClient httpClient,
@@ -104,7 +106,8 @@ namespace VainBot.Services
             {
                 var gameIds = liveStreams
                     .GroupBy(s => s.GameId)
-                    .Select(s => s.First().GameId);
+                    .Select(s => s.First().GameId)
+                    .Where(g => !string.IsNullOrEmpty(g));
 
                 var gameIdString = string.Join("&id=", gameIds);
 
@@ -162,6 +165,15 @@ namespace VainBot.Services
 
                 var user = users.Find(u => u.Id == stream.UserId);
                 var game = games.Find(g => g.Id == stream.GameId);
+                if (game == null)
+                {
+                    game = new TwitchGame
+                    {
+                        Id = "0",
+                        Name = "(none)",
+                        BoxArtUrl = NOGAMESETURL
+                    };
+                }
 
                 // if the streamer WAS online and STILL IS online, then they're not newly offline.
                 // they also belong in stillOnline.
@@ -260,10 +272,9 @@ namespace VainBot.Services
 
                 if (!(_discord.GetChannel((ulong)toCheck.ChannelId) is SocketTextChannel channel))
                 {
-                    await RemoveStreamByIdAsync(toCheck.Id);
+                    //await RemoveStreamByIdAsync(toCheck.Id);
                     await _logSvc.LogMessageAsync(LogSeverity.Warning,
-                        $"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}. " +
-                        "Removing entry.");
+                        $"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}.");
                     return;
                 }
 
