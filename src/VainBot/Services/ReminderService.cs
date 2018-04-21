@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VainBot.Classes;
+using VainBot.Infrastructure;
 
 namespace VainBot.Services
 {

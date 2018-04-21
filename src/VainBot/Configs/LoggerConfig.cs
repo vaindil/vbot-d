@@ -1,6 +1,6 @@
 ﻿namespace VainBot.Configs
 {
-    public class RollbarConfig
+    public class LoggerConfig
     {
         public bool UseRollbar { get; set; }
 

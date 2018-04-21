@@ -12,6 +12,7 @@ using Tweetinvi.Models;
 using Tweetinvi.Streaming;
 using VainBot.Classes;
 using VainBot.Configs;
+using VainBot.Infrastructure;
 
 namespace VainBot.Services
 {

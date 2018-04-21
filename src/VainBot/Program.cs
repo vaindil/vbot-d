@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using VainBot.Classes;
+using VainBot.Infrastructure;
 using VainBot.Services;
 
 namespace VainBot
@@ -67,7 +68,7 @@ namespace VainBot
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
             return new ServiceCollection()
-                .Configure<Configs.RollbarConfig>(_config.GetSection("Rollbar"))
+                .Configure<Configs.LoggerConfig>(_config.GetSection("Rollbar"))
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .Configure<Configs.FitzyConfig>(_config.GetSection("Fitzy"))
                 .AddSingleton(_client)

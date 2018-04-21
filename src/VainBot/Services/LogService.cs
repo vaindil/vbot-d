@@ -11,13 +11,13 @@ namespace VainBot.Services
 {
     public class LogService
     {
-        readonly Configs.RollbarConfig _config;
+        readonly Configs.LoggerConfig _config;
 
         readonly DiscordSocketClient _discord;
         readonly CommandService _commands;
 
         public LogService(
-            IOptions<Configs.RollbarConfig> options,
+            IOptions<Configs.LoggerConfig> options,
             DiscordSocketClient discord,
             CommandService commands,
             ILoggerFactory loggerFactory)

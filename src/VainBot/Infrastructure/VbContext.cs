@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VainBot.Classes;
 
-namespace VainBot
+namespace VainBot.Infrastructure
 {
     public class VbContext : DbContext
     {
