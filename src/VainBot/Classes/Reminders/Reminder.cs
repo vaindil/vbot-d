@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VainBot.Classes
+namespace VainBot.Classes.Reminders
 {
     public class Reminder
     {

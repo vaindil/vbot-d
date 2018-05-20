@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VainBot.Classes
+namespace VainBot.Classes.YouTube
 {
     public class YouTubeChannelToCheck
     {

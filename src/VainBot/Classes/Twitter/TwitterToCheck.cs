@@ -1,4 +1,4 @@
-﻿namespace VainBot.Classes
+﻿namespace VainBot.Classes.Twitter
 {
     public class TwitterToCheck
     {

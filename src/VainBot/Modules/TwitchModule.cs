@@ -2,7 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Threading.Tasks;
-using VainBot.Classes;
+using VainBot.Classes.Twitch;
 using VainBot.Services;
 
 namespace VainBot.Modules
