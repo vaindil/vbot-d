@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VainBot.Classes;
+using VainBot.Classes.Reminders;
 using VainBot.Infrastructure;
 
 namespace VainBot.Services

@@ -1,4 +1,4 @@
-﻿namespace VainBot.Classes
+﻿namespace VainBot.Classes.Twitch
 {
     public class TwitchStreamToCheck
     {

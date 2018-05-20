@@ -11,7 +11,7 @@ using Tweetinvi;
 using Tweetinvi.Events;
 using Tweetinvi.Models;
 using Tweetinvi.Streaming;
-using VainBot.Classes;
+using VainBot.Classes.Twitter;
 using VainBot.Configs;
 using VainBot.Infrastructure;
 

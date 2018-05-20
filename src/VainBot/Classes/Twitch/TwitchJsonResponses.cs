@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
-namespace VainBot.Classes
+namespace VainBot.Classes.Twitch
 {
     public class TwitchTokenResponse
     {
