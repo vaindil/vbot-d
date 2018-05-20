@@ -9,11 +9,6 @@
     "AccessToken": "",
     "AccessTokenSecret": ""
   },
-  "Rollbar": {
-    "UseRollbar": false,
-    "AccessToken": "can be blank if above is false",
-    "Environment": "can be blank if above is false"
-  },
   "Fitzy": {
     "ApiBaseUrl": "without trailing slash",
     "ApiSecret": ""

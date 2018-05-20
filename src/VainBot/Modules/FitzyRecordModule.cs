@@ -1,12 +1,12 @@
 ﻿using Discord;
 using Discord.Commands;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using VainBot.Configs;
 using VainBot.Preconditions;
-using VainBot.Services;
 
 namespace VainBot.Modules
 {
@@ -16,15 +16,13 @@ namespace VainBot.Modules
     {
         private readonly FitzyConfig _config;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<FitzyRecordModule> _logger;
 
-        private readonly LogService _logSvc;
-
-        public FitzyRecordModule(IOptions<FitzyConfig> options, HttpClient httpClient, LogService logSvc)
+        public FitzyRecordModule(IOptions<FitzyConfig> options, HttpClient httpClient, ILogger<FitzyRecordModule> logger)
         {
             _config = options.Value;
             _httpClient = httpClient;
-
-            _logSvc = logSvc;
+            _logger = logger;
         }
 
         [Command("w")]
@@ -33,6 +31,8 @@ namespace VainBot.Modules
         {
             num = NormalizeNum(num);
             var success = await SendApiCallAsync(num, RecordType.wins);
+
+            _logger.LogDebug($"Fitzy Record: {Context.Message.Author.Username} used !win {num}");
 
             await HandleReply(success);
         }
@@ -44,6 +44,8 @@ namespace VainBot.Modules
             num = NormalizeNum(num);
             var success = await SendApiCallAsync(num, RecordType.losses);
 
+            _logger.LogDebug($"Fitzy Record: {Context.Message.Author.Username} used !loss {num}");
+
             await HandleReply(success);
         }
 
@@ -54,6 +56,8 @@ namespace VainBot.Modules
             num = NormalizeNum(num);
             var success = await SendApiCallAsync(num, RecordType.draws);
 
+            _logger.LogDebug($"Fitzy Record: {Context.Message.Author.Username} used !draw {num}");
+
             await HandleReply(success);
         }
 
@@ -63,6 +67,8 @@ namespace VainBot.Modules
         {
             var success = await SendApiCallAsync(0, RecordType.clear);
 
+            _logger.LogDebug($"Fitzy Record: {Context.Message.Author.Username} used !clear");
+
             await HandleReply(success);
         }
 
@@ -70,6 +76,8 @@ namespace VainBot.Modules
         public async Task Refresh()
         {
             var success = await SendApiCallAsync(0, RecordType.refresh);
+
+            _logger.LogDebug($"Fitzy Record: {Context.Message.Author.Username} used !refresh");
 
             await HandleReply(success);
         }
@@ -93,7 +101,7 @@ namespace VainBot.Modules
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync();
-                await _logSvc.LogMessageAsync(LogSeverity.Error, $"Fitzy API call failed. Status {response.StatusCode}, body: {body}");
+                _logger.LogError($"Fitzy API call failed. Status {response.StatusCode}, body: {body}");
             }
 
             return response.IsSuccessStatusCode;

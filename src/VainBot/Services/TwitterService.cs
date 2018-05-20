@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -19,8 +20,8 @@ namespace VainBot.Services
     public class TwitterService
     {
         readonly DiscordSocketClient _discord;
+        readonly ILogger<TwitterService> _logger;
 
-        readonly LogService _logSvc;
         readonly TwitterConfig _config;
         readonly IServiceProvider _provider;
 
@@ -31,14 +32,14 @@ namespace VainBot.Services
 
         public TwitterService(
             DiscordSocketClient discord,
-            LogService logSvc,
+            ILogger<TwitterService> logger,
             IOptions<TwitterConfig> options,
             IServiceProvider provider)
         {
             _discord = discord;
+            _logger = logger;
             _config = options.Value;
 
-            _logSvc = logSvc;
             _provider = provider;
 
             _cache = new MemoryCache(new MemoryCacheOptions());
@@ -69,7 +70,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error reading database in Twitter service: initialize");
                 return;
             }
 

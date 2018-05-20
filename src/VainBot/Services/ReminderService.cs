@@ -1,6 +1,7 @@
 ﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,19 +16,19 @@ namespace VainBot.Services
     {
         readonly DiscordSocketClient _discord;
 
-        readonly LogService _logSvc;
+        readonly ILogger<ReminderService> _logger;
         readonly IServiceProvider _provider;
 
         readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
 
         public ReminderService(
             DiscordSocketClient discord,
-            LogService logSvc,
+            ILogger<ReminderService> logger,
             IServiceProvider provider)
         {
             _discord = discord;
 
-            _logSvc = logSvc;
+            _logger = logger;
             _provider = provider;
         }
 
@@ -44,7 +45,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Reminder service could not be initialized");
                 return;
             }
 
@@ -102,7 +103,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in reminder service: add reminder");
             }
 
             _timers.Add(
@@ -151,7 +152,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in reminder service: remove reminder");
                 return;
             }
 

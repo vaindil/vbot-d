@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,8 @@ namespace VainBot.Services
         readonly DiscordSocketClient _discord;
         readonly HttpClient _httpClient;
         readonly IConfiguration _config;
+        readonly ILogger<TwitchService> _logger;
 
-        readonly LogService _logSvc;
         readonly IServiceProvider _provider;
 
         List<TwitchStreamToCheck> _streamsToCheck;
@@ -36,19 +37,20 @@ namespace VainBot.Services
             DiscordSocketClient discord,
             HttpClient httpClient,
             IConfiguration config,
-            LogService logSvc,
+            ILogger<TwitchService> logger,
             IServiceProvider provider)
         {
             _discord = discord;
             _httpClient = httpClient;
             _config = config;
+            _logger = logger;
 
-            _logSvc = logSvc;
             _provider = provider;
         }
 
         public async Task InitializeAsync()
         {
+            _logger.LogCritical("test WEW LAD");
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
@@ -59,7 +61,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error initializing Twitch service");
                 return;
             }
 
@@ -99,7 +101,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error executing Twitch stream check");
                 return;
             }
 
@@ -130,7 +132,7 @@ namespace VainBot.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logSvc.LogExceptionAsync(ex);
+                    _logger.LogCritical(ex, "Error executing Twitch game request");
                     return;
                 }
 
@@ -154,7 +156,7 @@ namespace VainBot.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logSvc.LogExceptionAsync(ex);
+                    _logger.LogCritical(ex, "Error executing Twitch user request");
                     return;
                 }
 
@@ -251,7 +253,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database during Twitch check");
                 return;
             }
 
@@ -279,9 +281,8 @@ namespace VainBot.Services
 
                 if (!(_discord.GetChannel((ulong)toCheck.ChannelId) is SocketTextChannel channel))
                 {
-                    //await RemoveStreamByIdAsync(toCheck.Id);
-                    await _logSvc.LogMessageAsync(LogSeverity.Warning,
-                        $"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}.");
+                    await RemoveStreamByIdAsync(toCheck.Id);
+                    _logger.LogError($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}");
                     return;
                 }
 
@@ -301,7 +302,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in Twitch service: newly online");
             }
         }
 
@@ -357,7 +358,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in Twitch service: newly offline");
             }
         }
 
@@ -438,7 +439,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in Twitch service: adding new stream");
             }
         }
 
@@ -468,7 +469,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in Twitch service: removing stream");
             }
         }
 
@@ -519,7 +520,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error in Twitch service: user ID request");
                 return ("-1", "An error occurred when getting the ID. Please try again, or yell at vaindil.");
             }
 

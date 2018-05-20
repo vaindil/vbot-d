@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,8 +21,8 @@ namespace VainBot.Services
         readonly DiscordSocketClient _discord;
         readonly HttpClient _httpClient;
         readonly IConfiguration _config;
+        readonly ILogger<YouTubeService> _logger;
 
-        readonly LogService _logSvc;
         readonly IServiceProvider _provider;
 
         List<YouTubeChannelToCheck> _channels;
@@ -32,14 +33,14 @@ namespace VainBot.Services
             DiscordSocketClient discord,
             HttpClient httpClient,
             IConfiguration config,
-            LogService logSvc,
+            ILogger<YouTubeService> logger,
             IServiceProvider provider)
         {
             _discord = discord;
             _httpClient = httpClient;
             _config = config;
+            _logger = logger;
 
-            _logSvc = logSvc;
             _provider = provider;
         }
 
@@ -54,7 +55,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error initializing YouTube service");
                 return;
             }
 
@@ -85,8 +86,7 @@ namespace VainBot.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    await _logSvc.LogMessageAsync(LogSeverity.Critical,
-                        $"YouTube check failed for playlist ID {channel.YouTubePlaylistId}, user {channel.Username}");
+                    _logger.LogError($"YouTube check failed for playlist ID {channel.YouTubePlaylistId}, user {channel.Username}");
                     continue;
                 }
 
@@ -120,7 +120,7 @@ namespace VainBot.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logSvc.LogExceptionAsync(ex);
+                    _logger.LogCritical(ex, "Error updating database in YouTube service: channel changed");
                 }
             }
         }
@@ -129,9 +129,8 @@ namespace VainBot.Services
         {
             if (!(_discord.GetChannel((ulong)channel.DiscordChannelId) is SocketTextChannel discordChannel))
             {
-                //await RemoveChannelByIdAsync(channel.Id);
-                await _logSvc.LogMessageAsync(LogSeverity.Warning,
-                    $"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
+                await RemoveChannelByIdAsync(channel.Id);
+                _logger.LogError($"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
                     $"for YouTube channel {channel.Username} ({channel.YouTubeChannelId}).");
                 return;
             }
@@ -160,7 +159,7 @@ namespace VainBot.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logSvc.LogExceptionAsync(ex);
+                    _logger.LogCritical(ex, "Error updating database in YouTube service: post new video");
                 }
             }
         }
@@ -187,7 +186,7 @@ namespace VainBot.Services
             }
             catch (Exception ex)
             {
-                await _logSvc.LogExceptionAsync(ex);
+                _logger.LogCritical(ex, "Error updating database in YouTube service: remove channel by ID");
             }
         }
     }

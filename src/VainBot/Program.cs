@@ -4,7 +4,8 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Rollbar;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -28,7 +29,6 @@ namespace VainBot
         public async Task MainAsync()
         {
             _config = BuildConfig();
-            ConfigureRollbar();
 
             _isDev = Environment.GetEnvironmentVariable("VB_DEV") != null;
 
@@ -40,7 +40,6 @@ namespace VainBot
 
             var services = ConfigureServices();
 
-            services.GetRequiredService<LogService>();
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
@@ -68,7 +67,6 @@ namespace VainBot
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
             return new ServiceCollection()
-                .Configure<Configs.LoggerConfig>(_config.GetSection("Rollbar"))
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .Configure<Configs.FitzyConfig>(_config.GetSection("Fitzy"))
                 .AddSingleton(_client)
@@ -79,8 +77,8 @@ namespace VainBot
                 .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton(httpClient)
-                .AddLogging()
-                .AddSingleton<LogService>()
+                .AddLogging(o => o.AddConsole())
+                .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))
                 .AddSingleton(_config)
                 .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
@@ -92,20 +90,6 @@ namespace VainBot
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
-        }
-
-        void ConfigureRollbar()
-        {
-            if (!bool.Parse(_config["Rollbar:UseRollbar"]))
-                return;
-
-            var config = new RollbarConfig(_config["Rollbar:AccessToken"])
-            {
-                Environment = _config["Rollbar:Environment"],
-                LogLevel = ErrorLevel.Warning
-            };
-
-            RollbarLocator.RollbarInstance.Configure(config);
         }
 
         // https://stackoverflow.com/a/15228558/1672458
