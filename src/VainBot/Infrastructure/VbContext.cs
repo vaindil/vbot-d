@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using VainBot.Classes;
 using VainBot.Classes.Reminders;
 using VainBot.Classes.Twitch;
 using VainBot.Classes.Twitter;
+using VainBot.Classes.Users;
 using VainBot.Classes.YouTube;
 
 namespace VainBot.Infrastructure
@@ -20,6 +22,8 @@ namespace VainBot.Infrastructure
         public DbSet<YouTubeChannelToCheck> YouTubeChannelsToCheck { get; set; }
         public DbSet<TwitterToCheck> TwittersToCheck { get; set; }
         public DbSet<Reminder> Reminders { get; set; }
+
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -113,6 +117,110 @@ namespace VainBot.Infrastructure
                 e.Property(r => r.GuildId).HasColumnName("guild_id").IsRequired();
                 e.Property(r => r.IsDM).HasColumnName("is_dm").IsRequired();
                 e.Property(r => r.Message).HasColumnName("message").IsRequired().HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<User>(e =>
+            {
+                e.ToTable("tracked_user");
+                e.HasKey(t => t.Id);
+
+                e.Property(t => t.Id).HasColumnName("id");
+                e.Property(t => t.TwitchId).HasColumnName("twitch_id").IsRequired();
+                e.Property(t => t.DiscordId).HasColumnName("discord_id").IsRequired();
+                e.Property(t => t.IsModerator).HasColumnName("is_moderator").IsRequired();
+            });
+
+            modelBuilder.Entity<UserAlias>(e =>
+            {
+                e.ToTable("user_alias");
+                e.HasKey(u => u.Id);
+
+                e.Property(u => u.Id).HasColumnName("id");
+                e.Property(u => u.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(u => u.ModeratorId).HasColumnName("moderator_id").IsRequired();
+                e.Property(u => u.Alias).HasColumnName("alias").IsRequired();
+
+                e.HasOne(u => u.User)
+                    .WithMany(x => x.Aliases)
+                    .HasForeignKey(u => u.UserId);
+
+                e.HasOne(u => u.Moderator)
+                    .WithMany(m => m.ModeratedAliases)
+                    .HasForeignKey(u => u.ModeratorId);
+            });
+
+            modelBuilder.Entity<TwitchUsernameHistory>(e =>
+            {
+                e.ToTable("twitch_username_history");
+                e.HasKey(t => t.Id);
+
+                e.Property(t => t.Id).HasColumnName("id");
+                e.Property(t => t.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(t => t.LoggedAt).HasColumnName("logged_at").IsRequired();
+                e.Property(t => t.Username).HasColumnName("username").IsRequired();
+
+                e.HasOne(t => t.User)
+                    .WithMany(u => u.TwitchUsernames)
+                    .HasForeignKey(t => t.UserId);
+            });
+
+            modelBuilder.Entity<DiscordUsernameHistory>(e =>
+            {
+                e.ToTable("discord_username_history");
+                e.HasKey(d => d.Id);
+
+                e.Property(d => d.Id).HasColumnName("id");
+                e.Property(d => d.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(d => d.LoggedAt).HasColumnName("logged_at").IsRequired();
+                e.Property(d => d.Username).HasColumnName("username").IsRequired();
+                e.Property(d => d.Discriminator).HasColumnName("discriminator").IsRequired();
+
+                e.HasOne(d => d.User)
+                    .WithMany(u => u.DiscordUsernames)
+                    .HasForeignKey(d => d.UserId);
+            });
+
+            modelBuilder.Entity<ActionTaken>(e =>
+            {
+                e.ToTable("action_taken");
+                e.HasKey(a => a.Id);
+
+                e.Property(a => a.Id).HasColumnName("id");
+                e.Property(a => a.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(a => a.ModeratorId).HasColumnName("moderator_id").IsRequired();
+                e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
+                e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
+                e.Property(a => a.Reason).HasColumnName("reason");
+                e.Property(a => a.ActionType).HasColumnName("action_type").IsRequired()
+                    .HasConversion((x) => x.ToString(), (x) => (ActionType)Enum.Parse(typeof(ActionType), x));
+
+                e.HasOne(a => a.User)
+                    .WithMany(u => u.ActionsAgainst)
+                    .HasForeignKey(a => a.UserId);
+
+                e.HasOne(a => a.Moderator)
+                    .WithMany(m => m.ModeratedActions)
+                    .HasForeignKey(a => a.ModeratorId);
+            });
+
+            modelBuilder.Entity<UserNote>(e =>
+            {
+                e.ToTable("user_note");
+                e.HasKey(n => n.Id);
+
+                e.Property(n => n.Id).HasColumnName("id");
+                e.Property(n => n.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(n => n.ModeratorId).HasColumnName("moderator_id").IsRequired();
+                e.Property(n => n.LoggedAt).HasColumnName("logged_at").IsRequired();
+                e.Property(n => n.Note).HasColumnName("note").IsRequired();
+
+                e.HasOne(n => n.User)
+                    .WithMany(u => u.Notes)
+                    .HasForeignKey(n => n.UserId);
+
+                e.HasOne(n => n.Moderator)
+                    .WithMany(m => m.ModeratedNotes)
+                    .HasForeignKey(n => n.ModeratorId);
             });
         }
     }
