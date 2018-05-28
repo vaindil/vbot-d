@@ -24,6 +24,11 @@ namespace VainBot.Infrastructure
         public DbSet<Reminder> Reminders { get; set; }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserAlias> UserAliases { get; set; }
+        public DbSet<DiscordUsernameHistory> DiscordUsernameHistories { get; set; }
+        public DbSet<TwitchUsernameHistory> TwitchUsernameHistories { get; set; }
+        public DbSet<ActionTaken> ActionsTaken { get; set; }
+        public DbSet<UserNote> UserNotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -125,8 +130,8 @@ namespace VainBot.Infrastructure
                 e.HasKey(t => t.Id);
 
                 e.Property(t => t.Id).HasColumnName("id");
-                e.Property(t => t.TwitchId).HasColumnName("twitch_id").IsRequired();
-                e.Property(t => t.DiscordId).HasColumnName("discord_id").IsRequired();
+                e.Property(t => t.TwitchId).HasColumnName("twitch_id");
+                e.Property(t => t.DiscordId).HasColumnName("discord_id");
                 e.Property(t => t.IsModerator).HasColumnName("is_moderator").IsRequired();
             });
 
@@ -191,8 +196,8 @@ namespace VainBot.Infrastructure
                 e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
                 e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
                 e.Property(a => a.Reason).HasColumnName("reason");
-                e.Property(a => a.ActionType).HasColumnName("action_type").IsRequired()
-                    .HasConversion((x) => x.ToString(), (x) => (ActionType)Enum.Parse(typeof(ActionType), x));
+                e.Property(a => a.ActionTakenType).HasColumnName("action_type").IsRequired()
+                    .HasConversion((x) => x.ToString(), (x) => (ActionTakenType)Enum.Parse(typeof(ActionTakenType), x));
 
                 e.HasOne(a => a.User)
                     .WithMany(u => u.ActionsAgainst)

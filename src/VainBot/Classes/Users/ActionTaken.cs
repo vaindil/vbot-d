@@ -12,7 +12,7 @@ namespace VainBot.Classes.Users
 
         public DateTimeOffset LoggedAt { get; set; }
 
-        public ActionType ActionType { get; set; }
+        public ActionTakenType ActionTakenType { get; set; }
 
         public int DurationSeconds { get; set; }
 
@@ -23,7 +23,7 @@ namespace VainBot.Classes.Users
         public User Moderator { get; set; }
     }
 
-    public enum ActionType
+    public enum ActionTakenType
     {
         Warning,
         Timeout,

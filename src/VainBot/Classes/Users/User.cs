@@ -6,9 +6,9 @@ namespace VainBot.Classes.Users
     {
         public int Id { get; set; }
 
-        public long TwitchId { get; set; }
+        public string TwitchId { get; set; }
 
-        public long DiscordId { get; set; }
+        public long? DiscordId { get; set; }
 
         public bool IsModerator { get; set; }
 

@@ -12,7 +12,7 @@ namespace VainBot.Classes.Users
 
         public string Username { get; set; }
 
-        public short Discriminator { get; set; }
+        public string Discriminator { get; set; }
 
         public User User { get; set; }
     }
