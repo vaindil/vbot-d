@@ -48,6 +48,7 @@ namespace VainBot
                 await services.GetRequiredService<ReminderService>().InitializeAsync();
                 await services.GetRequiredService<TwitchService>().InitializeAsync();
                 await services.GetRequiredService<YouTubeService>().InitializeAsync();
+                await services.GetRequiredService<UserService>().InitializeAsync();
 
                 if (!_isDev)
                     await services.GetRequiredService<TwitterService>().InitializeAsync();
@@ -76,6 +77,7 @@ namespace VainBot
                 .AddSingleton<YouTubeService>()
                 .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
+                .AddSingleton<UserService>()
                 .AddSingleton(httpClient)
                 .AddLogging(o => o.AddConsole())
                 .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))
