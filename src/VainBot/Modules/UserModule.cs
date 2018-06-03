@@ -11,6 +11,7 @@ using VainBot.Services;
 namespace VainBot.Modules
 {
     [FitzyGuild]
+    [FitzyModChannel]
     [FitzyModerator]
     public class UserModule : ModuleBase
     {
@@ -276,6 +277,7 @@ namespace VainBot.Modules
         }
 
         [Command("mod")]
+        [FitzyAdmin]
         public async Task ToggleMod(IUser discordUser)
         {
             var user = await _svc.GetOrCreateUserByDiscordAsync(discordUser);
