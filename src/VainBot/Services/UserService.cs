@@ -44,7 +44,8 @@ namespace VainBot.Services
         {
             using (var db = Db())
             {
-                var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == (long)user.Id)
+                var userId = (long)user.Id;
+                var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == userId)
                     ?? await CreateUserFromDiscordAsync(user);
 
                 return await GetUserByIdAsync(dbUser.Id);
@@ -286,7 +287,8 @@ namespace VainBot.Services
                 _mods.Remove(mod);
                 using (var db = Db())
                 {
-                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == (long)discordUser.Id);
+                    var discordUserId = (long)discordUser.Id;
+                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUserId);
                     if (dbUser == null)
                         return;
 
@@ -298,7 +300,8 @@ namespace VainBot.Services
             {
                 using (var db = Db())
                 {
-                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == (long)discordUser.Id)
+                    var discordUserId = (long)discordUser.Id;
+                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUserId)
                         ?? await CreateUserFromDiscordAsync(discordUser);
 
                     dbUser.IsModerator = true;

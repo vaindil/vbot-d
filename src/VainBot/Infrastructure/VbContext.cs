@@ -143,6 +143,7 @@ namespace VainBot.Infrastructure
                 e.Property(u => u.Id).HasColumnName("id");
                 e.Property(u => u.UserId).HasColumnName("user_id").IsRequired();
                 e.Property(u => u.ModeratorId).HasColumnName("moderator_id").IsRequired();
+                e.Property(u => u.AddedAt).HasColumnName("added_at").IsRequired();
                 e.Property(u => u.Alias).HasColumnName("alias").IsRequired();
 
                 e.HasOne(u => u.User)
