@@ -29,7 +29,22 @@ namespace VainBot.Modules
         [Alias("users")]
         public async Task Help()
         {
-            await ReplyAsync("This will have help text, but I have to write the commands in the first place. :thinking:");
+            await ReplyAsync("The following commands are used to manage tracked users. The bot is able to parse " +
+                "Discord users in a variety of ways, including a standard mention, by their username/discriminator in plain " +
+                "text (such as `vaindil#4444`), or by just their nickname if it is unique on the server. Twitch usernames " +
+                "must be their current username. In the commands below, the parameter `user` can refer to either of these two; " +
+                "you do not need to specify which is being used.\n" +
+                "\n" +
+                "A user will be created in the system the first time that a command is used on them.\n" +
+                "\n" +
+                "`!link discord_user twitch_username`: Links the user's Discord account to their Twitch account.\n" +
+                "`!addalias user alias`: Adds the provided alias to the user.\n" +
+                "`!addnote user note`: Adds the provided note to the user.\n" +
+                "`!addaction user <type> <duration> <reason (optional)>`: Adds an action to the given user. The duration should be in seconds. " +
+                "A duration of -1 should be used for permanent actions. Example: `!addaction vaindil ban -1 he sucks`\n" +
+                "`!aliases user`: Gets the aliases associated with the user.\n" +
+                "`!notes user`: Gets the notes associated with the user.\n" +
+                "`!history user`: Gets the history of actions taken against this user.\n");
         }
 
         [Command("link")]
