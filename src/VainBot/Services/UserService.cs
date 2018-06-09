@@ -161,28 +161,57 @@ namespace VainBot.Services
                 var dbDiscordUser = await GetOrCreateUserByDiscordAsync(discordUser);
 
                 foreach (var a in dbDiscordUser.Aliases)
+                {
+                    db.UserAliases.Update(a);
                     a.UserId = dbTwitchUser.Id;
+                }
 
                 foreach (var u in dbDiscordUser.TwitchUsernames)
+                {
+                    db.TwitchUsernameHistories.Update(u);
                     u.UserId = dbTwitchUser.Id;
+                }
 
                 foreach (var u in dbDiscordUser.DiscordUsernames)
+                {
+                    db.DiscordUsernameHistories.Update(u);
                     u.UserId = dbTwitchUser.Id;
+                }
 
                 foreach (var aa in dbDiscordUser.ActionsAgainst)
+                {
+                    db.ActionsTaken.Update(aa);
                     aa.UserId = dbTwitchUser.Id;
+                }
 
                 foreach (var n in dbDiscordUser.Notes)
+                {
+                    db.UserNotes.Update(n);
                     n.UserId = dbTwitchUser.Id;
+                }
 
                 foreach (var ma in dbDiscordUser.ModeratedAliases)
+                {
+                    db.UserAliases.Update(ma);
                     ma.ModeratorId = dbTwitchUser.Id;
+                }
 
                 foreach (var ma in dbDiscordUser.ModeratedActions)
+                {
+                    db.ActionsTaken.Update(ma);
                     ma.ModeratorId = dbTwitchUser.Id;
+                }
 
                 foreach (var mn in dbDiscordUser.ModeratedNotes)
+                {
+                    db.UserNotes.Update(mn);
                     mn.ModeratorId = dbTwitchUser.Id;
+                }
+
+                dbTwitchUser.IsModerator = dbDiscordUser.IsModerator;
+                dbTwitchUser.DiscordId = dbDiscordUser.DiscordId;
+
+                db.Users.Update(dbTwitchUser);
 
                 await db.SaveChangesAsync();
 

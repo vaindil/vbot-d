@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,14 @@ namespace VainBot.Modules
         public async Task Help()
         {
             await ReplyAsync("This will have help text, but I have to write the commands in the first place. :thinking:");
+        }
+
+        [Command("link")]
+        public async Task LinkAccounts(IUser discordUser, string twitchUsername)
+        {
+            await _svc.LinkAccountsAsync(discordUser, twitchUsername);
+
+            await ReplyAsync($"{discordUser.Username} is now linked to {twitchUsername}.");
         }
 
         [Command("addnote")]
@@ -109,7 +118,7 @@ namespace VainBot.Modules
                 sb.Append("] ");
                 sb.Append(_svc.GetModName(note.ModeratorId));
                 sb.Append(": ");
-                sb.Append(note);
+                sb.Append(note.Note);
                 sb.Append("\n");
             }
 
@@ -218,6 +227,71 @@ namespace VainBot.Modules
             }
 
             await ReplyAsync(msg);
+        }
+
+        [Command("addaction")]
+        public async Task AddActionByDiscordUser(IUser discordUser, string type, string durationStr, [Remainder]string reason = null)
+        {
+            var validResponse = await ValidateActionAsync(type, durationStr, reason);
+            if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+                return;
+
+            await _svc.AddActionTakenByDiscordIdAsync(discordUser, Context.Message.Author,
+                validResponse.Item1.Value, validResponse.Item2.Value, reason);
+            await ReplyAsync("Action added successfully.");
+        }
+
+        [Command("addaction")]
+        public async Task AddActionByTwitchUsername(string twitchUsername, string type, string durationStr, [Remainder]string reason = null)
+        {
+            var validResponse = await ValidateActionAsync(type, durationStr, reason);
+            if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+                return;
+
+            await _svc.AddActionTakenByTwitchUsernameAsync(twitchUsername, Context.Message.Author,
+                validResponse.Item1.Value, validResponse.Item2.Value, reason);
+            await ReplyAsync("Action added successfully.");
+        }
+
+        async Task<(ActionTakenType?, int?)> ValidateActionAsync(string type, string durationStr, string reason)
+        {
+            if (!Enum.TryParse(typeof(ActionTakenType), type, true, out var actionTypeOut))
+            {
+                var validTypes = "";
+                foreach (ActionTakenType t in Enum.GetValues(typeof(ActionTakenType)))
+                {
+                    validTypes += "`" + t.ToString().ToLower() + "`, ";
+                }
+
+                validTypes = validTypes.TrimEnd(',', ' ');
+
+                await ReplyAsync("Action type is not valid. Valid types are " + validTypes + ".");
+                return (null, null);
+            }
+
+            var actionType = (ActionTakenType)actionTypeOut;
+            if (actionType == ActionTakenType.Warning)
+                durationStr = "-1";
+
+            if (!int.TryParse(durationStr, out var duration))
+            {
+                await ReplyAsync("Duration is not a valid integer.");
+                return (null, null);
+            }
+
+            if (duration < -1 || duration == 0)
+            {
+                await ReplyAsync("Duration is invalid. Must be a positive number, or -1 for permanent.");
+                return (null, null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(reason) && reason.Length > 500)
+            {
+                await ReplyAsync("Reason must be 500 characters or fewer. Your reason was {reason.Length} characters long.");
+                return (null, null);
+            }
+
+            return ((ActionTakenType)actionType, duration);
         }
 
         [Command("history")]
