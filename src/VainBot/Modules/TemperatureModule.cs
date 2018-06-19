@@ -34,6 +34,8 @@ namespace VainBot.Modules
                 return;
             }
 
+            val = Math.Round(val, 2);
+
             if (Math.Abs(val) > 100000)
             {
                 await ReplyAsync("That's a bit much, calm down.");
