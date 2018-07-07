@@ -45,9 +45,9 @@ namespace VainBot
 
             _client.Ready += async () =>
             {
-                //await services.GetRequiredService<ReminderService>().InitializeAsync();
+                await services.GetRequiredService<ReminderService>().InitializeAsync();
                 await services.GetRequiredService<TwitchService>().InitializeAsync();
-                //await services.GetRequiredService<YouTubeService>().InitializeAsync();
+                await services.GetRequiredService<YouTubeService>().InitializeAsync();
                 await services.GetRequiredService<UserService>().InitializeAsync();
 
                 if (!_isDev)
