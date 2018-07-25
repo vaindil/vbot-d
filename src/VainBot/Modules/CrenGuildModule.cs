@@ -19,7 +19,7 @@ namespace VainBot.Modules
         }
 
         [Command]
-        [RequireUserPermission(GuildPermission.ManageRoles)]
+        [CrendorMod]
         public async Task Toggle(IGuildUser user)
         {
             await ManageRole(user);
