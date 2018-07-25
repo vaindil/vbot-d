@@ -25,6 +25,19 @@ namespace VainBot.Modules
             await ManageRole(user);
         }
 
+        [Command]
+        [CrendorMod]
+        public async Task PingRole([Remainder]string message)
+        {
+            var role = Context.Guild.GetRole(418148201099689987);
+            if (!role.IsMentionable)
+                await role.ModifyAsync(r => r.Mentionable = true);
+
+            await ReplyAsync($"{role.Mention}: {message}");
+
+            await role.ModifyAsync(r => r.Mentionable = false);
+        }
+
         private async Task ManageRole(IGuildUser user)
         {
             var role = Context.Guild.Roles.FirstOrDefault(r => r.Name == "CrenGuild");
