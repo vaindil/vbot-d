@@ -50,19 +50,6 @@ namespace VainBot.Modules
         [Priority(2)]
         public async Task CreateReminder(string delay, [Remainder]string message)
         {
-            if (Context.Message.Author.Id == 121390139405500418)
-            {
-                await ReplyAsync("No.");
-                return;
-            }
-
-            var isDM = Context.Guild == null;
-            if (isDM)
-            {
-                await ReplyAsync("This command doesn't work in DMs yet, sorry. I'm working on it!");
-                return;
-            }
-
             if (message.Length > 500)
             {
                 await ReplyAsync("Reminder message must be 500 characters or fewer.");
@@ -81,7 +68,7 @@ namespace VainBot.Modules
             }
 
             await _reminderSvc.CreateReminderAsync(
-                Context.Message.Author.Id, Context.Channel.Id, Context.Guild.Id, isDM, message, delayTs);
+                Context.Message.Author.Id, Context.Channel.Id, Context.Guild?.Id, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
