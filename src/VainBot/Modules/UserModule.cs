@@ -41,8 +41,8 @@ namespace VainBot.Modules
                 "`!link discord_user twitch_username`: Links the user's Discord account to their Twitch account.\n" +
                 "`!addalias user alias`: Adds the provided alias to the user.\n" +
                 "`!addnote user note`: Adds the provided note to the user.\n" +
-                "`!addaction user <type> <duration> <reason (optional)>`: Adds an action to the given user. The duration should be in seconds. " +
-                "A duration of -1 should be used for permanent actions. Example: `!addaction vaindil ban -1 he sucks`\n" +
+                "`!addaction twitch` or `!addaction discord`: Starts an interactive game with the bot to add an action to a user on the " +
+                "specified platform.\n" +
                 "`!aliases user`: Gets the aliases associated with the user.\n" +
                 "`!notes user`: Gets the notes associated with the user.\n" +
                 "`!history user`: Gets the history of actions taken against this user.\n");
