@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -286,7 +287,7 @@ namespace VainBot.Modules
 
             var actionTakenType = (ActionTakenType)typeOut;
 
-            await ReplyAsync($"So far so good. You did this: {actionTakenType} to {user.Mention}. Does this have a duration? " +
+            await ReplyAsync($"So far so good. You did this: {actionTakenType} against {user.Mention}. Does this have a duration? " +
                 "If so, how many seconds? You can use 0 for things with no duration, or -1 for things that are permanent.");
 
             response = await NextMessageAsync();
@@ -310,6 +311,10 @@ namespace VainBot.Modules
             await _svc.AddActionTakenByDiscordIdAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
+
+            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
+            await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
+                $"{user.Mention}.");
         }
 
         [Command("addaction twitch", RunMode = RunMode.Async)]
@@ -339,7 +344,7 @@ namespace VainBot.Modules
 
             var actionTakenType = (ActionTakenType)typeOut;
 
-            await ReplyAsync($"So far so good. You did this: {actionTakenType} to {user}. Does this have a duration? " +
+            await ReplyAsync($"So far so good. You did this: {actionTakenType} against {user}. Does this have a duration? " +
                 "If so, how many seconds? You can use 0 for things with no duration, or -1 for things that are permanent.");
 
             response = await NextMessageAsync();
@@ -363,6 +368,10 @@ namespace VainBot.Modules
             await _svc.AddActionTakenByTwitchUsernameAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
+
+            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
+            await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
+                $"{user}.");
         }
 
         //[Command("addaction")]
