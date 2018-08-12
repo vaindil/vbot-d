@@ -50,7 +50,6 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
-            _logger.LogCritical("test WEW LAD");
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())

@@ -49,7 +49,9 @@ namespace VainBot.Services
                 return;
             }
 
-            var guilds = reminders.Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
+            var guilds = reminders
+                .Where(r => r.GuildId.HasValue)
+                .Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
             await _discord.DownloadUsersAsync(guilds);
 
             var now = DateTimeOffset.UtcNow;
@@ -64,21 +66,13 @@ namespace VainBot.Services
             foreach (var r in reminders)
             {
                 if (r.FireAt <= now)
-                {
                     await SendReminderAsync(r);
-                }
                 else
-                {
-                    var timeSpan = r.FireAt - now;
-                    _timers.Add(
-                        new TimerWrapper(
-                            r.Id,
-                            new Timer(async (e) => await SendReminderAsync(e), r, timeSpan, TimeSpan.FromMilliseconds(-1))));
-                }
+                    CreateTimer(r);
             }
         }
 
-        public async Task CreateReminderAsync(ulong userId, ulong channelId, ulong guildId, bool isDM, string message, TimeSpan remindIn)
+        public async Task CreateReminderAsync(ulong userId, ulong channelId, ulong? guildId, string message, TimeSpan remindIn)
         {
             message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
 
@@ -88,8 +82,7 @@ namespace VainBot.Services
                 FireAt = DateTimeOffset.UtcNow.Add(remindIn),
                 UserId = (long)userId,
                 ChannelId = (long)channelId,
-                GuildId = (long)guildId,
-                IsDM = isDM,
+                GuildId = (long?)guildId,
                 Message = message
             };
 
@@ -106,10 +99,7 @@ namespace VainBot.Services
                 _logger.LogCritical(ex, "Error updating database in reminder service: add reminder");
             }
 
-            _timers.Add(
-                new TimerWrapper(
-                    reminder.Id,
-                    new Timer(async (e) => await SendReminderAsync(e), reminder, remindIn, TimeSpan.FromMilliseconds(-1))));
+            CreateTimer(reminder);
         }
 
         public async Task SendReminderAsync(object reminderIn)
@@ -122,7 +112,7 @@ namespace VainBot.Services
 
             var message = $"{user.Mention} asked for a reminder: {reminder.Message}";
 
-            if (reminder.IsDM)
+            if (!reminder.GuildId.HasValue)
             {
                 var channel = await user.GetOrCreateDMChannelAsync();
                 if (channel == null)
@@ -164,6 +154,38 @@ namespace VainBot.Services
             wrapper.Timer = null;
 
             _timers.Remove(wrapper);
+        }
+
+        private void CreateTimer(object reminderIn)
+        {
+            var reminder = (Reminder)reminderIn;
+
+            var wrapper = _timers.Find(t => t.ReminderId == reminder.Id);
+            if (wrapper != null)
+            {
+                wrapper.Timer.Dispose();
+                wrapper.Timer = null;
+
+                _timers.Remove(wrapper);
+            }
+
+            var timeSpan = reminder.FireAt - DateTimeOffset.UtcNow;
+            var maxTimeSpan = TimeSpan.FromDays(40);
+
+            if (timeSpan > maxTimeSpan)
+            {
+                _timers.Add(
+                    new TimerWrapper(
+                        reminder.Id,
+                        new Timer(CreateTimer, reminder, maxTimeSpan, TimeSpan.FromMilliseconds(-1))));
+            }
+            else
+            {
+                _timers.Add(
+                    new TimerWrapper(
+                        reminder.Id,
+                        new Timer(async (e) => await SendReminderAsync(e), reminder, timeSpan, TimeSpan.FromMilliseconds(-1))));
+            }
         }
 
         private class TimerWrapper

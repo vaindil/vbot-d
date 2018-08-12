@@ -15,7 +15,7 @@ namespace VainBot.Modules
 
         readonly Regex _validDelay = new Regex("^[dhm0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
-        const string TooFarIntoFutureError = "I don't think you need a reminder more than a year into the future.";
+        const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
         const string OverflowError = "You can't overflow me, I'm better than that.";
 
         public ReminderModule(ReminderService reminderSvc)
@@ -50,19 +50,6 @@ namespace VainBot.Modules
         [Priority(2)]
         public async Task CreateReminder(string delay, [Remainder]string message)
         {
-            if (Context.Message.Author.Id == 121390139405500418)
-            {
-                await ReplyAsync("No.");
-                return;
-            }
-
-            var isDM = Context.Guild == null;
-            if (isDM)
-            {
-                await ReplyAsync("This command doesn't work in DMs yet, sorry. I'm working on it!");
-                return;
-            }
-
             if (message.Length > 500)
             {
                 await ReplyAsync("Reminder message must be 500 characters or fewer.");
@@ -81,7 +68,7 @@ namespace VainBot.Modules
             }
 
             await _reminderSvc.CreateReminderAsync(
-                Context.Message.Author.Id, Context.Channel.Id, Context.Guild.Id, isDM, message, delayTs);
+                Context.Message.Author.Id, Context.Channel.Id, Context.Guild?.Id, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
@@ -126,7 +113,7 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numDays > 365)
+                if (numDays > 730)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromDays(numDays));
@@ -143,7 +130,7 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numHours > 8660)
+                if (numHours > 17520)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromHours(numHours));
@@ -160,13 +147,13 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numMinutes > 525600)
+                if (numMinutes > 1051200)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromMinutes(numMinutes));
             }
 
-            if (target > TimeSpan.FromMinutes(525600))
+            if (target > TimeSpan.FromMinutes(1051200))
                 throw new Exception(TooFarIntoFutureError);
 
             if (target == TimeSpan.Zero)
