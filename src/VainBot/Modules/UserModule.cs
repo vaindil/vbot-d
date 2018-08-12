@@ -314,7 +314,7 @@ namespace VainBot.Modules
 
             var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
             await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
-                $"{user.Mention}.");
+                $"{user.Mention} with the reason: {response.Content}.");
         }
 
         [Command("addaction twitch", RunMode = RunMode.Async)]
@@ -371,7 +371,7 @@ namespace VainBot.Modules
 
             var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
             await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
-                $"Twitch user {user}.");
+                $"Twitch user {user} with the reason: {response.Content}.");
         }
 
         //[Command("addaction")]
