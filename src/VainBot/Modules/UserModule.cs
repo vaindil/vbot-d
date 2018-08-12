@@ -298,7 +298,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            var reply = "Perfect, a duration of {duration} seconds.";
+            var reply = $"Perfect, a duration of {duration} seconds.";
             if (duration == -1)
                 reply = "Perfect, the action is permanent.";
             else if (duration == 0)
@@ -355,7 +355,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            var reply = "Perfect, a duration of {duration} seconds.";
+            var reply = $"Perfect, a duration of {duration} seconds.";
             if (duration == -1)
                 reply = "Perfect, the action is permanent.";
             else if (duration == 0)
@@ -371,7 +371,7 @@ namespace VainBot.Modules
 
             var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
             await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
-                $"{user}.");
+                $"Twitch user {user}.");
         }
 
         //[Command("addaction")]
