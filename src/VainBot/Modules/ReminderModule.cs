@@ -15,7 +15,7 @@ namespace VainBot.Modules
 
         readonly Regex _validDelay = new Regex("^[dhm0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
-        const string TooFarIntoFutureError = "I don't think you need a reminder more than a year into the future.";
+        const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
         const string OverflowError = "You can't overflow me, I'm better than that.";
 
         public ReminderModule(ReminderService reminderSvc)
@@ -113,7 +113,7 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numDays > 365)
+                if (numDays > 730)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromDays(numDays));
@@ -130,7 +130,7 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numHours > 8660)
+                if (numHours > 17520)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromHours(numHours));
@@ -147,13 +147,13 @@ namespace VainBot.Modules
                     throw new Exception(OverflowError);
                 }
 
-                if (numMinutes > 525600)
+                if (numMinutes > 1051200)
                     throw new Exception(TooFarIntoFutureError);
 
                 target = target.Add(TimeSpan.FromMinutes(numMinutes));
             }
 
-            if (target > TimeSpan.FromMinutes(525600))
+            if (target > TimeSpan.FromMinutes(1051200))
                 throw new Exception(TooFarIntoFutureError);
 
             if (target == TimeSpan.Zero)
