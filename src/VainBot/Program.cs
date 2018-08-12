@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,7 @@ namespace VainBot
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .Configure<Configs.FitzyConfig>(_config.GetSection("Fitzy"))
                 .AddSingleton(_client)
+                .AddSingleton(new InteractiveService(_client))
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()

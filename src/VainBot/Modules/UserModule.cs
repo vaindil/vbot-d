@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace VainBot.Modules
     [FitzyGuild]
     [FitzyModChannel]
     [FitzyModerator]
-    public class UserModule : ModuleBase
+    public class UserModule : InteractiveBase
     {
         readonly UserService _svc;
 
@@ -244,70 +245,201 @@ namespace VainBot.Modules
             await ReplyAsync(msg);
         }
 
-        [Command("addaction")]
-        public async Task AddActionByDiscordUser(IUser discordUser, string type, string durationStr, [Remainder]string reason = null)
+        [Command("addaction discord", RunMode = RunMode.Async)]
+        public async Task AddDiscordActionInteractive()
         {
-            var validResponse = await ValidateActionAsync(type, durationStr, reason);
-            if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+            if (Context.Channel.Id != 432328775598866434)
+            {
+                await ReplyAsync("This command can only be used in <#432328775598866434>. Quit trying to spam!");
                 return;
+            }
 
-            await _svc.AddActionTakenByDiscordIdAsync(discordUser, Context.Message.Author,
-                validResponse.Item1.Value, validResponse.Item2.Value, reason);
-            await ReplyAsync("Action added successfully.");
-        }
+            await ReplyAsync("So you want to add an action! Hooray! (Or maybe not, actions are bad.) ANYWAY:\n" +
+                "Who was the naughty child? (for example, `vaindil#4444`)");
 
-        [Command("addaction")]
-        public async Task AddActionByTwitchUsername(string twitchUsername, string type, string durationStr, [Remainder]string reason = null)
-        {
-            var validResponse = await ValidateActionAsync(type, durationStr, reason);
-            if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+            var response = await NextMessageAsync();
+            var parts = response.Content.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length != 2)
+            {
+                await ReplyAsync("Invalid response: That's not in the proper format of `vaindil#4444`. CANCELED!");
                 return;
+            }
 
-            await _svc.AddActionTakenByTwitchUsernameAsync(twitchUsername, Context.Message.Author,
-                validResponse.Item1.Value, validResponse.Item2.Value, reason);
-            await ReplyAsync("Action added successfully.");
+            await Context.Client.DownloadUsersAsync(new[] { Context.Guild });
+
+            var user = Context.Client.GetUser(parts[0], parts[1]);
+            if (user == null)
+            {
+                await ReplyAsync("That user does not exist. CANCELED!");
+                return;
+            }
+
+            await ReplyAsync($"Okay, action against {user.Mention}, sounds good. What action was taken? Valid options are {GetValidActionTypes()}.");
+            response = await NextMessageAsync();
+
+            if (!Enum.TryParse(typeof(ActionTakenType), response.Content, true, out var typeOut))
+            {
+                await ReplyAsync("That's not a valid action type. CANCELED!");
+                return;
+            }
+
+            var actionTakenType = (ActionTakenType)typeOut;
+
+            await ReplyAsync($"So far so good. You did this: {actionTakenType} to {user.Mention}. Does this have a duration? " +
+                "If so, how many seconds? You can use 0 for things with no duration, or -1 for things that are permanent.");
+
+            response = await NextMessageAsync();
+
+            if (!int.TryParse(response.Content, out var duration) || duration < -1)
+            {
+                await ReplyAsync("That's not a valid integer. CANCELED!");
+                return;
+            }
+
+            var reply = "Perfect, a duration of {duration} seconds.";
+            if (duration == -1)
+                reply = "Perfect, the action is permanent.";
+            else if (duration == 0)
+                reply = "Perfect, the action has no duration.";
+
+            await ReplyAsync($"{reply} Last step! What's the reason for this action?");
+
+            response = await NextMessageAsync();
+
+            await _svc.AddActionTakenByDiscordIdAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
+
+            await ReplyAsync("Action added successfully. Thanks for playing!");
         }
 
-        async Task<(ActionTakenType?, int?)> ValidateActionAsync(string type, string durationStr, string reason)
+        [Command("addaction twitch", RunMode = RunMode.Async)]
+        public async Task AddTwitchActionInteractive()
         {
-            if (!Enum.TryParse(typeof(ActionTakenType), type, true, out var actionTypeOut))
+            if (Context.Channel.Id != 432328775598866434)
             {
-                var validTypes = "";
-                foreach (ActionTakenType t in Enum.GetValues(typeof(ActionTakenType)))
-                {
-                    validTypes += "`" + t.ToString().ToLower() + "`, ";
-                }
-
-                validTypes = validTypes.TrimEnd(',', ' ');
-
-                await ReplyAsync("Action type is not valid. Valid types are " + validTypes + ".");
-                return (null, null);
+                await ReplyAsync("This command can only be used in <#432328775598866434>. Quit trying to spam!");
+                return;
             }
 
-            var actionType = (ActionTakenType)actionTypeOut;
-            if (actionType == ActionTakenType.Warning)
-                durationStr = "-1";
+            await ReplyAsync("So you want to add an action! Hooray! (Or maybe not, actions are bad.) ANYWAY:\n" +
+                "Who was the naughty child? (for example, `vaindil`)");
 
-            if (!int.TryParse(durationStr, out var duration))
+            var response = await NextMessageAsync();
+
+            var user = response.Content;
+
+            await ReplyAsync($"Okay, action against {user}, sounds good. What action was taken? Valid options are {GetValidActionTypes()}.");
+            response = await NextMessageAsync();
+
+            if (!Enum.TryParse(typeof(ActionTakenType), response.Content, true, out var typeOut))
             {
-                await ReplyAsync("Duration is not a valid integer.");
-                return (null, null);
+                await ReplyAsync("That's not a valid action type. CANCELED!");
+                return;
             }
 
-            if (duration < -1 || duration == 0)
+            var actionTakenType = (ActionTakenType)typeOut;
+
+            await ReplyAsync($"So far so good. You did this: {actionTakenType} to {user}. Does this have a duration? " +
+                "If so, how many seconds? You can use 0 for things with no duration, or -1 for things that are permanent.");
+
+            response = await NextMessageAsync();
+
+            if (!int.TryParse(response.Content, out var duration) || duration < -1)
             {
-                await ReplyAsync("Duration is invalid. Must be a positive number, or -1 for permanent.");
-                return (null, null);
+                await ReplyAsync("That's not a valid integer. CANCELED!");
+                return;
             }
 
-            if (!string.IsNullOrWhiteSpace(reason) && reason.Length > 500)
-            {
-                await ReplyAsync("Reason must be 500 characters or fewer. Your reason was {reason.Length} characters long.");
-                return (null, null);
-            }
+            var reply = "Perfect, a duration of {duration} seconds.";
+            if (duration == -1)
+                reply = "Perfect, the action is permanent.";
+            else if (duration == 0)
+                reply = "Perfect, the action has no duration.";
 
-            return ((ActionTakenType)actionType, duration);
+            await ReplyAsync($"{reply} Last step! What's the reason for this action?");
+
+            response = await NextMessageAsync();
+
+            await _svc.AddActionTakenByTwitchUsernameAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
+
+            await ReplyAsync("Action added successfully. Thanks for playing!");
         }
+
+        //[Command("addaction")]
+        //public async Task AddActionByDiscordUser(IUser discordUser, string type, string durationStr, [Remainder]string reason = null)
+        //{
+        //    var validResponse = await ValidateActionAsync(type, durationStr, reason);
+        //    if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+        //        return;
+
+        //    await _svc.AddActionTakenByDiscordIdAsync(discordUser, Context.Message.Author,
+        //        validResponse.Item1.Value, validResponse.Item2.Value, reason);
+        //    await ReplyAsync("Action added successfully.");
+        //}
+
+        //[Command("addaction")]
+        //public async Task AddActionByTwitchUsername(string twitchUsername, string type, string durationStr, [Remainder]string reason = null)
+        //{
+        //    var validResponse = await ValidateActionAsync(type, durationStr, reason);
+        //    if (!validResponse.Item1.HasValue || !validResponse.Item2.HasValue)
+        //        return;
+
+        //    await _svc.AddActionTakenByTwitchUsernameAsync(twitchUsername, Context.Message.Author,
+        //        validResponse.Item1.Value, validResponse.Item2.Value, reason);
+        //    await ReplyAsync("Action added successfully.");
+        //}
+
+        private string GetValidActionTypes()
+        {
+            var validTypes = "";
+            foreach (ActionTakenType t in Enum.GetValues(typeof(ActionTakenType)))
+            {
+                validTypes += "`" + t.ToString().ToLower() + "`, ";
+            }
+
+            return validTypes.TrimEnd(',', ' ');
+        }
+
+        //async Task<(ActionTakenType?, int?)> ValidateActionAsync(string type, string durationStr, string reason)
+        //{
+        //    if (!Enum.TryParse(typeof(ActionTakenType), type, true, out var actionTypeOut))
+        //    {
+        //        var validTypes = "";
+        //        foreach (ActionTakenType t in Enum.GetValues(typeof(ActionTakenType)))
+        //        {
+        //            validTypes += "`" + t.ToString().ToLower() + "`, ";
+        //        }
+
+        //        validTypes = validTypes.TrimEnd(',', ' ');
+
+        //        await ReplyAsync("Action type is not valid. Valid types are " + validTypes + ".");
+        //        return (null, null);
+        //    }
+
+        //    var actionType = (ActionTakenType)actionTypeOut;
+        //    if (actionType == ActionTakenType.Warning)
+        //        durationStr = "-1";
+
+        //    if (!int.TryParse(durationStr, out var duration))
+        //    {
+        //        await ReplyAsync("Duration is not a valid integer.");
+        //        return (null, null);
+        //    }
+
+        //    if (duration < -1 || duration == 0)
+        //    {
+        //        await ReplyAsync("Duration is invalid. Must be a positive number, or -1 for permanent.");
+        //        return (null, null);
+        //    }
+
+        //    if (!string.IsNullOrWhiteSpace(reason) && reason.Length > 500)
+        //    {
+        //        await ReplyAsync("Reason must be 500 characters or fewer. Your reason was {reason.Length} characters long.");
+        //        return (null, null);
+        //    }
+
+        //    return ((ActionTakenType)actionType, duration);
+        //}
 
         [Command("history")]
         public async Task GetHistoryByDiscordUser(IUser discordUser)
@@ -384,6 +516,12 @@ namespace VainBot.Modules
                 await ReplyAsync($"{discordUser.Username} is no longer marked as a mod.");
             else
                 await ReplyAsync($"{discordUser.Username} is now marked as a mod.");
+        }
+
+        private enum ActionLocation
+        {
+            Discord,
+            Twitch
         }
     }
 }
