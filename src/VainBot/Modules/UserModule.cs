@@ -255,8 +255,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            await ReplyAsync("So you want to add an action! Hooray! (Or maybe not, actions are bad.) ANYWAY:\n" +
-                "Who was the naughty child? (for example, `vaindil#4444`)");
+            await ReplyAsync("Who was the naughty child? (for example, `vaindil#4444`)");
 
             var response = await NextMessageAsync();
             var parts = response.Content.Split('#', StringSplitOptions.RemoveEmptyEntries);
@@ -276,7 +275,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            await ReplyAsync($"Okay, action against {user.Mention}, sounds good. What action was taken? Valid options are {GetValidActionTypes()}.");
+            await ReplyAsync($"Okay, action against {user.Mention}. What action was taken? Valid options are {GetValidActionTypes()}.");
             response = await NextMessageAsync();
 
             if (!Enum.TryParse(typeof(ActionTakenType), response.Content, true, out var typeOut))
@@ -326,14 +325,13 @@ namespace VainBot.Modules
                 return;
             }
 
-            await ReplyAsync("So you want to add an action! Hooray! (Or maybe not, actions are bad.) ANYWAY:\n" +
-                "Who was the naughty child? (for example, `vaindil`)");
+            await ReplyAsync("Who was the naughty child? (for example, `vaindil`)");
 
             var response = await NextMessageAsync();
 
             var user = response.Content;
 
-            await ReplyAsync($"Okay, action against {user}, sounds good. What action was taken? Valid options are {GetValidActionTypes()}.");
+            await ReplyAsync($"Okay, action against {user}. What action was taken? Valid options are {GetValidActionTypes()}.");
             response = await NextMessageAsync();
 
             if (!Enum.TryParse(typeof(ActionTakenType), response.Content, true, out var typeOut))
