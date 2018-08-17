@@ -49,8 +49,8 @@ namespace VainBot
                 await services.GetRequiredService<TwitchService>().InitializeAsync();
                 await services.GetRequiredService<YouTubeService>().InitializeAsync();
 
-                //if (!_isDev)
-                //    await services.GetRequiredService<TwitterService>().InitializeAsync();
+                if (!_isDev)
+                    await services.GetRequiredService<TwitterService>().InitializeAsync();
             };
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
@@ -74,7 +74,7 @@ namespace VainBot
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()
                 .AddSingleton<YouTubeService>()
-                //.AddSingleton<TwitterService>()
+                .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton(httpClient)
                 .AddLogging(o => o.AddConsole())
