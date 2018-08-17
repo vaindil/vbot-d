@@ -13,5 +13,7 @@
         public long DiscordGuildId { get; set; }
 
         public long DiscordChannelId { get; set; }
+
+        public long LatestTweetId { get; set; }
     }
 }

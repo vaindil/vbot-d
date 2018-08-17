@@ -107,6 +107,7 @@ namespace VainBot.Infrastructure
                 e.Property(t => t.IncludeRetweets).HasColumnName("include_retweets").IsRequired();
                 e.Property(t => t.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
                 e.Property(t => t.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
+                e.Property(t => t.LatestTweetId).HasColumnName("latest_tweet_id").IsRequired();
             });
 
             modelBuilder.Entity<Reminder>(e =>
