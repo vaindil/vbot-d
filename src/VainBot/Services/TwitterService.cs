@@ -82,7 +82,7 @@ namespace VainBot.Services
                     MaximumNumberOfTweetsToRetrieve = 5
                 });
 
-                if (tweets.Any())
+                if (tweets?.Any() == true)
                 {
                     updated = true;
 
