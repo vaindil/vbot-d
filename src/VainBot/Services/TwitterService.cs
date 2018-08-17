@@ -6,11 +6,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Events;
 using Tweetinvi.Models;
-using Tweetinvi.Streaming;
+using Tweetinvi.Parameters;
 using VainBot.Classes.Twitter;
 using VainBot.Configs;
 using VainBot.Infrastructure;
@@ -25,10 +27,8 @@ namespace VainBot.Services
         readonly TwitterConfig _config;
         readonly IServiceProvider _provider;
 
-        readonly IMemoryCache _cache;
-
         List<TwitterToCheck> _twittersToCheck;
-        IFilteredStream _stream;
+        Timer _timer;
 
         public TwitterService(
             DiscordSocketClient discord,
@@ -41,22 +41,10 @@ namespace VainBot.Services
             _config = options.Value;
 
             _provider = provider;
-
-            _cache = new MemoryCache(new MemoryCacheOptions());
         }
 
         public async Task InitializeAsync()
         {
-            if (_stream != null)
-            {
-                _stream.MatchingTweetReceived -= HandleMatchingTweet;
-                _stream.DisconnectMessageReceived -= HandleDisconnect;
-                _stream.StreamStopped -= HandleStopped;
-
-                _stream.StopStream();
-                _stream = null;
-            }
-
             Auth.ApplicationCredentials = new TwitterCredentials(
                 _config.ConsumerKey, _config.ConsumerSecret,
                 _config.AccessToken, _config.AccessTokenSecret);
@@ -77,62 +65,52 @@ namespace VainBot.Services
             if (_twittersToCheck.Count == 0)
                 return;
 
-            _stream = Stream.CreateFilteredStream();
+            _timer = new Timer(CheckForTweets, null, TimeSpan.Zero, TimeSpan.FromMinutes(4));
+        }
 
-            foreach (var toCheck in _twittersToCheck)
+        async void CheckForTweets(object _)
+        {
+            var updated = false;
+
+            foreach (var ttc in _twittersToCheck)
             {
-                _stream.AddFollow(toCheck.TwitterId);
+                var tweets = await TimelineAsync.GetUserTimeline(new UserIdentifier(ttc.TwitterId), new UserTimelineParameters
+                {
+                    ExcludeReplies = true,
+                    IncludeRTS = ttc.IncludeRetweets,
+                    SinceId = ttc.LatestTweetId,
+                    MaximumNumberOfTweetsToRetrieve = 5
+                });
+
+                if (tweets.Any())
+                {
+                    updated = true;
+
+                    tweets = tweets.OrderBy(x => x.CreatedAt);
+                    ttc.LatestTweetId = tweets.Last().Id;
+
+                    foreach (var tweet in tweets)
+                    {
+                        var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
+                        await channel.SendMessageAsync(tweet.Url);
+                    }
+                }
             }
 
-            _stream.MatchingTweetReceived += HandleMatchingTweet;
-            _stream.DisconnectMessageReceived += HandleDisconnect;
-            _stream.StreamStopped += HandleStopped;
-
-            await _stream.StartStreamMatchingAnyConditionAsync();
-        }
-
-        async void HandleMatchingTweet(object sender, MatchedTweetReceivedEventArgs e)
-        {
-            if (_cache.TryGetValue(e.Tweet.Id, out _))
-                return;
-
-            _cache.Set(e.Tweet.Id, true, CacheEntryOptions);
-
-            if (e.Tweet.InReplyToUserId.HasValue)
-                return;
-
-            var toCheck = _twittersToCheck.Find(t => t.TwitterId == e.Tweet.CreatedBy.Id);
-            if (toCheck == null)
-                return;
-
-            if (e.Tweet.IsRetweet && !toCheck.IncludeRetweets)
-                return;
-
-            var channel = _discord.GetChannel((ulong)toCheck.DiscordChannelId) as SocketTextChannel;
-            await channel.SendMessageAsync(e.Tweet.Url);
-        }
-
-        async void HandleDisconnect(object sender, DisconnectedEventArgs e)
-        {
-            //await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream disconnected. Restarting.");
-            await _stream.StartStreamMatchingAnyConditionAsync();
-        }
-
-        async void HandleStopped(object sender, StreamExceptionEventArgs e)
-        {
-            //await _logSvc.LogMessageAsync(LogSeverity.Warning, "Twitter stream stopped. Restarting.");
-            await _stream.StartStreamMatchingAnyConditionAsync();
-        }
-
-        static MemoryCacheEntryOptions CacheEntryOptions
-        {
-            get
+            if (updated)
             {
-                return new MemoryCacheEntryOptions
+                try
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2),
-                    Priority = CacheItemPriority.NeverRemove
-                };
+                    using (var db = _provider.GetRequiredService<VbContext>())
+                    {
+                        db.TwittersToCheck.UpdateRange(_twittersToCheck);
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, "Error updating database in Twitter service: check for tweets");
+                }
             }
         }
     }
