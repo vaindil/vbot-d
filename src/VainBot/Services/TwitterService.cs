@@ -86,7 +86,10 @@ namespace VainBot.Services
                 {
                     updated = true;
 
-                    tweets = tweets.OrderBy(x => x.CreatedAt);
+                    tweets = tweets.GroupBy(x => x.Id)
+                        .Select(x => x.First())
+                        .OrderBy(x => x.CreatedAt);
+
                     ttc.LatestTweetId = tweets.Last().Id;
 
                     foreach (var tweet in tweets)
