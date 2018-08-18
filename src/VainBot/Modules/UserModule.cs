@@ -151,7 +151,7 @@ namespace VainBot.Modules
 
             if (combined.Count == 0)
             {
-                embed.AddField("", $"{name} has no notes or actions taken against them.");
+                embed.WithDescription($"{name} has no notes or actions taken against them.");
             }
             else
             {
