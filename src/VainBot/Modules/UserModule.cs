@@ -112,6 +112,12 @@ namespace VainBot.Modules
         [Alias("notes", "note", "stalk")]
         public async Task GetNotesByTwitchUsername(string username)
         {
+            if (username.Contains(' '))
+            {
+                await ReplyAsync("Invalid username provided.");
+                return;
+            }
+
             var user = await _svc.GetOrCreateUserByTwitchUsernameAsync(username);
             await GetActionsAsync(username, user);
         }
@@ -186,6 +192,12 @@ namespace VainBot.Modules
         {
             if (!await ValidateAliasAsync(alias))
                 return;
+
+            if (username.Contains(' '))
+            {
+                await ReplyAsync("Invalid username provided.");
+                return;
+            }
 
             var user = await _svc.GetOrCreateUserByTwitchUsernameAsync(username);
             if (user.Aliases.Any(x => string.Equals(x.Alias, alias, System.StringComparison.OrdinalIgnoreCase)))
