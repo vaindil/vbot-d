@@ -13,6 +13,8 @@ namespace VainBot.Services
         readonly CommandService _commands;
         readonly IServiceProvider _provider;
 
+        readonly char _prefix;
+
         public CommandHandlingService(DiscordSocketClient discord, CommandService commands, IServiceProvider provider)
         {
             _discord = discord;
@@ -20,6 +22,11 @@ namespace VainBot.Services
             _provider = provider;
 
             _discord.MessageReceived += MessageReceived;
+
+            if (Environment.GetEnvironmentVariable("VB_DEV") != null)
+                _prefix = '+';
+            else
+                _prefix = '!';
         }
 
         public async Task InitializeAsync()
@@ -36,7 +43,7 @@ namespace VainBot.Services
                 return;
 
             int argPos = 0;
-            if (!message.HasCharPrefix('!', ref argPos))
+            if (!message.HasCharPrefix(_prefix, ref argPos))
                 return;
 
             var context = new SocketCommandContext(_discord, message);

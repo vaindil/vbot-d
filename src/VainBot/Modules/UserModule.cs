@@ -100,54 +100,68 @@ namespace VainBot.Modules
             return true;
         }
 
-        [Command("notes")]
-        [Alias("note")]
+        [Command("history")]
+        [Alias("notes", "note", "stalk")]
         public async Task GetNotesByDiscordUser(IUser discordUser)
         {
             var user = await _svc.GetOrCreateUserByDiscordAsync(discordUser);
-            if (user.Notes?.Count == 0)
-                await ReplyAsync($"No notes found for {discordUser.Username}.");
-            else
-                await GetNotesAsync(discordUser.Username, user.Notes);
+            await GetActionsAsync(discordUser.Username, user);
         }
 
-        [Command("notes")]
-        [Alias("note")]
+        [Command("history")]
+        [Alias("notes", "note", "stalk")]
         public async Task GetNotesByTwitchUsername(string username)
         {
             var user = await _svc.GetOrCreateUserByTwitchUsernameAsync(username);
-            if (user.Notes?.Count == 0)
-                await ReplyAsync($"No notes found for {username}.");
-            else
-                await GetNotesAsync(username, user.Notes);
+            await GetActionsAsync(username, user);
         }
 
-        async Task GetNotesAsync(string name, List<UserNote> notes)
+        async Task GetActionsAsync(string name, User user)
         {
-            var sb = new StringBuilder("__Notes for ");
-            sb.Append(name);
-            sb.Append("__\n");
+            var combined = new List<DetailsWrapper>();
 
-            foreach (var note in notes.OrderByDescending(x => x.LoggedAt))
+            combined.AddRange(user.Notes.Select(x => new DetailsWrapper
             {
-                sb.Append('[');
-                sb.Append(note.LoggedAt.ToString(_dtFormat));
-                sb.Append("] ");
-                sb.Append(_svc.GetModName(note.ModeratorId));
-                sb.Append(": ");
-                sb.Append(note.Note);
-                sb.Append("\n");
+                LoggedAt = x.LoggedAt,
+                Type = "Note",
+                ModeratorId = x.ModeratorId,
+                Content = x.Note
+            }));
+
+            combined.AddRange(user.ActionsAgainst.Select(x => new DetailsWrapper
+            {
+                LoggedAt = x.LoggedAt,
+                Type = x.DurationSeconds > 0 ? $"{x.DurationSeconds}-{x.ActionTakenType}".ToLower() : x.ActionTakenType.ToString(),
+                ModeratorId = x.ModeratorId,
+                Content = x.Reason
+            }));
+
+            var embed = new EmbedBuilder()
+                .WithColor(new Color(108, 54, 135));
+
+            if (user.TwitchUsernames.Count > 0)
+            {
+                embed.WithTitle($"Details for {name} - click to stalk")
+                    .WithUrl($"https://ttv.overrustlelogs.net/Fitzyhere/{user.TwitchUsernames.Last().Username}");
+            }
+            else
+            {
+                embed.WithTitle($"Details for {name}");
             }
 
-            var msg = sb.ToString().TrimEnd('\n');
-            if (msg.Length > 1800)
+            if (combined.Count == 0)
             {
-                await ReplyAsync("This person's notes are way too long and vaindil hasn't written the code to handle this yet. " +
-                    "Go yell at him.");
-                return;
+                embed.AddField("", $"{name} has no notes or actions taken against them.");
+            }
+            else
+            {
+                foreach (var i in combined.OrderByDescending(x => x.LoggedAt))
+                {
+                    embed.AddField($"{i.LoggedAt.ToString(_dtFormat)} | {_svc.GetModName(i.ModeratorId)}: {i.Type}", i.Content);
+                }
             }
 
-            await ReplyAsync(msg);
+            await ReplyAsync(embed: embed.Build());
         }
 
         [Command("addalias")]
@@ -448,62 +462,6 @@ namespace VainBot.Modules
         //    return ((ActionTakenType)actionType, duration);
         //}
 
-        [Command("history")]
-        public async Task GetHistoryByDiscordUser(IUser discordUser)
-        {
-            var user = await _svc.GetOrCreateUserByDiscordAsync(discordUser);
-            await GetHistoryForUserAsync(discordUser.Username, user.ActionsAgainst);
-        }
-
-        [Command("history")]
-        public async Task GetHistoryByTwitchUsername(string username)
-        {
-            var user = await _svc.GetOrCreateUserByTwitchUsernameAsync(username);
-            await GetHistoryForUserAsync(username, user.ActionsAgainst);
-        }
-
-        async Task GetHistoryForUserAsync(string name, List<ActionTaken> actions)
-        {
-            if (actions.Count == 0)
-            {
-                await ReplyAsync($"{name} has not had any actions taken against them.");
-                return;
-            }
-
-            var sb = new StringBuilder("__Actions taken against ");
-            sb.Append(name);
-            sb.Append("__\n");
-
-            foreach (var action in actions)
-            {
-                sb.Append('[');
-                sb.Append(action.LoggedAt.ToString(_dtFormat));
-                sb.Append("] [");
-                sb.Append(action.ActionTakenType.ToString().ToLower());
-                sb.Append("] ");
-                sb.Append(_svc.GetModName(action.ModeratorId));
-
-                if (!string.IsNullOrEmpty(action.Reason))
-                {
-                    sb.Append(" | ");
-                    sb.Append(action.Reason);
-                }
-
-                sb.Append("\n");
-            }
-
-            var msg = sb.ToString().TrimEnd('\n');
-
-            if (msg.Length > 1800)
-            {
-                await ReplyAsync($"{name} is so bad that their actions combined generate a message that's too long for Discord. " +
-                    "Yell at vaindil for not implementing this yet.");
-                return;
-            }
-
-            await ReplyAsync(msg);
-        }
-
         [Command("mod")]
         [FitzyAdmin]
         public async Task ToggleMod(IUser discordUser)
@@ -523,6 +481,14 @@ namespace VainBot.Modules
                 await ReplyAsync($"{discordUser.Username} is no longer marked as a mod.");
             else
                 await ReplyAsync($"{discordUser.Username} is now marked as a mod.");
+        }
+
+        private class DetailsWrapper
+        {
+            public DateTimeOffset LoggedAt { get; set; }
+            public int ModeratorId { get; set; }
+            public string Type { get; set; }
+            public string Content { get; set; }
         }
 
         private enum ActionLocation
