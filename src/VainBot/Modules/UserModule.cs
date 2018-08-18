@@ -325,7 +325,7 @@ namespace VainBot.Modules
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
+            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(480178651837628436);
             await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
                 $"{user.Mention} with the reason: {response.Content}.");
         }
@@ -381,7 +381,7 @@ namespace VainBot.Modules
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(313643739719532544);
+            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(480178651837628436);
             await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
                 $"Twitch user {user} with the reason: {response.Content}.");
         }
