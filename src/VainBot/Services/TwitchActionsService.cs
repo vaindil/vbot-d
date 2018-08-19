@@ -108,13 +108,13 @@ namespace VainBot.Services
             if (duration == -1)
                 durationString = "Permanent";
             else if (duration > 0)
-                durationString = $"{duration} seconds";
+                durationString = $"{duration}-second";
 
             var embed = new EmbedBuilder()
                 .WithColor(new Color(108, 54, 135))
                 .WithTitle("Twitch Action")
                 .AddField("User", userUsername, true)
-                .AddField("Action", durationString, true)
+                .AddField("Action", $"{durationString} {action}", true)
                 .AddField("Reason", reason, true)
                 .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {actionTaken.Id}", true)
