@@ -28,6 +28,8 @@ namespace VainBot.Classes.Users
         Warning,
         Timeout,
         Ban,
-        TemporaryBan
+        TemporaryBan,
+        Unban,
+        Untimeout
     }
 }

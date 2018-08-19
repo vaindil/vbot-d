@@ -69,6 +69,20 @@ namespace VainBot.Services
 
         private async void HandleMessageAsync(string message)
         {
+            var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
+
+            if (message == "LIVE")
+            {
+                await actionChannel.SendMessageAsync("Fitzy just went live.");
+                return;
+            }
+
+            if (message == "OFFLINE")
+            {
+                await actionChannel.SendMessageAsync("Fitzy is now offline.");
+                return;
+            }
+
             if (!message.StartsWith("ACTION"))
                 return;
 
@@ -81,8 +95,6 @@ namespace VainBot.Services
             var action = parts[3];
             var duration = int.Parse(parts[4]);
             var reason = parts[5];
-
-            var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
 
             var discordMod = await _userSvc.GetDiscordUserByTwitchUsername(modUsername);
             if (discordMod == null)
