@@ -115,6 +115,7 @@ namespace VainBot.Services
                 .WithTitle("Twitch Action")
                 .AddField("User", userUsername, true)
                 .AddField("Action", $"{duration}-second {action}", true)
+                .AddField("Reason", reason, true)
                 .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {actionTaken.Id}", true)
                 .Build();
