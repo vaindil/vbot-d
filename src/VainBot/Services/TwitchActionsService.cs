@@ -116,7 +116,7 @@ namespace VainBot.Services
             var actionTaken = await _userSvc.AddActionTakenByTwitchUsernameAsync(userUsername, discordMod,
                 (ActionTakenType)actionTakenType, duration, reason);
 
-            var durationString = "N/A";
+            var durationString = "";
             if (duration == -1)
                 durationString = "Permanent";
             else if (duration > 0)
