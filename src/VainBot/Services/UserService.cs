@@ -160,6 +160,9 @@ namespace VainBot.Services
                 var dbTwitchUser = await GetOrCreateUserByTwitchUsernameAsync(twitchUsername);
                 var dbDiscordUser = await GetOrCreateUserByDiscordAsync(discordUser);
 
+                if (dbTwitchUser.Id == dbDiscordUser.Id)
+                    return;
+
                 foreach (var a in dbDiscordUser.Aliases)
                 {
                     db.UserAliases.Update(a);
@@ -276,25 +279,25 @@ namespace VainBot.Services
             }
         }
 
-        public async Task AddActionTakenByDiscordIdAsync(
+        public async Task<ActionTaken> AddActionTakenByDiscordIdAsync(
             IUser discordUser, IUser moderator, ActionTakenType type, int duration, string reason = null)
         {
             var user = await GetOrCreateUserByDiscordAsync(discordUser);
-            await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
+            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
         }
 
-        public async Task AddActionTakenByTwitchUsernameAsync(
+        public async Task<ActionTaken> AddActionTakenByTwitchUsernameAsync(
             string twitchUsername, IUser moderator, ActionTakenType type, int duration, string reason = null)
         {
             var user = await GetOrCreateUserByTwitchUsernameAsync(twitchUsername);
-            await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
+            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
         }
 
-        async Task AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type, int duration, string reason = null)
+        async Task<ActionTaken> AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type, int duration, string reason = null)
         {
             using (var db = Db())
             {
-                db.ActionsTaken.Add(new ActionTaken
+                var actionTaken = new ActionTaken
                 {
                     UserId = userId,
                     ModeratorId = moderatorId,
@@ -302,9 +305,29 @@ namespace VainBot.Services
                     ActionTakenType = type,
                     DurationSeconds = duration,
                     Reason = reason
-                });
+                };
 
+                db.ActionsTaken.Add(actionTaken);
                 await db.SaveChangesAsync();
+
+                return actionTaken;
+            }
+        }
+
+        public async Task<bool> UpdateReasonAsync(int actionId, string newReason)
+        {
+            using (var db = Db())
+            {
+                var action = await db.ActionsTaken.FindAsync(actionId);
+                if (action == null)
+                    return false;
+
+                action.Reason = newReason;
+
+                db.ActionsTaken.Update(action);
+                await db.SaveChangesAsync();
+
+                return true;
             }
         }
 
@@ -343,6 +366,26 @@ namespace VainBot.Services
                     _mods.Add(new Mod(dbUser.Id, discordUser.Id, dbUser.Aliases[0].Alias));
                 }
             }
+        }
+
+        public async Task<IUser> GetDiscordUserByTwitchUsername(string twitchUsername)
+        {
+            long userId = 0;
+
+            using (var db = Db())
+            {
+                var twitch = await db.TwitchUsernameHistories.FirstOrDefaultAsync(x => x.Username == twitchUsername);
+                if (twitch == null)
+                    return null;
+
+                var user = await db.Users.FirstOrDefaultAsync(x => x.Id == twitch.UserId);
+                if (user == null || !user.DiscordId.HasValue)
+                    return null;
+
+                userId = user.DiscordId.Value;
+            }
+
+            return _discord.GetUser((ulong)userId);
         }
 
         public bool CheckIfUserIsMod(ulong discordId)

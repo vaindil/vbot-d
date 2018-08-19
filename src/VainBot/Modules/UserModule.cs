@@ -398,6 +398,15 @@ namespace VainBot.Modules
                 $"Twitch user {user} with the reason: {response.Content}.");
         }
 
+        [Command("reason")]
+        public async Task EditReason(int id, [Remainder]string reason)
+        {
+            if (await _svc.UpdateReasonAsync(id, reason))
+                await ReplyAsync("Reason updated successfully.");
+            else
+                await ReplyAsync("That action doesn't exist.");
+        }
+
         //[Command("addaction")]
         //public async Task AddActionByDiscordUser(IUser discordUser, string type, string durationStr, [Remainder]string reason = null)
         //{

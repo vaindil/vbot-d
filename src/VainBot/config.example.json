@@ -11,6 +11,7 @@
   },
   "Fitzy": {
     "ApiBaseUrl": "without trailing slash",
-    "ApiSecret": ""
+    "ApiSecret": "",
+    "TwitchActionSocketUrl": "without trailing slash"
   }
 }

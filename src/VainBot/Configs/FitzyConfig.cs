@@ -5,5 +5,7 @@
         public string ApiBaseUrl { get; set; }
 
         public string ApiSecret { get; set; }
+
+        public string TwitchActionSocketUrl { get; set; }
     }
 }

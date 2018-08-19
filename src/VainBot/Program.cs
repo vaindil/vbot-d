@@ -47,6 +47,7 @@ namespace VainBot
             _client.Ready += async () =>
             {
                 await services.GetRequiredService<UserService>().InitializeAsync();
+                await services.GetRequiredService<TwitchActionsService>().InitializeAsync();
 
                 if (!_isDev)
                 {
@@ -82,6 +83,7 @@ namespace VainBot
                 .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton<UserService>()
+                .AddSingleton<TwitchActionsService>()
                 .AddSingleton(httpClient)
                 .AddLogging(o => o.AddConsole())
                 .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))
