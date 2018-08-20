@@ -283,17 +283,18 @@ namespace VainBot.Services
             IUser discordUser, IUser moderator, ActionTakenType type, int duration, string reason = null)
         {
             var user = await GetOrCreateUserByDiscordAsync(discordUser);
-            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
+            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, "Discord", reason);
         }
 
         public async Task<ActionTaken> AddActionTakenByTwitchUsernameAsync(
             string twitchUsername, IUser moderator, ActionTakenType type, int duration, string reason = null)
         {
             var user = await GetOrCreateUserByTwitchUsernameAsync(twitchUsername);
-            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, reason);
+            return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, "Twitch", reason);
         }
 
-        async Task<ActionTaken> AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type, int duration, string reason = null)
+        async Task<ActionTaken> AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type,
+            int duration, string source, string reason = null)
         {
             using (var db = Db())
             {
@@ -304,7 +305,8 @@ namespace VainBot.Services
                     LoggedAt = DateTimeOffset.UtcNow,
                     ActionTakenType = type,
                     DurationSeconds = duration,
-                    Reason = reason
+                    Reason = reason,
+                    Source = source
                 };
 
                 db.ActionsTaken.Add(actionTaken);
@@ -314,11 +316,13 @@ namespace VainBot.Services
             }
         }
 
-        public async Task<bool> UpdateReasonAsync(int actionId, string newReason)
+        public async Task<bool> UpdateReasonAsync(IUser mod, int actionId, string newReason)
         {
+            ActionTaken action;
+
             using (var db = Db())
             {
-                var action = await db.ActionsTaken.FindAsync(actionId);
+                action = await db.ActionsTaken.FindAsync(actionId);
                 if (action == null)
                     return false;
 
@@ -326,9 +330,11 @@ namespace VainBot.Services
 
                 db.ActionsTaken.Update(action);
                 await db.SaveChangesAsync();
-
-                return true;
             }
+
+            await SendActionMessageAsync(action, mod);
+
+            return true;
         }
 
         public async Task ToggleModAsync(IUser discordUser)
@@ -379,13 +385,99 @@ namespace VainBot.Services
                     return null;
 
                 var user = await db.Users.FirstOrDefaultAsync(x => x.Id == twitch.UserId);
-                if (user == null || !user.DiscordId.HasValue)
+                if (user?.DiscordId.HasValue != true)
                     return null;
 
                 userId = user.DiscordId.Value;
             }
 
             return _discord.GetUser((ulong)userId);
+        }
+
+        public async Task SendActionMessageAsync(ActionTaken action, IUser discordMod, string username = null)
+        {
+            if (username == null)
+            {
+                using (var db = Db())
+                {
+                    var user = await db.Users
+                        .Include(x => x.TwitchUsernames)
+                        .FirstOrDefaultAsync(x => x.Id == action.UserId);
+                    if (user == null)
+                        return;
+
+                    if (action.Source == "Twitch")
+                        username = user.TwitchUsernames.OrderByDescending(x => x.LoggedAt).First().Username;
+                    else
+                        username = _discord.GetUser((ulong)user.DiscordId).Mention;
+                }
+            }
+
+            var durationString = "";
+            if (action.DurationSeconds == -1)
+                durationString = "Permanent";
+            else if (action.DurationSeconds > 0)
+                durationString = $"{action.DurationSeconds}-second";
+
+            Color color;
+            switch (action.ActionTakenType)
+            {
+                case ActionTakenType.Warning:
+                    color = new Color(255, 242, 179);
+                    break;
+
+                case ActionTakenType.Timeout:
+                    color = new Color(255, 128, 0);
+                    break;
+
+                case ActionTakenType.TemporaryBan:
+                case ActionTakenType.Ban:
+                    color = new Color(255, 0, 0);
+                    break;
+
+                case ActionTakenType.Untimeout:
+                case ActionTakenType.Unban:
+                    color = new Color(38, 230, 0);
+                    break;
+
+                default:
+                    color = new Color(255, 255, 255);
+                    break;
+            }
+
+            var embed = new EmbedBuilder()
+                .WithColor(color)
+                .WithTitle($"{action.Source} Action")
+                .AddField("User", username, true)
+                .AddField("Action", $"{durationString} {action}", true)
+                .AddField("Reason", action.Reason, true)
+                .AddField("Responsible Mod", discordMod.Mention, true)
+                .AddField("Edit reason with", $"!reason {action.Id}", true)
+                .Build();
+
+            var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
+
+            if (action.DiscordMessageId.HasValue)
+            {
+                var message = await actionChannel.GetMessageAsync((ulong)action.DiscordMessageId.Value) as SocketUserMessage;
+                await message.ModifyAsync(x =>
+                {
+                    x.Content = discordMod.Mention;
+                    x.Embed = embed;
+                });
+            }
+            else
+            {
+                var message = await actionChannel.SendMessageAsync(discordMod.Mention, embed: embed);
+
+                using (var db = Db())
+                {
+                    action.DiscordMessageId = (long)message.Id;
+
+                    db.ActionsTaken.Update(action);
+                    await db.SaveChangesAsync();
+                }
+            }
         }
 
         public bool CheckIfUserIsMod(ulong discordId)

@@ -18,6 +18,10 @@ namespace VainBot.Classes.Users
 
         public string Reason { get; set; }
 
+        public long? DiscordMessageId { get; set; }
+
+        public string Source { get; set; }
+
         public User User { get; set; }
 
         public User Moderator { get; set; }

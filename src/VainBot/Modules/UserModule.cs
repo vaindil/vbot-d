@@ -137,13 +137,13 @@ namespace VainBot.Modules
             combined.AddRange(user.ActionsAgainst.Select(x => new DetailsWrapper
             {
                 LoggedAt = x.LoggedAt,
-                Type = x.DurationSeconds > 0 ? $"{x.DurationSeconds}-{x.ActionTakenType}".ToLower() : x.ActionTakenType.ToString(),
+                Type = x.DurationSeconds > 0 ? $"{x.DurationSeconds}-second {x.ActionTakenType}".ToLower() : x.ActionTakenType.ToString(),
                 ModeratorId = x.ModeratorId,
                 Content = x.Reason
             }));
 
             var embed = new EmbedBuilder()
-                .WithColor(new Color(108, 54, 135));
+                .WithColor(new Color(0, 0, 255));
 
             if (user.TwitchUsernames.Count > 0)
             {
@@ -333,13 +333,11 @@ namespace VainBot.Modules
 
             response = await NextMessageAsync();
 
-            await _svc.AddActionTakenByDiscordIdAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
+            var action = await _svc.AddActionTakenByDiscordIdAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(480178651837628436);
-            await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
-                $"{user.Mention} with the reason: {response.Content}.");
+            await _svc.SendActionMessageAsync(action, Context.Message.Author, false);
         }
 
         [Command("addaction twitch", RunMode = RunMode.Async)]
@@ -389,19 +387,17 @@ namespace VainBot.Modules
 
             response = await NextMessageAsync();
 
-            await _svc.AddActionTakenByTwitchUsernameAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
+            var action = await _svc.AddActionTakenByTwitchUsernameAsync(user, Context.Message.Author, actionTakenType, duration, response.Content);
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            var modChannel = (SocketTextChannel)Context.Guild.GetChannel(480178651837628436);
-            await modChannel.SendMessageAsync($"{Context.Message.Author.Mention} just added a {actionTakenType.ToString().ToLower()} against " +
-                $"Twitch user {user} with the reason: {response.Content}.");
+            await _svc.SendActionMessageAsync(action, Context.Message.Author, true, user);
         }
 
         [Command("reason")]
         public async Task EditReason(int id, [Remainder]string reason)
         {
-            if (await _svc.UpdateReasonAsync(id, reason))
+            if (await _svc.UpdateReasonAsync(Context.Message.Author, id, reason))
                 await ReplyAsync("Reason updated successfully.");
             else
                 await ReplyAsync("That action doesn't exist.");

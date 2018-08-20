@@ -73,13 +73,25 @@ namespace VainBot.Services
 
             if (message == "LIVE")
             {
-                await actionChannel.SendMessageAsync("Fitzy just went live.");
+                var twitchEmbed = new EmbedBuilder()
+                    .WithColor(100, 65, 164)
+                    .WithTitle("Twitch")
+                    .WithDescription("Fitzy just went live.")
+                    .Build();
+
+                await actionChannel.SendMessageAsync(embed: twitchEmbed);
                 return;
             }
 
             if (message == "OFFLINE")
             {
-                await actionChannel.SendMessageAsync("Fitzy is now offline.");
+                var twitchEmbed = new EmbedBuilder()
+                    .WithColor(100, 65, 164)
+                    .WithTitle("Twitch")
+                    .WithDescription("Fitzy just went offline.")
+                    .Build();
+
+                await actionChannel.SendMessageAsync(embed: twitchEmbed);
                 return;
             }
 
@@ -116,23 +128,7 @@ namespace VainBot.Services
             var actionTaken = await _userSvc.AddActionTakenByTwitchUsernameAsync(userUsername, discordMod,
                 (ActionTakenType)actionTakenType, duration, reason);
 
-            var durationString = "";
-            if (duration == -1)
-                durationString = "Permanent";
-            else if (duration > 0)
-                durationString = $"{duration}-second";
-
-            var embed = new EmbedBuilder()
-                .WithColor(new Color(108, 54, 135))
-                .WithTitle("Twitch Action")
-                .AddField("User", userUsername, true)
-                .AddField("Action", $"{durationString} {action}", true)
-                .AddField("Reason", reason, true)
-                .AddField("Responsible Mod", discordMod.Mention, true)
-                .AddField("Edit reason with", $"!reason {actionTaken.Id}", true)
-                .Build();
-
-            await actionChannel.SendMessageAsync(discordMod.Mention, embed: embed);
+            await _userSvc.SendActionMessageAsync(actionTaken, discordMod);
         }
     }
 }

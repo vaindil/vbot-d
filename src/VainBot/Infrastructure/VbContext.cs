@@ -197,6 +197,8 @@ namespace VainBot.Infrastructure
                 e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
                 e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
                 e.Property(a => a.Reason).HasColumnName("reason");
+                e.Property(a => a.DiscordMessageId).HasColumnName("discord_message_id");
+                e.Property(a => a.Source).HasColumnName("source").IsRequired();
                 e.Property(a => a.ActionTakenType).HasColumnName("action_type").IsRequired()
                     .HasConversion((x) => x.ToString(), (x) => (ActionTakenType)Enum.Parse(typeof(ActionTakenType), x));
 
