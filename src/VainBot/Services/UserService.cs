@@ -445,11 +445,13 @@ namespace VainBot.Services
                     break;
             }
 
+            var actionString = action.ActionTakenType.ToString().ToLower();
+
             var embed = new EmbedBuilder()
                 .WithColor(color)
                 .WithTitle($"{action.Source} Action")
                 .AddField("User", username, true)
-                .AddField("Action", $"{durationString} {action}", true)
+                .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
                 .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {action.Id}", true)
