@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -461,7 +462,7 @@ namespace VainBot.Services
 
             if (action.DiscordMessageId.HasValue)
             {
-                var message = await actionChannel.GetMessageAsync((ulong)action.DiscordMessageId.Value) as SocketUserMessage;
+                var message = await actionChannel.GetMessageAsync((ulong)action.DiscordMessageId.Value) as RestUserMessage;
                 await message.ModifyAsync(x =>
                 {
                     x.Content = discordMod.Mention;
