@@ -337,7 +337,7 @@ namespace VainBot.Modules
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            await _svc.SendActionMessageAsync(action, Context.Message.Author, false);
+            await _svc.SendActionMessageAsync(action, Context.Message.Author);
         }
 
         [Command("addaction twitch", RunMode = RunMode.Async)]
@@ -391,7 +391,7 @@ namespace VainBot.Modules
 
             await ReplyAsync("Action added successfully. Thanks for playing!");
 
-            await _svc.SendActionMessageAsync(action, Context.Message.Author, true, user);
+            await _svc.SendActionMessageAsync(action, Context.Message.Author, user);
         }
 
         [Command("reason")]
