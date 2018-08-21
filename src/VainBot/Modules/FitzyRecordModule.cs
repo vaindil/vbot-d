@@ -38,7 +38,7 @@ namespace VainBot.Modules
         }
 
         [Command("l")]
-        [Alias("loss", "losses", "k", "kill", "kills")]
+        [Alias("loss", "losses")]
         public async Task Losses(int num = -1)
         {
             num = NormalizeNum(num);
@@ -50,7 +50,7 @@ namespace VainBot.Modules
         }
 
         [Command("d")]
-        [Alias("draw", "draws", "death", "deaths")]
+        [Alias("draw", "draws")]
         public async Task Draws(int num = -1)
         {
             num = NormalizeNum(num);
