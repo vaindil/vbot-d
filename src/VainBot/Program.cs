@@ -41,6 +41,8 @@ namespace VainBot
 
             var services = ConfigureServices();
 
+            services.GetRequiredService<ActionChannelGuard>();
+
             await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
@@ -84,6 +86,7 @@ namespace VainBot
                 .AddSingleton<ReminderService>()
                 .AddSingleton<UserService>()
                 .AddSingleton<TwitchActionsService>()
+                .AddSingleton<ActionChannelGuard>()
                 .AddSingleton(httpClient)
                 .AddLogging(o => o.AddConsole())
                 .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))

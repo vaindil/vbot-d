@@ -394,13 +394,16 @@ namespace VainBot.Modules
             await _svc.SendActionMessageAsync(action, Context.Message.Author, user);
         }
 
-        [Command("reason")]
+        [Command("reason", RunMode = RunMode.Async)]
         public async Task EditReason(int id, [Remainder]string reason)
         {
             if (await _svc.UpdateReasonAsync(Context.Message.Author, id, reason))
-                await ReplyAsync("Reason updated successfully.");
+                await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
             else
-                await ReplyAsync("That action doesn't exist.");
+                await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
+
+            await Task.Delay(5000);
+            await Context.Message.DeleteAsync();
         }
 
         //[Command("addaction")]

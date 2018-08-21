@@ -12,7 +12,7 @@ namespace VainBot.Preconditions
             CommandInfo command,
             IServiceProvider services)
         {
-            return context.Channel.Id == 313643739719532544 || context.Channel.Id == 432328775598866434
+            return context.Channel.Id == 313643739719532544 || context.Channel.Id == 432328775598866434 || context.Channel.Id == 480178651837628436
                 ? Task.FromResult(PreconditionResult.FromSuccess())
                 : Task.FromResult(PreconditionResult.FromError("That command cannot be used in this channel."));
         }
