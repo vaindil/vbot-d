@@ -333,7 +333,7 @@ namespace VainBot.Services
                 await db.SaveChangesAsync();
             }
 
-            await SendActionMessageAsync(action, mod);
+            await SendActionMessageAsync(action);
 
             return true;
         }
@@ -395,12 +395,16 @@ namespace VainBot.Services
             return _discord.GetUser((ulong)userId);
         }
 
-        public async Task SendActionMessageAsync(ActionTaken action, IUser discordMod, string username = null)
+        public async Task SendActionMessageAsync(ActionTaken action, string username = null)
         {
+            ulong modId = 0;
+
             if (username == null)
             {
                 using (var db = Db())
                 {
+                    modId = (ulong)(await db.Users.FindAsync(action.ModeratorId)).DiscordId.Value;
+
                     var user = await db.Users
                         .Include(x => x.TwitchUsernames)
                         .FirstOrDefaultAsync(x => x.Id == action.UserId);
@@ -413,6 +417,8 @@ namespace VainBot.Services
                         username = _discord.GetUser((ulong)user.DiscordId).Mention;
                 }
             }
+
+            var discordMod = _discord.GetUser(modId);
 
             var durationString = "";
             if (action.DurationSeconds == -1)

@@ -128,7 +128,7 @@ namespace VainBot.Services
             var actionTaken = await _userSvc.AddActionTakenByTwitchUsernameAsync(userUsername, discordMod,
                 (ActionTakenType)actionTakenType, duration, reason);
 
-            await _userSvc.SendActionMessageAsync(actionTaken, discordMod);
+            await _userSvc.SendActionMessageAsync(actionTaken);
         }
     }
 }
