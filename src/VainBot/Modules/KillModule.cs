@@ -23,7 +23,7 @@ namespace VainBot.Modules
         {
             _logger.LogCritical($"Bot restart initiated by {Context.User.Username}");
 
-            await ReplyAsync("Bot is now restarting. No message will be sent when it comes back online.");
+            await ReplyAsync($"Bot is now restarting. No message will be sent when it comes back online. <@!132714099241910273>");
             Environment.Exit(1);
         }
     }

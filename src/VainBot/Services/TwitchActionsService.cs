@@ -69,6 +69,8 @@ namespace VainBot.Services
 
         private async void HandleMessageAsync(string message)
         {
+            _logger.LogInformation("New websocket message received: " + message);
+
             var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
 
             if (message == "LIVE")
