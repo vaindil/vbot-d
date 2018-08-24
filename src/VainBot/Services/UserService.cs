@@ -457,6 +457,7 @@ namespace VainBot.Services
             var embed = new EmbedBuilder()
                 .WithColor(color)
                 .WithTitle($"{action.Source} Action")
+                .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
                 .AddField("User", username, true)
                 .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
