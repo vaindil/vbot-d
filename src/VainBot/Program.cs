@@ -88,7 +88,11 @@ namespace VainBot
                 .AddSingleton<TwitchActionsService>()
                 .AddSingleton<ActionChannelGuard>()
                 .AddSingleton(httpClient)
-                .AddLogging(o => o.AddConsole())
+                .AddLogging(o =>
+                {
+                    o.AddConsole();
+                    o.AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Warning);
+                })
                 .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))
                 .AddSingleton(_config)
                 .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
