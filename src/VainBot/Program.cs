@@ -92,6 +92,7 @@ namespace VainBot
                 {
                     o.AddConsole();
                     o.AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Warning);
+                    o.AddFilter(DbLoggerCategory.Infrastructure.Name, LogLevel.Warning);
                 })
                 .Replace(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TimedLogger<>)))
                 .AddSingleton(_config)
