@@ -79,7 +79,7 @@ namespace VainBot.Services
                 var response = await _httpClient.GetAsync(
                     "https://www.googleapis.com/youtube/v3/playlistItems" +
                     $"?playlistId={channel.YouTubePlaylistId}" +
-                    "&maxResults=5" +
+                    "&maxResults=10" +
                     "&part=snippet" +
                     $"&key={_config["youtube_api_key"]}");
 
