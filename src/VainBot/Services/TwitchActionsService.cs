@@ -34,17 +34,10 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
-            var wsOptions = new PureWebSocketOptions
+            while (_ws?.State != WebSocketState.Open)
             {
-                MyReconnectStrategy = new ReconnectStrategy(1000, 2500)
-            };
+                InitializeWebSocket();
 
-            _ws = new PureWebSocket($"{_config.TwitchActionSocketUrl}?key={_config.ApiSecret}", wsOptions);
-            _ws.OnStateChanged += StateChanged;
-            _ws.OnMessage += HandleMessageAsync;
-
-            while (_ws.State != WebSocketState.Open)
-            {
                 var success = false;
                 try
                 {
@@ -52,7 +45,8 @@ namespace VainBot.Services
                 }
                 catch
                 {
-                    _ws = new PureWebSocket($"{_config.TwitchActionSocketUrl}?key={_config.ApiSecret}", wsOptions);
+                    _ws.Dispose(false);
+                    _ws = null;
                 }
 
                 if (success)
@@ -60,6 +54,18 @@ namespace VainBot.Services
 
                 await Task.Delay(1500);
             }
+        }
+
+        private void InitializeWebSocket()
+        {
+            var wsOptions = new PureWebSocketOptions
+            {
+                MyReconnectStrategy = new ReconnectStrategy(1000, 2500),
+            };
+
+            _ws = new PureWebSocket($"{_config.TwitchActionSocketUrl}?key={_config.ApiSecret}", wsOptions);
+            _ws.OnStateChanged += StateChanged;
+            _ws.OnMessage += HandleMessageAsync;
         }
 
         private void StateChanged(WebSocketState newState, WebSocketState oldState)
