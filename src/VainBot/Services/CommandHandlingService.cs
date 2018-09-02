@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,14 +13,17 @@ namespace VainBot.Services
         readonly DiscordSocketClient _discord;
         readonly CommandService _commands;
         readonly IServiceProvider _provider;
+        readonly ILogger<CommandHandlingService> _logger;
 
         readonly char _prefix;
 
-        public CommandHandlingService(DiscordSocketClient discord, CommandService commands, IServiceProvider provider)
+        public CommandHandlingService(DiscordSocketClient discord, CommandService commands,
+            IServiceProvider provider, ILogger<CommandHandlingService> logger)
         {
             _discord = discord;
             _commands = commands;
             _provider = provider;
+            _logger = logger;
 
             _discord.MessageReceived += MessageReceived;
 
@@ -66,6 +70,11 @@ namespace VainBot.Services
 
                     case CommandError.UnmetPrecondition:
                         msg = "You can't use that command.";
+                        break;
+
+                    default:
+                        _logger.LogError($"[{context.Guild.Name}][{context.Channel.Name}][{context.User.Username}] " +
+                            $"Command error: {result.ErrorReason}");
                         break;
                 }
 
