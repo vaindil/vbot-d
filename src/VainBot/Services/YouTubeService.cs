@@ -28,6 +28,8 @@ namespace VainBot.Services
 
         Timer _pollTimer;
 
+        const ulong ROLEID = 458302101232156682;
+
         public YouTubeService(
             DiscordSocketClient discord,
             HttpClient httpClient,
@@ -134,8 +136,13 @@ namespace VainBot.Services
                 return;
             }
 
+            var role = discordChannel.Guild.GetRole(ROLEID);
+            await role.ModifyAsync(x => x.Mentionable = true);
+
             var newMsg = await discordChannel.SendMessageAsync(
                 $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
+
+            await role.ModifyAsync(x => x.Mentionable = false);
 
             if (channel.IsDeleted)
             {

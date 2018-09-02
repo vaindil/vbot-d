@@ -32,6 +32,7 @@ namespace VainBot.Services
         Timer _pollTimer;
 
         const string NOGAMESETURL = "https://vaindil.xyz/misc/nogame.png";
+        const ulong ROLEID = 458302101232156682;
 
         public TwitchService(
             DiscordSocketClient discord,
@@ -285,10 +286,15 @@ namespace VainBot.Services
                     return;
                 }
 
-                var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
-                toCheck.CurrentMessageId = (long)message.Id;
+                var role = channel.Guild.GetRole(ROLEID);
+                await role.ModifyAsync(x => x.Mentionable = true);
 
+                var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
+
+                toCheck.CurrentMessageId = (long)message.Id;
                 toCheckUpdated.Add(toCheck);
+
+                await role.ModifyAsync(x => x.Mentionable = false);
             }
 
             try
