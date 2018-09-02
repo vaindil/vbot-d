@@ -85,6 +85,7 @@ namespace VainBot.Services
                     .WithColor(100, 65, 164)
                     .WithTitle("Twitch")
                     .WithDescription("Fitzy just went live.")
+                    .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
                     .Build();
 
                 await actionChannel.SendMessageAsync(embed: twitchEmbed);
@@ -97,6 +98,7 @@ namespace VainBot.Services
                     .WithColor(100, 65, 164)
                     .WithTitle("Twitch")
                     .WithDescription("Fitzy just went offline.")
+                    .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
                     .Build();
 
                 await actionChannel.SendMessageAsync(embed: twitchEmbed);
