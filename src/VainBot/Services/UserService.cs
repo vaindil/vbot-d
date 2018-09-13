@@ -397,6 +397,7 @@ namespace VainBot.Services
         public async Task SendActionMessageAsync(ActionTaken action, string username = null)
         {
             ulong modId = 0;
+            var actionCount = 0;
 
             if (username == null)
             {
@@ -409,6 +410,9 @@ namespace VainBot.Services
                         .FirstOrDefaultAsync(x => x.Id == action.UserId);
                     if (user == null)
                         return;
+
+                    actionCount = await db.ActionsTaken
+                        .CountAsync(x => x.UserId == user.Id && x.ActionTakenType != ActionTakenType.Unban && x.ActionTakenType != ActionTakenType.Untimeout);
 
                     if (action.Source == "Twitch")
                         username = user.TwitchUsernames.OrderByDescending(x => x.LoggedAt).First().Username;
@@ -460,6 +464,7 @@ namespace VainBot.Services
                 .AddField("User", username, true)
                 .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
+                .AddField("This is the user's", $"{actionCount.ToOrdinal()} action", true)
                 .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {action.Id}", true)
                 .Build();
