@@ -464,7 +464,7 @@ namespace VainBot.Services
                 .AddField("User", username, true)
                 .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
-                .AddField("This is the user's", $"{actionCount.ToOrdinal()} action", true)
+                .AddField("Total Violations", actionCount, true)
                 .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {action.Id}", true)
                 .Build();
