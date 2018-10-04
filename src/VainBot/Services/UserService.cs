@@ -461,11 +461,12 @@ namespace VainBot.Services
                 .WithColor(color)
                 .WithTitle($"{action.Source} Action")
                 .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
+                .WithUrl($"https://ttv.overrustlelogs.net/Fitzyhere/{username}")
                 .AddField("User", username, true)
                 .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
                 .AddField("Total Violations", actionCount, true)
-                .AddField("Responsible Mod", discordMod.Mention, true)
+                .AddField("\"Responsible\" Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {action.Id}", true)
                 .Build();
 
