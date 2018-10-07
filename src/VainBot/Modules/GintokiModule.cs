@@ -16,8 +16,7 @@ namespace VainBot.Modules
             _random = random;
         }
 
-        [Command("gintoki")]
-        [Alias("gin")]
+        [Command("gin")]
         public async Task Gintoki([Remainder]string message)
         {
             var outMsg = new StringBuilder();
