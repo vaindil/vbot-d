@@ -88,6 +88,7 @@ namespace VainBot
                 .AddSingleton<TwitchActionsService>()
                 .AddSingleton<ActionChannelGuard>()
                 .AddSingleton(httpClient)
+                .AddSingleton(new Random())
                 .AddLogging(o =>
                 {
                     o.AddConsole();
