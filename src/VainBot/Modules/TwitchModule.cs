@@ -58,6 +58,14 @@ namespace VainBot.Modules
             {
                 var channel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)s.ChannelId);
                 reply += $"{s.Id}: {s.Username} {channel?.Mention} `{s.MessageToPost}`\n";
+
+                if (reply.Length >= 1700)
+                {
+                    reply.TrimEnd('\\', 'n');
+
+                    await ReplyAsync(reply);
+                    reply = "";
+                }
             }
 
             reply.TrimEnd('\\', 'n');
