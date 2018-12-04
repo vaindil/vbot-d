@@ -51,7 +51,9 @@ namespace VainBot.Services
 
             var guilds = reminders
                 .Where(r => r.GuildId.HasValue)
-                .Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
+                .Select(r => _discord.GetGuild((ulong)r.GuildId))
+                .Where(r => r != null)
+                .Distinct();
             await _discord.DownloadUsersAsync(guilds);
 
             var now = DateTimeOffset.UtcNow;
