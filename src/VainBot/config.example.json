@@ -8,9 +8,5 @@
     "ConsumerSecret": "",
     "AccessToken": "",
     "AccessTokenSecret": ""
-  },
-  "Fitzy": {
-    "ApiBaseUrl": "without trailing slash",
-    "ApiSecret": ""
   }
 }

@@ -1,7 +1,6 @@
 ﻿using Discord.Commands;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VainBot.Preconditions;
 
 namespace VainBot.Modules
 {
@@ -35,19 +34,6 @@ namespace VainBot.Modules
             }
 
             await ReplyAsync(GenerateReply(username, channel));
-        }
-
-        [Command]
-        [FitzyGuild]
-        public async Task StalkFitzy(string username)
-        {
-            if (!_validUsername.IsMatch(username))
-            {
-                await ReplyAsync("Provided username is not a valid Twitch username.");
-                return;
-            }
-
-            await ReplyAsync(GenerateReply(username, "fitzyhere"));
         }
 
         private static string GenerateReply(string username, string channel)
