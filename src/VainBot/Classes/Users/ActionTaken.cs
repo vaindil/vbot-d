@@ -34,6 +34,7 @@ namespace VainBot.Classes.Users
         Ban,
         TemporaryBan,
         Unban,
-        Untimeout
+        Untimeout,
+        MessageDeleted
     }
 }
