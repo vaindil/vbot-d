@@ -127,7 +127,15 @@ namespace VainBot.Services
                 if (!(_discord.GetChannel((ulong)reminder.ChannelId) is SocketTextChannel channel))
                     return;
 
-                await channel.SendMessageAsync(message);
+                try
+                {
+                    await channel.SendMessageAsync(message);
+                }
+                catch
+                {
+                    _logger.LogWarning($"No permission to send reminder message to channel {channel.Name}. " +
+                        $"Guild: {channel.Guild.Name}");
+                }
             }
 
             try
