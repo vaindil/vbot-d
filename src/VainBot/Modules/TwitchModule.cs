@@ -113,7 +113,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            await _twitchSvc.AddStreamAsync(new TwitchStreamToCheck
+            var success = await _twitchSvc.AddStreamAsync(new TwitchStreamToCheck
             {
                 TwitchId = id,
                 Username = displayName,
@@ -124,7 +124,10 @@ namespace VainBot.Modules
                 IsDeleted = true
             });
 
-            await ReplyAsync($"Added {displayName} in {channel.Mention} with message `{message}`.");
+            if (success)
+                await ReplyAsync($"Added {displayName} in {channel.Mention} with message `{message}`.");
+            else
+                await ReplyAsync("An error occurred while trying to add that Twitch stream.");
         }
 
         [Command("remove")]

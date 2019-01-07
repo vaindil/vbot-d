@@ -79,7 +79,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            await _twitterSvc.AddTwitterToCheckAsync(new TwitterToCheck
+            var success = await _twitterSvc.AddTwitterToCheckAsync(new TwitterToCheck
             {
                 TwitterUsername = username,
                 TwitterId = twitterId.Value,
@@ -88,7 +88,10 @@ namespace VainBot.Modules
                 IncludeRetweets = includeRTs == 1
             });
 
-            await ReplyAsync($"Added {username} in {channel.Mention}.");
+            if (success)
+                await ReplyAsync($"Added {username} in {channel.Mention}.");
+            else
+                await ReplyAsync("An error occurred while trying to add that timeline.");
         }
 
         [Command("remove")]
