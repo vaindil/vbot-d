@@ -424,12 +424,10 @@ namespace VainBot.Services
         /// Adds a stream to be checked
         /// </summary>
         /// <param name="stream">Stream to add</param>
-        public async Task AddStreamAsync(TwitchStreamToCheck stream)
+        public async Task<bool> AddStreamAsync(TwitchStreamToCheck stream)
         {
             if (_streamsToCheck.Any(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId))
-                return;
-
-            _streamsToCheck.Add(stream);
+                return true;
 
             try
             {
@@ -438,10 +436,15 @@ namespace VainBot.Services
                     db.StreamsToCheck.Add(stream);
                     await db.SaveChangesAsync();
                 }
+
+                _streamsToCheck.Add(stream);
+
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Error updating database in Twitch service: adding new stream");
+                return false;
             }
         }
 

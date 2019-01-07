@@ -121,10 +121,10 @@ namespace VainBot.Services
             }
         }
 
-        public async Task AddTwitterToCheckAsync(TwitterToCheck toCheck)
+        public async Task<bool> AddTwitterToCheckAsync(TwitterToCheck toCheck)
         {
             if (_twittersToCheck.Any(x => x.TwitterId == toCheck.TwitterId && x.DiscordChannelId == toCheck.DiscordChannelId))
-                return;
+                return true;
 
             var latestTweets = await TimelineAsync.GetUserTimeline(new UserIdentifier(toCheck.TwitterId), new UserTimelineParameters
             {
@@ -137,8 +137,6 @@ namespace VainBot.Services
             if (latestTweet != null)
                 toCheck.LatestTweetId = latestTweet.Id;
 
-            _twittersToCheck.Add(toCheck);
-
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
@@ -146,10 +144,15 @@ namespace VainBot.Services
                     db.TwittersToCheck.Add(toCheck);
                     await db.SaveChangesAsync();
                 }
+
+                _twittersToCheck.Add(toCheck);
+
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Error updating database in Twitter service: adding new to check");
+                return false;
             }
         }
 
