@@ -65,13 +65,6 @@
     <Rule Id="CA2242" Action="Warning" />
   </Rules>
   <Rules AnalyzerId="Roslynator.CSharp.Analyzers" RuleNamespace="Roslynator.CSharp.Analyzers">
-    <Rule Id="RCS1001" Action="None" />
-    <Rule Id="RCS1003" Action="None" />
-    <Rule Id="RCS1018" Action="None" />
     <Rule Id="RCS1090" Action="None" />
-    <Rule Id="RCS1163" Action="None" />
-    <Rule Id="RCS1174" Action="None" />
-    <Rule Id="RCS1174FadeOut" Action="None" />
-    <Rule Id="RCS1179" Action="None" />
   </Rules>
 </RuleSet>

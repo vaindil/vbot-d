@@ -426,6 +426,9 @@ namespace VainBot.Services
         /// <param name="stream">Stream to add</param>
         public async Task AddStreamAsync(TwitchStreamToCheck stream)
         {
+            if (_streamsToCheck.Any(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId))
+                return;
+
             _streamsToCheck.Add(stream);
 
             try
