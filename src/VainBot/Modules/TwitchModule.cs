@@ -29,7 +29,7 @@ namespace VainBot.Modules
                 "\n" +
                 "`!twitch id username`: Gets the Twitch ID for the user with the provided username.\n" +
                 "`!twitch list`: Lists all streams being checked.\n" +
-                "`!twitch add twitch_username channel message`: Adds a new stream to check.\n" +
+                "`!twitch add twitch_username channel is_embedded message`: Adds a new stream to check. `is_embedded` should be 1 to add an embed, any other number will not embed.\n" +
                 "`!twitch remove id`: Removes the stream with the given ID. Use `!twitch list` to get the ID.");
         }
 
@@ -57,7 +57,8 @@ namespace VainBot.Modules
             foreach (var s in streams)
             {
                 var channel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)s.ChannelId);
-                reply += $"{s.Id}: {s.Username} {channel?.Mention} `{s.MessageToPost}`\n";
+                var isEmbedded = s.IsEmbedded ? "(embedded) " : "";
+                reply += $"{s.Id}: {s.Username} {channel?.Mention ?? "(nonexistent channel)"} {isEmbedded}`{s.MessageToPost}`\n";
 
                 if (reply.Length >= 1700)
                 {
@@ -79,7 +80,7 @@ namespace VainBot.Modules
         [Command("add")]
         [Alias("create")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task Add(string twitchUsername, ITextChannel channel, [Remainder]string message)
+        public async Task Add(string twitchUsername, ITextChannel channel, int isEmbedded, [Remainder]string message)
         {
             if (twitchUsername.Length > 40)
             {
@@ -119,7 +120,7 @@ namespace VainBot.Modules
                 MessageToPost = message.Replace("EVERYONE", "@everyone").Replace("HERE", "@here"),
                 ChannelId = (long)channel.Id,
                 GuildId = (long)Context.Guild.Id,
-                IsEmbedded = false,
+                IsEmbedded = isEmbedded == 1,
                 IsDeleted = true
             });
 
