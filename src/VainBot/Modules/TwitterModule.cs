@@ -42,7 +42,7 @@ namespace VainBot.Modules
             {
                 var channel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)t.DiscordChannelId);
                 var includeRTs = t.IncludeRetweets ? " (includes RTs)" : "";
-                reply += $"{t.Id}: {t.TwitterUsername} {channel?.Mention ?? "(nonexistent channel)"}{includeRTs}\n";
+                reply += $"{t.Id}: {t.TwitterUsername} in {channel?.Mention ?? "(nonexistent channel)"}{includeRTs}\n";
 
                 if (reply.Length >= 1700)
                 {

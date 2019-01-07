@@ -96,6 +96,8 @@ namespace VainBot.Services
 
                     foreach (var tweet in tweets)
                     {
+                        ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
+
                         var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
                         await channel.SendMessageAsync(tweet.Url);
                     }
