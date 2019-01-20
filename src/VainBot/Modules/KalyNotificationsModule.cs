@@ -31,10 +31,6 @@ namespace VainBot.Modules
             await user.AddRoleAsync(role);
 
             var msg = await ReplyAsync($"{Context.User.Mention}: You will now receive notifications for Kaly's streams.");
-            await Task.Delay(4000);
-
-            await Context.Message.DeleteAsync();
-            await msg.DeleteAsync();
         }
 
         [Command("off", RunMode = RunMode.Async)]
@@ -47,10 +43,6 @@ namespace VainBot.Modules
             await user.RemoveRoleAsync(role);
 
             var msg = await ReplyAsync($"{Context.User.Mention}: You will no longer receive notifications for Kaly's streams.");
-            await Task.Delay(4000);
-
-            await Context.Message.DeleteAsync();
-            await msg.DeleteAsync();
         }
     }
 }
