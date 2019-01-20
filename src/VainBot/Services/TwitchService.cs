@@ -324,8 +324,8 @@ namespace VainBot.Services
 
                 var embed = CreateEmbed(stream);
                 var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
-                var message = await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) as RestUserMessage;
-                await message.ModifyAsync(m => m.Embed = embed);
+                if (await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) is RestUserMessage message)
+                    await message.ModifyAsync(m => m.Embed = embed);
             }
         }
 
@@ -344,9 +344,16 @@ namespace VainBot.Services
 
                 if (toCheck.IsDeleted)
                 {
-                    var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
-                    var message = await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) as RestUserMessage;
-                    await message.DeleteAsync();
+                    try
+                    {
+                        var channel = _discord.GetChannel((ulong)toCheck.ChannelId) as SocketTextChannel;
+                        var message = await channel.GetMessageAsync((ulong)toCheck.CurrentMessageId.Value) as RestUserMessage;
+                        await message.DeleteAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Could not delete Twitch stream message.");
+                    }
                 }
 
                 toCheck.CurrentMessageId = null;
