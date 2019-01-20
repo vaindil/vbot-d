@@ -450,14 +450,24 @@ namespace VainBot.Services
         /// <param name="stream">Stream to add</param>
         public async Task<bool> AddStreamAsync(TwitchStreamToCheck stream)
         {
-            if (_streamsToCheck.Any(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId))
-                return true;
-
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    db.StreamsToCheck.Add(stream);
+                    var toCheck = await db.StreamsToCheck.FirstOrDefaultAsync(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId);
+                    if (toCheck != null)
+                    {
+                        toCheck.IsDeleted = stream.IsDeleted;
+                        toCheck.IsEmbedded = stream.IsEmbedded;
+                        toCheck.MessageToPost = stream.MessageToPost;
+
+                        db.StreamsToCheck.Update(toCheck);
+                    }
+                    else
+                    {
+                        db.StreamsToCheck.Add(stream);
+                    }
+                        
                     await db.SaveChangesAsync();
                 }
 
