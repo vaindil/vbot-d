@@ -285,10 +285,34 @@ namespace VainBot.Services
                     return;
                 }
 
+                if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
+                {
+                    try
+                    {
+                        await _discord.GetGuild(258507766669377536).GetRole(534563536148627466).ModifyAsync(x => x.Mentionable = true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Could not toggle Kaly's role to mentionable.");
+                    }
+                }
+
                 var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
                 toCheck.CurrentMessageId = (long)message.Id;
 
                 toCheckUpdated.Add(toCheck);
+
+                if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
+                {
+                    try
+                    {
+                        await _discord.GetGuild(258507766669377536).GetRole(534563536148627466).ModifyAsync(x => x.Mentionable = false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Could not toggle Kaly's role to not mentionable.");
+                    }
+                }
             }
 
             try
