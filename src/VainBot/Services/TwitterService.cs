@@ -28,7 +28,9 @@ namespace VainBot.Services
         readonly IServiceProvider _provider;
 
         List<TwitterToCheck> _twittersToCheck;
+#pragma warning disable IDE0052 // Remove unread private members
         Timer _timer;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public TwitterService(
             DiscordSocketClient discord,
@@ -94,6 +96,8 @@ namespace VainBot.Services
 
                     foreach (var tweet in tweets)
                     {
+                        ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
+
                         var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
                         await channel.SendMessageAsync(tweet.Url);
                     }
@@ -115,6 +119,92 @@ namespace VainBot.Services
                     _logger.LogCritical(ex, "Error updating database in Twitter service: check for tweets");
                 }
             }
+        }
+
+        public async Task<bool> AddTwitterToCheckAsync(TwitterToCheck toCheck)
+        {
+            if (_twittersToCheck.Any(x => x.TwitterId == toCheck.TwitterId && x.DiscordChannelId == toCheck.DiscordChannelId))
+                return true;
+
+            var latestTweets = await TimelineAsync.GetUserTimeline(new UserIdentifier(toCheck.TwitterId), new UserTimelineParameters
+            {
+                ExcludeReplies = true,
+                IncludeRTS = true,
+                MaximumNumberOfTweetsToRetrieve = 1
+            });
+
+            var latestTweet = latestTweets.FirstOrDefault();
+            if (latestTweet != null)
+                toCheck.LatestTweetId = latestTweet.Id;
+
+            try
+            {
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    db.TwittersToCheck.Add(toCheck);
+                    await db.SaveChangesAsync();
+                }
+
+                _twittersToCheck.Add(toCheck);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error updating database in Twitter service: adding new to check");
+                return false;
+            }
+        }
+
+        public async Task RemoveTwitterToCheckByIdAsync(int id)
+        {
+            var toCheck = _twittersToCheck.Find(x => x.Id == id);
+            if (toCheck == null)
+                return;
+
+            _twittersToCheck.Remove(toCheck);
+
+            try
+            {
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    var t = await db.TwittersToCheck.FindAsync(id);
+                    if (t != null)
+                    {
+                        db.TwittersToCheck.Remove(t);
+                        await db.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error updating database in Twitter service: removing to check");
+            }
+        }
+
+        /// <summary>
+        /// Gets a Twitter user's information from their username.
+        /// </summary>
+        /// <param name="username">Username of the account to get the ID of</param>
+        /// <returns>ID and username of the account if it exists, otherwise null</returns>
+        public (long? id, string username) GetUserInfo(string username)
+        {
+            try
+            {
+                var user = User.GetUserFromScreenName(username);
+                return (user.Id, user.ScreenName);
+            }
+            catch
+            {
+                return (null, null);
+            }
+        }
+
+        public List<TwitterToCheck> GetTimelinesByGuild(ulong guildId)
+        {
+            return _twittersToCheck
+                .Where(x => x.DiscordGuildId == (long)guildId)
+                .ToList();
         }
     }
 }

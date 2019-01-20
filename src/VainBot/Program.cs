@@ -29,7 +29,10 @@ namespace VainBot
 
         public async Task MainAsync()
         {
-            _config = BuildConfig();
+            _config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("config.json")
+                .Build();
 
             _isDev = Environment.GetEnvironmentVariable("VB_DEV") != null;
 
@@ -40,10 +43,8 @@ namespace VainBot
                 });
 
             var services = ConfigureServices();
-
             services.GetRequiredService<ActionChannelGuard>();
 
-            await SetUpDB(services.GetRequiredService<VbContext>());
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
             _client.Ready += async () =>
@@ -99,32 +100,6 @@ namespace VainBot
                 .AddSingleton(_config)
                 .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
-        }
-
-        IConfiguration BuildConfig()
-        {
-            return new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("config.json")
-                .Build();
-        }
-
-        // https://stackoverflow.com/a/15228558/1672458
-        async Task SetUpDB(VbContext db)
-        {
-            foreach (var key in typeof(KeyValueKeys).GetFields(BindingFlags.Public | BindingFlags.Static))
-            {
-                if (key.IsLiteral && !key.IsInitOnly)
-                {
-                    var val = (string)key.GetRawConstantValue();
-                    var kv = await db.FindAsync<KeyValue>(val);
-                    if (kv == null)
-                    {
-                        db.Add(new KeyValue(val, ""));
-                        await db.SaveChangesAsync();
-                    }
-                }
-            }
         }
     }
 }
