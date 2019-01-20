@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Linq;
 using System.Threading.Tasks;
 using VainBot.Classes.Twitch;
 using VainBot.Services;
@@ -51,7 +52,7 @@ namespace VainBot.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task List([Remainder]string unused = null)
         {
-            var streams = _twitchSvc.GetStreamsByGuild(Context.Guild.Id);
+            var streams = _twitchSvc.GetStreamsByGuild(Context.Guild.Id).OrderBy(x => x.Username);
             var reply = "";
 
             foreach (var s in streams)

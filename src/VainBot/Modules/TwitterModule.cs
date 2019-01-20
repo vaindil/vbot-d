@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VainBot.Classes.Twitter;
@@ -35,7 +36,7 @@ namespace VainBot.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task List([Remainder]string unused = null)
         {
-            var timelines = _twitterSvc.GetTimelinesByGuild(Context.Guild.Id);
+            var timelines = _twitterSvc.GetTimelinesByGuild(Context.Guild.Id).OrderBy(x => x.TwitterUsername);
             var reply = "";
 
             foreach (var t in timelines)
