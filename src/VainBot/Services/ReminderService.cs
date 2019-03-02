@@ -115,12 +115,15 @@ namespace VainBot.Services
             if (user == null)
                 return;
 
-            var message = $"{user.Mention} asked for a reminder.";
+            var avatarUrl = user.GetAvatarUrl();
 
             var embedBuilder = new EmbedBuilder()
-                .WithTitle("Reminder")
+                .WithThumbnailUrl(user.GetAvatarUrl())
+                .WithTitle(user.Username)
                 .WithFooter("Requested at " + reminder.CreatedAt.ToString("HH:mm yyyy-MM-dd") + " UTC")
-                .AddField("Message", reminder.Message);
+                .WithColor(252, 185, 3)
+                .AddField("Reminder", reminder.Message)
+                .AddField("Original Message", "[Jump to message]()");
 
             // existing reminders will have this set to -1
             if (reminder.RequestingMessageId > 0)
@@ -138,7 +141,7 @@ namespace VainBot.Services
                 if (channel == null)
                     return;
 
-                await channel.SendMessageAsync(message, embed: embed);
+                await channel.SendMessageAsync(user.Mention, embed: embed);
             }
             else
             {
@@ -147,7 +150,7 @@ namespace VainBot.Services
 
                 try
                 {
-                    await channel.SendMessageAsync(message, embed: embed);
+                    await channel.SendMessageAsync(user.Mention, embed: embed);
                 }
                 catch
                 {
