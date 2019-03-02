@@ -14,6 +14,8 @@ namespace VainBot.Classes.Reminders
 
         public long ChannelId { get; set; }
 
+        public long RequestingMessageId { get; set; }
+
         public long? GuildId { get; set; }
 
         public string Message { get; set; }
