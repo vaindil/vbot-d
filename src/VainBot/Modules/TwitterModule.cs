@@ -1,10 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using VainBot.Classes.Twitter;
 using VainBot.Services;
@@ -25,19 +22,20 @@ namespace VainBot.Modules
         [Alias("help")]
         public async Task Help()
         {
-            await ReplyAsync("Handles Twitter timeline checking. Must be a server administrator to list/add/remove.\n" +
+            await ReplyAsync("Handles Twitter timeline checking. Must have the \"Manage Server\" permission to list/add/remove.\n" +
                 "\n" +
-                "`!twitter list`: Lits all timelines being checked.\n" +
+                "`!twitter list`: Lists all timelines being checked.\n" +
                 "`!twitter add twitter_username channel include_RTs`: Adds a new timeline to check. `include_RTs` should be 1 to include RTs, any other number will ignore them.\n" +
                 "`!twitter remove id`: Removes the timeline with the given ID. Use `!twitter list` to get the ID.");
         }
 
         [Command("list")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task List([Remainder]string unused = null)
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task List()
         {
             var timelines = _twitterSvc.GetTimelinesByGuild(Context.Guild.Id).OrderBy(x => x.TwitterUsername);
             var reply = "";
+            var multiMessage = false;
 
             foreach (var t in timelines)
             {
@@ -51,12 +49,13 @@ namespace VainBot.Modules
 
                     await ReplyAsync(reply);
                     reply = "";
+                    multiMessage = true;
                 }
             }
 
             reply.TrimEnd('\\', 'n');
 
-            if (reply?.Length == 0)
+            if (reply?.Length == 0 && !multiMessage)
                 reply = "No timelines are being checked on this server.";
 
             await ReplyAsync(reply);
@@ -64,7 +63,7 @@ namespace VainBot.Modules
 
         [Command("add")]
         [Alias("create")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Add(string twitterUsername, ITextChannel channel, int includeRTs)
         {
             if (channel == null)
@@ -97,7 +96,7 @@ namespace VainBot.Modules
 
         [Command("remove")]
         [Alias("delete")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Remove(int id)
         {
             var timelines = _twitterSvc.GetTimelinesByGuild(Context.Guild.Id);
@@ -116,7 +115,7 @@ namespace VainBot.Modules
             if (channel != null)
                 mention = channel.Mention;
 
-            await ReplyAsync($"Timeline checking for {timeline.TwitterUsername} in {mention} has been removed.");
+            await ReplyAsync($"Timeline checking for {timeline.TwitterUsername} in {mention} has been disabled.");
         }
     }
 }

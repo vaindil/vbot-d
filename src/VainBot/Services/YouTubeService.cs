@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using Google.Apis.YouTube.v3.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using VainBot.Classes.YouTube;
@@ -17,27 +19,27 @@ namespace VainBot.Services
 {
     public class YouTubeService
     {
-        readonly DiscordSocketClient _discord;
-        readonly HttpClient _httpClient;
-        readonly IConfiguration _config;
-        readonly ILogger<YouTubeService> _logger;
+        private readonly DiscordSocketClient _discord;
+        private readonly Google.Apis.YouTube.v3.YouTubeService _googleYtSvc;
+        private readonly ILogger<YouTubeService> _logger;
 
-        readonly IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
-        List<YouTubeChannelToCheck> _channels;
+        private List<YouTubeChannelToCheck> _channels;
 
-        Timer _pollTimer;
+        private Timer _pollTimer;
+
+        private readonly Regex _usernameRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/channel\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
+        private readonly Regex _channelIdRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/user\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
 
         public YouTubeService(
             DiscordSocketClient discord,
-            HttpClient httpClient,
-            IConfiguration config,
+            Google.Apis.YouTube.v3.YouTubeService googleYtSvc,
             ILogger<YouTubeService> logger,
             IServiceProvider provider)
         {
             _discord = discord;
-            _httpClient = httpClient;
-            _config = config;
+            _googleYtSvc = googleYtSvc;
             _logger = logger;
 
             _provider = provider;
@@ -64,7 +66,7 @@ namespace VainBot.Services
                 _pollTimer = null;
             }
 
-            _pollTimer = new Timer(async (e) => await CheckYouTubeAsync(), null, 0, 60000);
+            _pollTimer = new Timer(async (_) => await CheckYouTubeAsync(), null, 0, 60000);
         }
 
         public async Task CheckYouTubeAsync()
@@ -76,27 +78,26 @@ namespace VainBot.Services
 
             foreach (var channel in _channels)
             {
-                var response = await _httpClient.GetAsync(
-                    "https://www.googleapis.com/youtube/v3/playlistItems" +
-                    $"?playlistId={channel.YouTubePlaylistId}" +
-                    "&maxResults=10" +
-                    "&part=snippet" +
-                    $"&key={_config["youtube_api_key"]}");
+                var request = _googleYtSvc.PlaylistItems.List("snippet");
+                request.MaxResults = 10;
+                request.PlaylistId = channel.YouTubePlaylistId;
 
-                if (!response.IsSuccessStatusCode)
+                PlaylistItemListResponse response;
+
+                try
                 {
-                    _logger.LogError($"YouTube check failed for playlist ID {channel.YouTubePlaylistId}, user {channel.Username}");
+                    response = await request.ExecuteAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"YouTube check failed for playlist ID {channel.YouTubePlaylistId}, user {channel.Username}");
                     continue;
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-
-                var result = JsonConvert.DeserializeObject<YouTubePlaylistItemsResponse>(content);
-
-                if (result.Items.Count == 0)
+                if (response.Items.Count == 0)
                     continue;
 
-                var newest = result.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
+                var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
                 if (channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
                     continue;
 
@@ -124,7 +125,7 @@ namespace VainBot.Services
             }
         }
 
-        public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, YouTubeVideoSnippet video)
+        public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, PlaylistItemSnippet video)
         {
             if (!(_discord.GetChannel((ulong)channel.DiscordChannelId) is SocketTextChannel discordChannel))
             {
@@ -160,6 +161,106 @@ namespace VainBot.Services
                 {
                     _logger.LogCritical(ex, "Error updating database in YouTube service: post new video");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets all YouTube channels being checked for the given guild.
+        /// </summary>
+        /// <param name="guildId">ID of the guild for which to get YouTube channels</param>
+        /// <returns>List of YouTube channels</returns>
+        public List<YouTubeChannelToCheck> GetChannelsByGuild(ulong guildId)
+        {
+            return _channels
+                .Where(c => c.DiscordGuildId == (long)guildId)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Fills in all relevant YouTube API information for the given channel using the provided channel URL.
+        /// Returns null if the channel URL is invalid.
+        /// </summary>
+        /// <param name="channelUrl">URL of the channel's YouTube page</param>
+        /// <param name="channel">Channel object to fill in</param>
+        /// <returns>Channel with information filled in if a success, otherwise null</returns>
+        public async Task<YouTubeChannelToCheck> FillInChannelInformationAsync(string channelUrl, YouTubeChannelToCheck channel)
+        {
+            var request = _googleYtSvc.Channels.List("snippet,contentDetails");
+
+            var matches = _usernameRegex.Match(channelUrl);
+            if (matches.Success)
+            {
+                request.ForUsername = matches.Groups[0].Value;
+            }
+            else
+            {
+                matches = _channelIdRegex.Match(channelUrl);
+                if (matches.Success)
+                {
+                    request.Id = matches.Groups[0].Value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            try
+            {
+                var response = await request.ExecuteAsync();
+
+                if (response.Items.Count == 0)
+                {
+                    return null;
+                }
+
+                var ytChannel = response.Items[0];
+
+                channel.Username = ytChannel.Snippet.Title;
+                channel.YouTubeChannelId = ytChannel.Id;
+                channel.YouTubePlaylistId = ytChannel.ContentDetails.RelatedPlaylists.Uploads;
+
+                return channel;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, $"Error filling in YouTube information for channel with URL {channelUrl}.");
+                return null;
+            }
+        }
+
+        public async Task<bool> AddChannelAsync(YouTubeChannelToCheck channel)
+        {
+            try
+            {
+                using (var db = _provider.GetRequiredService<VbContext>())
+                {
+                    var toCheck = await db.YouTubeChannelsToCheck
+                        .FirstOrDefaultAsync(x => x.YouTubePlaylistId == channel.YouTubePlaylistId
+                                               && x.DiscordChannelId == channel.DiscordChannelId);
+                    if (toCheck != null)
+                    {
+                        toCheck.DiscordMessageToPost = channel.DiscordMessageToPost;
+                        toCheck.IsDeleted = channel.IsDeleted;
+
+                        db.YouTubeChannelsToCheck.Update(toCheck);
+                    }
+                    else
+                    {
+                        db.YouTubeChannelsToCheck.Add(channel);
+                    }
+
+                    await db.SaveChangesAsync();
+                }
+
+                _channels.Add(channel);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error updating database in YouTube service: adding new channel");
+                return false;
             }
         }
 

@@ -23,14 +23,15 @@ namespace VainBot.Modules
         [Alias("help")]
         public async Task Help()
         {
-            await ReplyAsync("Handles Twitch stream checking. Must be a server administrator to list/add/remove.\n" +
+            await ReplyAsync("Handles Twitch stream checking. Must have the \"Manage Server\" permission to list/add/remove.\n" +
                 "\n" +
                 "**NOTE:** To add a mention of `@everyone` or `@here` to a message, use EVERYONE or HERE in all caps. The bot will " +
                 "internally replace those so that people are only mentioned when it matters.\n" +
                 "\n" +
                 "`!twitch id username`: Gets the Twitch ID for the user with the provided username.\n" +
                 "`!twitch list`: Lists all streams being checked.\n" +
-                "`!twitch add twitch_username channel is_embedded message`: Adds a new stream to check. `is_embedded` should be 1 to add an embed, any other number will not embed.\n" +
+                "`!twitch add twitch_username channel is_embedded message`: Adds a new stream to check. `is_embedded` should be 1 to add an " +
+                "embed, any other number will not embed.\n" +
                 "`!twitch remove id`: Removes the stream with the given ID. Use `!twitch list` to get the ID.");
         }
 
@@ -49,11 +50,12 @@ namespace VainBot.Modules
         }
 
         [Command("list")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task List([Remainder]string unused = null)
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task List()
         {
             var streams = _twitchSvc.GetStreamsByGuild(Context.Guild.Id).OrderBy(x => x.Username);
             var reply = "";
+            var multiMessage = false;
 
             foreach (var s in streams)
             {
@@ -67,12 +69,13 @@ namespace VainBot.Modules
 
                     await ReplyAsync(reply);
                     reply = "";
+                    multiMessage = true;
                 }
             }
 
             reply.TrimEnd('\\', 'n');
 
-            if (reply?.Length == 0)
+            if (reply?.Length == 0 && !multiMessage)
                 reply = "No streams are being checked on this server.";
 
             await ReplyAsync(reply);
@@ -80,7 +83,7 @@ namespace VainBot.Modules
 
         [Command("add")]
         [Alias("create")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Add(string twitchUsername, ITextChannel channel, int isEmbedded, [Remainder]string message)
         {
             if (twitchUsername.Length > 40)
@@ -133,7 +136,7 @@ namespace VainBot.Modules
 
         [Command("remove")]
         [Alias("delete")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Remove(int id)
         {
             var streams = _twitchSvc.GetStreamsByGuild(Context.Guild.Id);
@@ -152,7 +155,7 @@ namespace VainBot.Modules
             if (channel != null)
                 mention = channel.Mention;
 
-            await ReplyAsync($"Stream checking for {stream.Username} in {mention} has been removed.");
+            await ReplyAsync($"Stream checking for {stream.Username} in {mention} has been disabled.");
         }
     }
 }
