@@ -220,6 +220,18 @@ namespace VainBot.Services
                 channel.YouTubeChannelId = ytChannel.Id;
                 channel.YouTubePlaylistId = ytChannel.ContentDetails.RelatedPlaylists.Uploads;
 
+                var playlistRequest = _googleYtSvc.PlaylistItems.List("snippet");
+                playlistRequest.MaxResults = 10;
+                playlistRequest.PlaylistId = channel.YouTubePlaylistId;
+
+                var playlistResponse = await playlistRequest.ExecuteAsync();
+                if (playlistResponse.Items.Count > 0)
+                {
+                    var newest = playlistResponse.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
+                    channel.LatestVideoId = newest.ResourceId.VideoId;
+                    channel.LatestVideoUploadedAt = newest.PublishedAt;
+                }
+
                 return channel;
             }
             catch (Exception ex)
