@@ -74,7 +74,8 @@ namespace VainBot.Services
             }
         }
 
-        public async Task CreateReminderAsync(ulong userId, ulong channelId, ulong? guildId, string message, TimeSpan remindIn)
+        public async Task CreateReminderAsync(
+            ulong userId, ulong channelId, ulong messageId, ulong? guildId, string message, TimeSpan remindIn)
         {
             message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
 
@@ -84,6 +85,7 @@ namespace VainBot.Services
                 FireAt = DateTimeOffset.UtcNow.Add(remindIn),
                 UserId = (long)userId,
                 ChannelId = (long)channelId,
+                RequestingMessageId = (long)messageId,
                 GuildId = (long?)guildId,
                 Message = message
             };
@@ -113,6 +115,13 @@ namespace VainBot.Services
                 return;
 
             var message = $"{user.Mention} asked for a reminder: {reminder.Message}";
+
+            // existing reminders will have this set to -1
+            if (reminder.RequestingMessageId > 0)
+            {
+                var guildId = reminder.GuildId.HasValue ? reminder.GuildId.ToString() : "@me";
+                message += $" | https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId}";
+            }
 
             if (!reminder.GuildId.HasValue)
             {
