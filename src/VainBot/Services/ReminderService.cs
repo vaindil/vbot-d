@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -112,14 +113,22 @@ namespace VainBot.Services
             if (user == null)
                 return;
 
-            var message = $"{user.Mention} asked for a reminder: {reminder.Message}";
+            var message = $"{user.Mention} asked for a reminder.";
+
+            var embedBuilder = new EmbedBuilder()
+                .WithTitle("Reminder")
+                .WithFooter("Requested at " + reminder.CreatedAt.ToString("HH:mm yyyy-MM-dd") + " UTC")
+                .AddField("Message", reminder.Message);
 
             // existing reminders will have this set to -1
             if (reminder.RequestingMessageId > 0)
             {
                 var guildId = reminder.GuildId.HasValue ? reminder.GuildId.ToString() : "@me";
-                message += $" | https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId}";
+                embedBuilder.WithUrl(
+                    $"https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId}");
             }
+
+            var embed = embedBuilder.Build();
 
             if (!reminder.GuildId.HasValue)
             {
@@ -127,7 +136,7 @@ namespace VainBot.Services
                 if (channel == null)
                     return;
 
-                await channel.SendMessageAsync(message);
+                await channel.SendMessageAsync(message, embed: embed);
             }
             else
             {
@@ -136,7 +145,7 @@ namespace VainBot.Services
 
                 try
                 {
-                    await channel.SendMessageAsync(message);
+                    await channel.SendMessageAsync(message, embed: embed);
                 }
                 catch
                 {
