@@ -29,8 +29,8 @@ namespace VainBot.Services
 
         private Timer _pollTimer;
 
-        private readonly Regex _usernameRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/channel\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
-        private readonly Regex _channelIdRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/user\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
+        private readonly Regex _channelIdRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/channel\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
+        private readonly Regex _usernameRegex = new Regex(@"https:\/\/(?:www.)?youtube.com\/user\/([a-zA-Z0-9\-]+).*", RegexOptions.Compiled);
 
         public YouTubeService(
             DiscordSocketClient discord,
@@ -190,14 +190,14 @@ namespace VainBot.Services
             var matches = _usernameRegex.Match(channelUrl);
             if (matches.Success)
             {
-                request.ForUsername = matches.Groups[0].Value;
+                request.ForUsername = matches.Groups[1].Value;
             }
             else
             {
                 matches = _channelIdRegex.Match(channelUrl);
                 if (matches.Success)
                 {
-                    request.Id = matches.Groups[0].Value;
+                    request.Id = matches.Groups[1].Value;
                 }
                 else
                 {
