@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Google.Apis.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +12,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Threading.Tasks;
-using VainBot.Classes;
 using VainBot.Infrastructure;
 using VainBot.Services;
 
@@ -23,9 +22,9 @@ namespace VainBot
     {
         public static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
-        DiscordSocketClient _client;
-        IConfiguration _config;
-        bool _isDev;
+        private DiscordSocketClient _client;
+        private IConfiguration _config;
+        private bool _isDev;
 
         public async Task MainAsync()
         {
@@ -67,12 +66,18 @@ namespace VainBot
             await Task.Delay(-1);
         }
 
-        IServiceProvider ConfigureServices()
+        private IServiceProvider ConfigureServices()
         {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.UserAgent.Clear();
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
             httpClient.Timeout = TimeSpan.FromSeconds(5);
+
+            var googleYtSvc = new Google.Apis.YouTube.v3.YouTubeService(new BaseClientService.Initializer
+            {
+                ApplicationName = "VainBotDiscord",
+                ApiKey = _config["youtube_api_key"]
+            });
 
             return new ServiceCollection()
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
@@ -89,6 +94,7 @@ namespace VainBot
                 .AddSingleton<TwitchActionsService>()
                 .AddSingleton<ActionChannelGuard>()
                 .AddSingleton(httpClient)
+                .AddSingleton(googleYtSvc)
                 .AddSingleton(new Random())
                 .AddLogging(o =>
                 {

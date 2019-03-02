@@ -19,17 +19,17 @@ namespace VainBot.Services
 {
     public class TwitchService
     {
-        readonly DiscordSocketClient _discord;
-        readonly HttpClient _httpClient;
-        readonly IConfiguration _config;
-        readonly ILogger<TwitchService> _logger;
+        private readonly DiscordSocketClient _discord;
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _config;
+        private readonly ILogger<TwitchService> _logger;
 
-        readonly IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
-        List<TwitchStreamToCheck> _streamsToCheck;
-        List<TwitchLiveStream> _liveStreams;
+        private List<TwitchStreamToCheck> _streamsToCheck;
+        private List<TwitchLiveStream> _liveStreams;
 
-        Timer _pollTimer;
+        private Timer _pollTimer;
 
         const string NOGAMESETURL = "https://vaindil.xyz/misc/nogame.png";
         const ulong ROLEID = 458302101232156682;
@@ -71,13 +71,12 @@ namespace VainBot.Services
                 _pollTimer = null;
             }
 
-            _pollTimer = new Timer(async (e) => await CheckStreamsAsync(), null, 0, 60000);
+            _pollTimer = new Timer(async (_) => await CheckStreamsAsync(), null, 0, 60000);
         }
 
         /// <summary>
         /// Checks all streams currently in memory. The Twitch API supports up to 100 user IDs per request.
         /// </summary>
-        /// <returns></returns>
         public async Task CheckStreamsAsync()
         {
             if (_streamsToCheck == null || _streamsToCheck.Count == 0)
@@ -374,7 +373,7 @@ namespace VainBot.Services
             }
         }
 
-        Embed CreateEmbed(TwitchLiveStream stream)
+        private Embed CreateEmbed(TwitchLiveStream stream)
         {
             var now = DateTime.UtcNow;
             var cacheBuster =
@@ -456,7 +455,7 @@ namespace VainBot.Services
                     {
                         db.StreamsToCheck.Add(stream);
                     }
-                        
+
                     await db.SaveChangesAsync();
                 }
 

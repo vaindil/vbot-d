@@ -39,9 +39,9 @@ namespace VainBot.Infrastructure
                 e.HasKey(t => t.Id);
 
                 e.Property(t => t.Id).HasColumnName("id");
-                e.Property(t => t.TwitchId).HasColumnName("twitch_id").IsRequired().HasMaxLength(50);
-                e.Property(t => t.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
-                e.Property(t => t.MessageToPost).HasColumnName("message_to_post").IsRequired().HasMaxLength(1500);
+                e.Property(t => t.TwitchId).HasColumnName("twitch_id").IsRequired();
+                e.Property(t => t.Username).HasColumnName("username").IsRequired();
+                e.Property(t => t.MessageToPost).HasColumnName("message_to_post");
                 e.Property(t => t.ChannelId).HasColumnName("channel_id").IsRequired();
                 e.Property(t => t.GuildId).HasColumnName("guild_id").IsRequired();
                 e.Property(t => t.IsEmbedded).HasColumnName("is_embedded").IsRequired();
@@ -54,18 +54,18 @@ namespace VainBot.Infrastructure
                 e.ToTable("twitch_live_stream");
                 e.HasKey(t => t.TwitchUserId);
 
-                e.Property(t => t.TwitchUserId).HasColumnName("twitch_user_id").IsRequired().HasMaxLength(50);
+                e.Property(t => t.TwitchUserId).HasColumnName("twitch_user_id").IsRequired();
                 e.Property(t => t.StartedAt).HasColumnName("started_at").IsRequired();
                 e.Property(t => t.FirstOfflineAt).HasColumnName("first_offline_at");
-                e.Property(t => t.TwitchStreamId).HasColumnName("twitch_stream_id").IsRequired().HasMaxLength(50);
-                e.Property(t => t.TwitchLogin).HasColumnName("twitch_login").IsRequired().HasMaxLength(50);
-                e.Property(t => t.TwitchDisplayName).HasColumnName("twitch_display_name").IsRequired().HasMaxLength(50);
+                e.Property(t => t.TwitchStreamId).HasColumnName("twitch_stream_id").IsRequired();
+                e.Property(t => t.TwitchLogin).HasColumnName("twitch_login").IsRequired();
+                e.Property(t => t.TwitchDisplayName).HasColumnName("twitch_display_name").IsRequired();
                 e.Property(t => t.ViewerCount).HasColumnName("viewer_count").IsRequired();
-                e.Property(t => t.Title).HasColumnName("title").IsRequired().HasMaxLength(200);
-                e.Property(t => t.GameName).HasColumnName("game_name").IsRequired().HasMaxLength(300);
-                e.Property(t => t.GameId).HasColumnName("game_id").IsRequired().HasMaxLength(50);
-                e.Property(t => t.ThumbnailUrl).HasColumnName("thumbnail_url").IsRequired().HasMaxLength(350);
-                e.Property(t => t.ProfileImageUrl).HasColumnName("profile_image_url").IsRequired().HasMaxLength(350);
+                e.Property(t => t.Title).HasColumnName("title").IsRequired();
+                e.Property(t => t.GameName).HasColumnName("game_name").IsRequired();
+                e.Property(t => t.GameId).HasColumnName("game_id").IsRequired();
+                e.Property(t => t.ThumbnailUrl).HasColumnName("thumbnail_url").IsRequired();
+                e.Property(t => t.ProfileImageUrl).HasColumnName("profile_image_url").IsRequired();
             });
 
             modelBuilder.Entity<YouTubeChannelToCheck>(e =>
@@ -74,14 +74,14 @@ namespace VainBot.Infrastructure
                 e.HasKey(y => y.Id);
 
                 e.Property(y => y.Id).HasColumnName("id");
-                e.Property(y => y.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
+                e.Property(y => y.Username).HasColumnName("username").IsRequired();
                 e.Property(y => y.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
                 e.Property(y => y.DiscordChannelId).HasColumnName("discord_channel_id").IsRequired();
-                e.Property(y => y.DiscordMessageToPost).HasColumnName("discord_message_to_post").IsRequired().HasMaxLength(200);
-                e.Property(y => y.YouTubeChannelId).HasColumnName("youtube_channel_id").IsRequired().HasMaxLength(40);
-                e.Property(y => y.YouTubePlaylistId).HasColumnName("youtube_playlist_id").IsRequired().HasMaxLength(40);
+                e.Property(y => y.DiscordMessageToPost).HasColumnName("discord_message_to_post");
+                e.Property(y => y.YouTubeChannelId).HasColumnName("youtube_channel_id").IsRequired();
+                e.Property(y => y.YouTubePlaylistId).HasColumnName("youtube_playlist_id").IsRequired();
                 e.Property(y => y.IsDeleted).HasColumnName("is_deleted").IsRequired();
-                e.Property(y => y.LatestVideoId).HasColumnName("latest_video_id").HasMaxLength(40);
+                e.Property(y => y.LatestVideoId).HasColumnName("latest_video_id");
                 e.Property(y => y.LatestVideoUploadedAt).HasColumnName("latest_video_uploaded_at");
                 e.Property(y => y.DiscordMessageId).HasColumnName("discord_message_id");
             });
@@ -92,7 +92,7 @@ namespace VainBot.Infrastructure
                 e.HasKey(t => t.Id);
 
                 e.Property(t => t.Id).HasColumnName("id");
-                e.Property(t => t.TwitterUsername).HasColumnName("twitter_username").IsRequired().HasMaxLength(100);
+                e.Property(t => t.TwitterUsername).HasColumnName("twitter_username").IsRequired();
                 e.Property(t => t.TwitterId).HasColumnName("twitter_id").IsRequired();
                 e.Property(t => t.IncludeRetweets).HasColumnName("include_retweets").IsRequired();
                 e.Property(t => t.DiscordGuildId).HasColumnName("discord_guild_id").IsRequired();
@@ -111,7 +111,7 @@ namespace VainBot.Infrastructure
                 e.Property(r => r.UserId).HasColumnName("user_id").IsRequired();
                 e.Property(r => r.ChannelId).HasColumnName("channel_id").IsRequired();
                 e.Property(r => r.GuildId).HasColumnName("guild_id");
-                e.Property(r => r.Message).HasColumnName("message").IsRequired().HasMaxLength(500);
+                e.Property(r => r.Message).HasColumnName("message").IsRequired();
             });
 
             modelBuilder.Entity<User>(e =>
