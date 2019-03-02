@@ -59,7 +59,7 @@ namespace VainBot.Modules
             TimeSpan delayTs;
             try
             {
-                delayTs = await ParseDelay(delay);
+                delayTs = ParseDelay(delay);
             }
             catch (Exception ex)
             {
@@ -75,7 +75,7 @@ namespace VainBot.Modules
             await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimeString}).");
         }
 
-        private async Task<TimeSpan> ParseDelay(string delay)
+        private TimeSpan ParseDelay(string delay)
         {
             if (string.IsNullOrWhiteSpace(delay))
                 throw new Exception("Delay string cannot be empty. " + UseHelpIfNeededError);
@@ -157,11 +157,7 @@ namespace VainBot.Modules
                 throw new Exception(TooFarIntoFutureError);
 
             if (target == TimeSpan.Zero)
-            {
-                var ownerId = (await Context.Client.GetApplicationInfoAsync()).Owner.Id;
-                if (Context.User.Id != ownerId)
-                    throw new Exception("You can't set a reminder for right now, that defeats the purpose.");
-            }
+                throw new Exception("You can't set a reminder for right now, that defeats the purpose.");
 
             return target;
         }
