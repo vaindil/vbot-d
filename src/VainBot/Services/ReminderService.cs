@@ -118,19 +118,19 @@ namespace VainBot.Services
             var avatarUrl = user.GetAvatarUrl();
 
             var embedBuilder = new EmbedBuilder()
-                .WithThumbnailUrl(user.GetAvatarUrl())
+                .WithImageUrl(user.GetAvatarUrl())
                 .WithTitle(user.Username)
                 .WithFooter("Requested at " + reminder.CreatedAt.ToString("HH:mm yyyy-MM-dd") + " UTC")
                 .WithColor(252, 185, 3)
-                .AddField("Reminder", reminder.Message)
-                .AddField("Original Message", "[Jump to message]()");
+                .AddField("Reminder", reminder.Message);
 
             // existing reminders will have this set to -1
             if (reminder.RequestingMessageId > 0)
             {
                 var guildId = reminder.GuildId.HasValue ? reminder.GuildId.ToString() : "@me";
-                embedBuilder.WithUrl(
-                    $"https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId}");
+                embedBuilder.AddField(
+                    "Original Message",
+                    $"[Jump to message](https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId})");
             }
 
             var embed = embedBuilder.Build();
