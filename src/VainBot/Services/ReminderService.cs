@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,9 @@ namespace VainBot.Services
 
             var guilds = reminders
                 .Where(r => r.GuildId.HasValue)
-                .Select(r => _discord.GetGuild((ulong)r.GuildId)).Distinct();
+                .Select(r => _discord.GetGuild((ulong)r.GuildId))
+                .Where(r => r != null)
+                .Distinct();
             await _discord.DownloadUsersAsync(guilds);
 
             var now = DateTimeOffset.UtcNow;
@@ -72,7 +75,8 @@ namespace VainBot.Services
             }
         }
 
-        public async Task CreateReminderAsync(ulong userId, ulong channelId, ulong? guildId, string message, TimeSpan remindIn)
+        public async Task CreateReminderAsync(
+            ulong userId, ulong channelId, ulong messageId, ulong? guildId, string message, TimeSpan remindIn)
         {
             message = message.Replace("@everyone", "(@)everyone").Replace("@here", "(@)here");
 
@@ -82,6 +86,7 @@ namespace VainBot.Services
                 FireAt = DateTimeOffset.UtcNow.Add(remindIn),
                 UserId = (long)userId,
                 ChannelId = (long)channelId,
+                RequestingMessageId = (long)messageId,
                 GuildId = (long?)guildId,
                 Message = message
             };
@@ -110,7 +115,24 @@ namespace VainBot.Services
             if (user == null)
                 return;
 
-            var message = $"{user.Mention} asked for a reminder: {reminder.Message}";
+            var avatarUrl = user.GetAvatarUrl();
+
+            var embedBuilder = new EmbedBuilder()
+                .WithAuthor(user)
+                .WithFooter("Requested at " + reminder.CreatedAt.ToString("HH:mm yyyy-MM-dd") + " UTC")
+                .WithColor(252, 185, 3)
+                .AddField("Reminder", reminder.Message);
+
+            // existing reminders will have this set to -1
+            if (reminder.RequestingMessageId > 0)
+            {
+                var guildId = reminder.GuildId.HasValue ? reminder.GuildId.ToString() : "@me";
+                embedBuilder.AddField(
+                    "Original Message",
+                    $"[Jump to message](https://discordapp.com/channels/{guildId}/{reminder.ChannelId}/{reminder.RequestingMessageId})");
+            }
+
+            var embed = embedBuilder.Build();
 
             if (!reminder.GuildId.HasValue)
             {
@@ -118,7 +140,7 @@ namespace VainBot.Services
                 if (channel == null)
                     return;
 
-                await channel.SendMessageAsync(message);
+                await channel.SendMessageAsync(user.Mention, embed: embed);
             }
             else
             {
@@ -127,7 +149,7 @@ namespace VainBot.Services
 
                 try
                 {
-                    await channel.SendMessageAsync(message);
+                    await channel.SendMessageAsync(user.Mention, embed: embed);
                 }
                 catch
                 {

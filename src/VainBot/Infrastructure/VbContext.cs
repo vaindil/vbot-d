@@ -110,6 +110,7 @@ namespace VainBot.Infrastructure
                 e.Property(r => r.FireAt).HasColumnName("fire_at").IsRequired();
                 e.Property(r => r.UserId).HasColumnName("user_id").IsRequired();
                 e.Property(r => r.ChannelId).HasColumnName("channel_id").IsRequired();
+                e.Property(r => r.RequestingMessageId).HasColumnName("requesting_message_id").IsRequired();
                 e.Property(r => r.GuildId).HasColumnName("guild_id");
                 e.Property(r => r.Message).HasColumnName("message").IsRequired();
             });

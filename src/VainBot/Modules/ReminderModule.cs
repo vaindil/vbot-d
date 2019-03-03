@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
+using Discord.WebSocket;
 using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using VainBot.Services;
@@ -11,12 +11,12 @@ namespace VainBot.Modules
     [Alias("remindme", "remind")]
     public class ReminderModule : ModuleBase
     {
-        readonly ReminderService _reminderSvc;
+        private readonly ReminderService _reminderSvc;
 
-        readonly Regex _validDelay = new Regex("^[dhm0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
-        const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
-        const string OverflowError = "You can't overflow me, I'm better than that.";
+        private readonly Regex _validDelay = new Regex("^[dhm0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
+        private const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
+        private const string OverflowError = "You can't overflow me, I'm better than that.";
 
         public ReminderModule(ReminderService reminderSvc)
         {
@@ -68,14 +68,14 @@ namespace VainBot.Modules
             }
 
             await _reminderSvc.CreateReminderAsync(
-                Context.Message.Author.Id, Context.Channel.Id, Context.Guild?.Id, message, delayTs);
+                Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
             await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimeString}).");
         }
 
-        TimeSpan ParseDelay(string delay)
+        private TimeSpan ParseDelay(string delay)
         {
             if (string.IsNullOrWhiteSpace(delay))
                 throw new Exception("Delay string cannot be empty. " + UseHelpIfNeededError);
