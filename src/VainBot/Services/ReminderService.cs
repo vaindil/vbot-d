@@ -118,8 +118,7 @@ namespace VainBot.Services
             var avatarUrl = user.GetAvatarUrl();
 
             var embedBuilder = new EmbedBuilder()
-                .WithImageUrl(user.GetAvatarUrl())
-                .WithTitle(user.Username)
+                .WithAuthor(user)
                 .WithFooter("Requested at " + reminder.CreatedAt.ToString("HH:mm yyyy-MM-dd") + " UTC")
                 .WithColor(252, 185, 3)
                 .AddField("Reminder", reminder.Message);
