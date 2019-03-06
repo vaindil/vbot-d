@@ -18,9 +18,9 @@ namespace VainBot.Modules
     [FitzyModerator]
     public class UserModule : InteractiveBase
     {
-        readonly UserService _svc;
+        private readonly UserService _svc;
 
-        const string _dtFormat = "yy-MM-dd hh:mm UTC";
+        private const string _dtFormat = "yy-MM-dd hh:mm UTC";
 
         public UserModule(UserService svc)
         {
@@ -83,7 +83,7 @@ namespace VainBot.Modules
             await ReplyAsync("Note added.");
         }
 
-        async Task<bool> ValidateNoteAsync(string note)
+        private async Task<bool> ValidateNoteAsync(string note)
         {
             if (string.IsNullOrWhiteSpace(note))
             {
@@ -122,7 +122,7 @@ namespace VainBot.Modules
             await GetActionsAsync(username, user);
         }
 
-        async Task GetActionsAsync(string name, User user)
+        private async Task GetActionsAsync(string name, User user)
         {
             var combined = new List<DetailsWrapper>();
 
@@ -210,7 +210,7 @@ namespace VainBot.Modules
             await ReplyAsync("Alias added.");
         }
 
-        async Task<bool> ValidateAliasAsync(string alias)
+        private async Task<bool> ValidateAliasAsync(string alias)
         {
             if (string.IsNullOrWhiteSpace(alias))
             {
@@ -243,7 +243,7 @@ namespace VainBot.Modules
             await GetAliasesForUserAsync(username, user.Aliases);
         }
 
-        async Task GetAliasesForUserAsync(string name, List<UserAlias> aliases)
+        private async Task GetAliasesForUserAsync(string name, List<UserAlias> aliases)
         {
             if (aliases.Count == 0)
             {
@@ -397,7 +397,7 @@ namespace VainBot.Modules
         [Command("reason", RunMode = RunMode.Async)]
         public async Task EditReason(int id, [Remainder]string reason)
         {
-            if (await _svc.UpdateReasonAsync(Context.Message.Author, id, reason))
+            if (await _svc.UpdateReasonAsync(id, reason))
                 await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
             else
                 await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));

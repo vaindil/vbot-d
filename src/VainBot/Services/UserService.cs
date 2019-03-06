@@ -14,11 +14,11 @@ namespace VainBot.Services
 {
     public class UserService
     {
-        readonly IServiceProvider _provider;
-        readonly DiscordSocketClient _discord;
-        readonly TwitchService _twitchSvc;
+        private readonly IServiceProvider _provider;
+        private readonly DiscordSocketClient _discord;
+        private readonly TwitchService _twitchSvc;
 
-        List<Mod> _mods;
+        private List<Mod> _mods;
 
         public UserService(IServiceProvider provider)
         {
@@ -62,18 +62,18 @@ namespace VainBot.Services
 
                 var dbUsername = await db.TwitchUsernameHistories.FirstOrDefaultAsync(x => x.Username == username);
                 if (dbUsername != null)
-                    user = await GetUserByIdAsync(dbUsername.UserId);
+                {
+                    return await GetUserByIdAsync(dbUsername.UserId);
+                }
                 else
                 {
                     user = await CreateUserFromTwitchAsync(username);
-                    user = await GetUserByIdAsync(user.Id);
+                    return await GetUserByIdAsync(user.Id);
                 }
-
-                return user;
             }
         }
 
-        async Task<User> GetUserByIdAsync(int id)
+        private async Task<User> GetUserByIdAsync(int id)
         {
             using (var db = Db())
             {
@@ -90,7 +90,7 @@ namespace VainBot.Services
             }
         }
 
-        async Task<User> CreateUserFromDiscordAsync(IUser user)
+        private async Task<User> CreateUserFromDiscordAsync(IUser user)
         {
             var dbUser = new User
             {
@@ -117,13 +117,13 @@ namespace VainBot.Services
             return dbUser;
         }
 
-        async Task<User> CreateUserFromTwitchAsync(string username, string twitchId = null)
+        private async Task<User> CreateUserFromTwitchAsync(string username, string twitchId = null)
         {
             username = username.ToLowerInvariant();
 
             if (twitchId == null)
             {
-                var (id, displayName) = await _twitchSvc.GetUserIdAsync(username);
+                var (id, _) = await _twitchSvc.GetUserIdAsync(username);
                 twitchId = id;
             }
 
@@ -235,7 +235,7 @@ namespace VainBot.Services
             await AddNoteByIdAsync(user.Id, GetModId(moderator), note);
         }
 
-        async Task AddNoteByIdAsync(int userId, int moderatorId, string note)
+        private async Task AddNoteByIdAsync(int userId, int moderatorId, string note)
         {
             using (var db = Db())
             {
@@ -263,7 +263,7 @@ namespace VainBot.Services
             await AddAliasByIdAsync(user.Id, GetModId(moderator), alias);
         }
 
-        async Task AddAliasByIdAsync(int userId, int moderatorId, string alias)
+        private async Task AddAliasByIdAsync(int userId, int moderatorId, string alias)
         {
             using (var db = Db())
             {
@@ -293,7 +293,7 @@ namespace VainBot.Services
             return await AddActionTakenByIdAsync(user.Id, GetModId(moderator), type, duration, "Twitch", reason);
         }
 
-        async Task<ActionTaken> AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type,
+        private async Task<ActionTaken> AddActionTakenByIdAsync(int userId, int moderatorId, ActionTakenType type,
             int duration, string source, string reason = null)
         {
             using (var db = Db())
@@ -316,7 +316,7 @@ namespace VainBot.Services
             }
         }
 
-        public async Task<bool> UpdateReasonAsync(IUser mod, int actionId, string newReason)
+        public async Task<bool> UpdateReasonAsync(int actionId, string newReason)
         {
             ActionTaken action;
 
@@ -505,17 +505,17 @@ namespace VainBot.Services
             return _mods.Find(x => x.Id == id)?.Name;
         }
 
-        int GetModId(IUser discordUser)
+        private int GetModId(IUser discordUser)
         {
             return _mods.First(x => x.DiscordId == discordUser.Id).Id;
         }
 
-        VbContext Db()
+        private VbContext Db()
         {
             return _provider.GetRequiredService<VbContext>();
         }
 
-        class Mod
+        private class Mod
         {
             public Mod(int id, ulong discordId, string name)
             {
