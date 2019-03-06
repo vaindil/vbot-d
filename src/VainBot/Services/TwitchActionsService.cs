@@ -102,6 +102,7 @@ namespace VainBot.Services
                     .Build();
 
                 await actionChannel.SendMessageAsync(embed: twitchEmbed);
+                _logger.LogWarning("Offline");
                 return;
             }
 
