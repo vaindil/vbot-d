@@ -2,10 +2,12 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using PureWebSockets;
 using System;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using VainBot.Classes.Twitch;
 using VainBot.Classes.Users;
 using VainBot.Configs;
 
@@ -19,6 +21,8 @@ namespace VainBot.Services
         private readonly ILogger<TwitchActionsService> _logger;
 
         private PureWebSocket _ws;
+
+        private bool _isLive = false;
 
         public TwitchActionsService(
             IOptions<FitzyConfig> options,
@@ -75,36 +79,58 @@ namespace VainBot.Services
 
         private async void HandleMessageAsync(string message)
         {
-            _logger.LogInformation("New websocket message received: " + message);
-
             var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
 
-            if (message == "LIVE")
-            {
-                var twitchEmbed = new EmbedBuilder()
-                    .WithColor(100, 65, 164)
-                    .WithTitle("Twitch")
-                    .WithDescription("Fitzy just went live.")
-                    .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
-                    .Build();
+            // i know this WS code is ugly and hacky, i'm messing around with twitch webhooks.
+            // this should really just use the normal stream checking from TwitchService but that's no fun.
 
-                await actionChannel.SendMessageAsync(embed: twitchEmbed);
+            StreamChangedNotification notification = null;
+            if (message.StartsWith('{'))
+            {
+                try
+                {
+                    notification = JsonConvert.DeserializeObject<StreamChangedNotification>(message);
+                }
+                catch
+                {
+                }
+            }
+
+            if (notification != null)
+            {
+                _logger.LogInformation("New Twitch webhook websocket message received");
+
+                Embed twitchEmbed = null;
+                if (notification.Status == "live" && !_isLive)
+                {
+                    _isLive = true;
+
+                    twitchEmbed = new EmbedBuilder()
+                        .WithColor(100, 65, 164)
+                        .WithTitle("Twitch")
+                        .WithDescription("Fitzy just went live.")
+                        .WithFooter(notification.StartedAt.ToString("yyyy-MM-dd HH:mm:ss UTC"))
+                        .Build();
+                }
+                else if (notification.Status == "offline")
+                {
+                    _isLive = false;
+
+                    twitchEmbed = new EmbedBuilder()
+                        .WithColor(100, 65, 164)
+                        .WithTitle("Twitch")
+                        .WithDescription("Fitzy just went offline.")
+                        .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
+                        .Build();
+                }
+
+                if (twitchEmbed != null)
+                    await actionChannel.SendMessageAsync(embed: twitchEmbed);
+
                 return;
             }
 
-            if (message == "OFFLINE")
-            {
-                var twitchEmbed = new EmbedBuilder()
-                    .WithColor(100, 65, 164)
-                    .WithTitle("Twitch")
-                    .WithDescription("Fitzy just went offline.")
-                    .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
-                    .Build();
-
-                await actionChannel.SendMessageAsync(embed: twitchEmbed);
-                _logger.LogWarning("Offline");
-                return;
-            }
+            _logger.LogInformation("New websocket message received: " + message);
 
             if (!message.StartsWith("ACTION"))
                 return;

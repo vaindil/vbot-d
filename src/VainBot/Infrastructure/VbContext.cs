@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using VainBot.Classes;
 using VainBot.Classes.Reminders;
 using VainBot.Classes.Twitch;
 using VainBot.Classes.Twitter;
