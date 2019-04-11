@@ -105,11 +105,13 @@ namespace VainBot.Services
                 {
                     _isLive = true;
 
+                    var startedAt = notification.StartedAt ?? DateTimeOffset.UtcNow;
+
                     twitchEmbed = new EmbedBuilder()
                         .WithColor(100, 65, 164)
                         .WithTitle("Twitch")
                         .WithDescription("Fitzy just went live.")
-                        .WithFooter(notification.StartedAt.ToString("yyyy-MM-dd HH:mm:ss UTC"))
+                        .WithFooter(startedAt.ToString("yyyy-MM-dd HH:mm:ss UTC"))
                         .Build();
                 }
                 else if (notification.Status == "offline")

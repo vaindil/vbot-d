@@ -27,7 +27,7 @@ namespace VainBot.Classes.Twitch
         public int? ViewerCount { get; set; }
 
         [JsonProperty(PropertyName = "started_at")]
-        public DateTimeOffset StartedAt { get; set; }
+        public DateTimeOffset? StartedAt { get; set; }
 
         [JsonProperty(PropertyName = "thumbnail_url")]
         public string ThumbnailUrl { get; set; }
