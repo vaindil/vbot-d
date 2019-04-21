@@ -1,0 +1,13 @@
+[Unit]
+Description=VainBot - a Discord bot with a lame name
+After=network.target
+
+[Service]
+Type=simple
+User=vbot-d-crendor
+WorkingDirectory=/home/vbot-d-crendor
+ExecStart=/usr/bin/dotnet /opt/vbot-d/src/VainBot/bin/Release/netcoreapp2.2/publish/VainBot.dll
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
