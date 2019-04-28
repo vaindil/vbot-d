@@ -1,0 +1,13 @@
+[Unit]
+Description=VainBot - crendor branch
+After=network.target
+
+[Service]
+Type=simple
+User=vbot-d-crendor
+WorkingDirectory=/home/vbot-d-crendor/bot
+ExecStart=/usr/bin/dotnet /home/vbot-d-crendor/bot/VainBot.dll
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
