@@ -302,6 +302,8 @@ namespace VainBot.Services
                 _logger.LogInformation($"About to send Twitch live message | ID: {toCheck.Id} | Twitch name: {toCheck.Username} | " +
                     $"Guild: {toCheck.GuildId} | DChannel: {toCheck.ChannelId} | IsEmbedded: {toCheck.IsEmbedded}");
 
+                _logger.LogInformation($"Actual channel for the previous: channel {channel.Id} | guild {channel.Guild?.Id}");
+
                 var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
                 toCheck.CurrentMessageId = (long)message.Id;
 
