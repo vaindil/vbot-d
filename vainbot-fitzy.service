@@ -1,0 +1,13 @@
+[Unit]
+Description=VainBot - fitzy branch
+After=network.target
+
+[Service]
+Type=simple
+User=vainbot-fitzy
+WorkingDirectory=/home/vainbot-fitzy/bot
+ExecStart=/usr/bin/dotnet /home/vainbot-fitzy/bot/VainBot.dll
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
