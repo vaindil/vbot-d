@@ -99,10 +99,13 @@ namespace VainBot.Services
             if (notification != null)
             {
                 _logger.LogInformation($"New Twitch webhook websocket message received: {notification}");
+                _logger.LogInformation($"Fitzy is currently live: {_isLive}");
 
                 Embed twitchEmbed = null;
                 if (notification.Status == "live" && !_isLive)
                 {
+                    _logger.LogInformation("Fitzy is newly online, building embed");
+
                     _isLive = true;
 
                     var startedAt = notification.StartedAt ?? DateTimeOffset.UtcNow;
@@ -116,6 +119,8 @@ namespace VainBot.Services
                 }
                 else if (notification.Status == "offline")
                 {
+                    _logger.LogInformation("Fitzy is newly offline, building embed");
+
                     _isLive = false;
 
                     twitchEmbed = new EmbedBuilder()
@@ -124,6 +129,10 @@ namespace VainBot.Services
                         .WithDescription("Fitzy just went offline.")
                         .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
                         .Build();
+                }
+                else
+                {
+                    _logger.LogInformation("Fitzy is not newly online or offline, no embed built");
                 }
 
                 if (twitchEmbed != null)
