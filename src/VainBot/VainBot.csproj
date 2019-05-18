@@ -11,7 +11,7 @@
     <PackageReference Include="Discord.Net.Commands" Version="2.0.1" />
     <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.39.0.1572" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
