@@ -22,7 +22,7 @@ namespace VainBot.Services
 
         private PureWebSocket _ws;
 
-        private bool _isLive = false;
+        private bool _isLive;
 
         public TwitchActionsService(
             IOptions<FitzyConfig> options,
@@ -98,7 +98,7 @@ namespace VainBot.Services
 
             if (notification != null)
             {
-                _logger.LogInformation("New Twitch webhook websocket message received");
+                _logger.LogInformation($"New Twitch webhook websocket message received: {notification}");
 
                 Embed twitchEmbed = null;
                 if (notification.Status == "live" && !_isLive)
