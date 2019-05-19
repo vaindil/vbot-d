@@ -406,22 +406,22 @@ namespace VainBot.Modules
             await Context.Message.DeleteAsync();
         }
 
-        [Command("delete", RunMode = RunMode.Async)]
-        [Alias("remove")]
-        public async Task DeleteAction(int id)
-        {
-            if (await _svc.DeleteActionAsync(id, Context.User))
-            {
-                await ReplyAndDeleteAsync("Action deleted successfully.");
+        //[Command("delete", RunMode = RunMode.Async)]
+        //[Alias("remove")]
+        //public async Task DeleteAction(int id)
+        //{
+        //    if (await _svc.DeleteActionAsync(id, Context.User))
+        //    {
+        //        await ReplyAndDeleteAsync("Action deleted successfully.");
 
-                await Task.Delay(5000);
-                await Context.Message.DeleteAsync();
-            }
-            else
-            {
-                await ReplyAsync("Error occurred while deleting action. Yell at vaindil.");
-            }
-        }
+        //        await Task.Delay(5000);
+        //        await Context.Message.DeleteAsync();
+        //    }
+        //    else
+        //    {
+        //        await ReplyAsync("Error occurred while deleting action. Yell at vaindil.");
+        //    }
+        //}
 
         //[Command("addaction")]
         //public async Task AddActionByDiscordUser(IUser discordUser, string type, string durationStr, [Remainder]string reason = null)

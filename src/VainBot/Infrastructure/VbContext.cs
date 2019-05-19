@@ -26,7 +26,7 @@ namespace VainBot.Infrastructure
         public DbSet<DiscordUsernameHistory> DiscordUsernameHistories { get; set; }
         public DbSet<TwitchUsernameHistory> TwitchUsernameHistories { get; set; }
         public DbSet<ActionTaken> ActionsTaken { get; set; }
-        public DbSet<DeletedActionTaken> DeletedActionsTaken { get; set; }
+        // public DbSet<DeletedActionTaken> DeletedActionsTaken { get; set; }
         public DbSet<UserNote> UserNotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -203,27 +203,27 @@ namespace VainBot.Infrastructure
             });
 
             // there's probably some way to inherit but i dunno
-            modelBuilder.Entity<DeletedActionTaken>(e =>
-            {
-                e.ToTable("deleted_action_taken");
-                e.HasKey(a => a.Id);
+            //modelBuilder.Entity<DeletedActionTaken>(e =>
+            //{
+            //    e.ToTable("deleted_action_taken");
+            //    e.HasKey(a => a.Id);
 
-                e.Property(a => a.Id).HasColumnName("id");
-                e.Property(a => a.UserId).HasColumnName("user_id").IsRequired();
-                e.Property(a => a.ModeratorId).HasColumnName("moderator_id").IsRequired();
-                e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
-                e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
-                e.Property(a => a.Reason).HasColumnName("reason");
-                e.Property(a => a.DiscordMessageId).HasColumnName("discord_message_id");
-                e.Property(a => a.Source).HasColumnName("source").IsRequired();
-                e.Property(a => a.ActionTakenType).HasColumnName("action_type").IsRequired()
-                    .HasConversion((x) => x.ToString(), (x) => (ActionTakenType)Enum.Parse(typeof(ActionTakenType), x));
+            //    e.Property(a => a.Id).HasColumnName("id");
+            //    e.Property(a => a.UserId).HasColumnName("user_id").IsRequired();
+            //    e.Property(a => a.ModeratorId).HasColumnName("moderator_id").IsRequired();
+            //    e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
+            //    e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
+            //    e.Property(a => a.Reason).HasColumnName("reason");
+            //    e.Property(a => a.DiscordMessageId).HasColumnName("discord_message_id");
+            //    e.Property(a => a.Source).HasColumnName("source").IsRequired();
+            //    e.Property(a => a.ActionTakenType).HasColumnName("action_type").IsRequired()
+            //        .HasConversion((x) => x.ToString(), (x) => (ActionTakenType)Enum.Parse(typeof(ActionTakenType), x));
 
-                e.Property(a => a.DeletedById).HasColumnName("deleted_by_id").IsRequired();
-                e.Property(a => a.DeletedAt).HasColumnName("deleted_at").IsRequired();
+            //    e.Property(a => a.DeletedById).HasColumnName("deleted_by_id").IsRequired();
+            //    e.Property(a => a.DeletedAt).HasColumnName("deleted_at").IsRequired();
 
-                // this won't be exposed to query from, so no point in setting up the relationships
-            });
+            //    // this won't be exposed to query from, so no point in setting up the relationships
+            //});
 
             modelBuilder.Entity<UserNote>(e =>
             {
