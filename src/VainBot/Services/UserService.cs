@@ -18,7 +18,7 @@ namespace VainBot.Services
         private readonly IServiceProvider _provider;
         private readonly DiscordSocketClient _discord;
         private readonly TwitchService _twitchSvc;
-        private readonly ILogger<UserService> _logger;
+        // private readonly ILogger<UserService> _logger;
 
         private const ulong _actionsChannelId = 480178651837628436;
 
