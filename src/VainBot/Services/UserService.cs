@@ -24,21 +24,12 @@ namespace VainBot.Services
 
         private List<Mod> _mods;
 
-        //public UserService(IServiceProvider provider, ILogger<UserService> logger)
-        //{
-        //    _provider = provider;
-        //    _discord = _provider.GetRequiredService<DiscordSocketClient>();
-        //    _twitchSvc = _provider.GetRequiredService<TwitchService>();
-        //    _logger = logger;
-
-        //    _mods = new List<Mod>();
-        //}
-
-        public UserService(IServiceProvider provider)
+        public UserService(IServiceProvider provider, ILogger<UserService> logger)
         {
             _provider = provider;
             _discord = _provider.GetRequiredService<DiscordSocketClient>();
             _twitchSvc = _provider.GetRequiredService<TwitchService>();
+            _logger = logger;
 
             _mods = new List<Mod>();
         }
@@ -351,45 +342,45 @@ namespace VainBot.Services
             return true;
         }
 
-        //public async Task<bool> DeleteActionAsync(int actionId, IUser moderator)
-        //{
-        //    var modId = GetModId(moderator);
+        public async Task<bool> DeleteActionAsync(int actionId, IUser moderator)
+        {
+            var modId = GetModId(moderator);
 
-        //    try
-        //    {
-        //        using (var db = Db())
-        //        {
-        //            var action = await db.ActionsTaken.FindAsync(actionId);
-        //            if (action != null)
-        //            {
-        //                var deletedAction = new DeletedActionTaken(action, modId, DateTimeOffset.UtcNow);
-        //                db.DeletedActionsTaken.Add(deletedAction);
+            try
+            {
+                using (var db = Db())
+                {
+                    var action = await db.ActionsTaken.FindAsync(actionId);
+                    if (action != null)
+                    {
+                        var deletedAction = new DeletedActionTaken(action, modId, DateTimeOffset.UtcNow);
+                        db.DeletedActionsTaken.Add(deletedAction);
 
-        //                db.ActionsTaken.Remove(action);
+                        db.ActionsTaken.Remove(action);
 
-        //                await db.SaveChangesAsync();
+                        await db.SaveChangesAsync();
 
-        //                if (deletedAction.DiscordMessageId.HasValue)
-        //                {
-        //                    var actionsChannel = (SocketTextChannel)_discord.GetChannel(_actionsChannelId);
-        //                    var msg = await actionsChannel.GetMessageAsync((ulong)deletedAction.DiscordMessageId.Value);
+                        if (deletedAction.DiscordMessageId.HasValue)
+                        {
+                            var actionsChannel = (SocketTextChannel)_discord.GetChannel(_actionsChannelId);
+                            var msg = await actionsChannel.GetMessageAsync((ulong)deletedAction.DiscordMessageId.Value);
 
-        //                    if (msg != null)
-        //                    {
-        //                        await msg.DeleteAsync();
-        //                    }
-        //                }
-        //            }
-        //        }
+                            if (msg != null)
+                            {
+                                await msg.DeleteAsync();
+                            }
+                        }
+                    }
+                }
 
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, $"Error deleting action ID {actionId}");
-        //        return false;
-        //    }
-        //}
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting action ID {actionId}");
+                return false;
+            }
+        }
 
         public async Task ToggleModAsync(IUser discordUser)
         {
