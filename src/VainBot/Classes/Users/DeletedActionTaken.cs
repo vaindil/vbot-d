@@ -4,6 +4,8 @@ namespace VainBot.Classes.Users
 {
     public class DeletedActionTaken : ActionTaken
     {
+        public DeletedActionTaken() { }
+
         public DeletedActionTaken(ActionTaken action, int moderatorId, DateTimeOffset deletedAt)
         {
             DeletedById = moderatorId;
