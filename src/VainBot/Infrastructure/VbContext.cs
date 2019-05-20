@@ -206,6 +206,18 @@ namespace VainBot.Infrastructure
             modelBuilder.Entity<DeletedActionTaken>(e =>
             {
                 e.ToTable("deleted_action_taken");
+                e.HasKey(a => a.Id);
+
+                e.Property(a => a.Id).HasColumnName("id");
+                e.Property(a => a.UserId).HasColumnName("user_id").IsRequired();
+                e.Property(a => a.ModeratorId).HasColumnName("moderator_id").IsRequired();
+                e.Property(a => a.LoggedAt).HasColumnName("logged_at").IsRequired();
+                e.Property(a => a.DurationSeconds).HasColumnName("duration_seconds").IsRequired();
+                e.Property(a => a.Reason).HasColumnName("reason");
+                e.Property(a => a.DiscordMessageId).HasColumnName("discord_message_id");
+                e.Property(a => a.Source).HasColumnName("source").IsRequired();
+                e.Property(a => a.ActionTakenType).HasColumnName("action_type").IsRequired()
+                    .HasConversion((x) => x.ToString(), (x) => (ActionTakenType)Enum.Parse(typeof(ActionTakenType), x));
 
                 e.Property(a => a.DeletedById).HasColumnName("deleted_by_id").IsRequired();
                 e.Property(a => a.DeletedAt).HasColumnName("deleted_at").IsRequired();
