@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Events;
+using Tweetinvi.Logic.JsonConverters;
 using Tweetinvi.Models;
 using Tweetinvi.Parameters;
 using VainBot.Classes.Twitter;
@@ -43,6 +45,11 @@ namespace VainBot.Services
             _config = options.Value;
 
             _provider = provider;
+
+            // workaround until Tweetinvi is updated
+            // https://github.com/linvi/tweetinvi/issues/850#issuecomment-494746515
+            JsonPropertyConverterRepository.JsonConverters.Remove(typeof(Language));
+            JsonPropertyConverterRepository.JsonConverters.Add(typeof(Language), new CustomJsonLanguageConverter());
         }
 
         public async Task InitializeAsync()
@@ -205,6 +212,16 @@ namespace VainBot.Services
             return _twittersToCheck
                 .Where(x => x.DiscordGuildId == (long)guildId)
                 .ToList();
+        }
+
+        public class CustomJsonLanguageConverter : JsonLanguageConverter
+        {
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+            {
+                return reader.Value != null
+                    ? base.ReadJson(reader, objectType, existingValue, serializer)
+                    : Language.English;
+            }
         }
     }
 }
