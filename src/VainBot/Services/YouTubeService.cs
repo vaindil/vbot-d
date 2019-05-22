@@ -68,7 +68,7 @@ namespace VainBot.Services
                 _pollTimer = null;
             }
 
-            _pollTimer = new Timer(async (_) => await CheckYouTubeAsync(), null, 0, 60000);
+            _pollTimer = new Timer(async (_) => await CheckYouTubeAsync(), null, 0, 600000);
         }
 
         public async Task CheckYouTubeAsync()

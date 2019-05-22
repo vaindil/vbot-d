@@ -274,6 +274,9 @@ namespace VainBot.Services
                 if (stream == null)
                     continue;
 
+                _logger.LogInformation($"Stream newly live | ID: {toCheck.Id} | Twitch name: {stream.TwitchDisplayName}" +
+                    $" | channel: {toCheck.ChannelId} | embedded: {toCheck.IsEmbedded}");
+
                 Embed embed = null;
                 if (toCheck.IsEmbedded)
                     embed = CreateEmbed(stream);
