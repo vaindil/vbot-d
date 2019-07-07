@@ -110,7 +110,7 @@ namespace VainBot.Modules
 
         [Command("history")]
         [Alias("notes", "note", "stalk")]
-        public async Task GetNotesByTwitchUsername(string username)
+        public async Task GetNotesByTwitchUsername(string username, int page = 1)
         {
             if (username.Contains(' '))
             {
@@ -119,10 +119,10 @@ namespace VainBot.Modules
             }
 
             var user = await _svc.GetOrCreateUserByTwitchUsernameAsync(username);
-            await GetActionsAsync(username, user);
+            await GetActionsAsync(username, user, page);
         }
 
-        private async Task GetActionsAsync(string name, User user)
+        private async Task GetActionsAsync(string name, User user, int page = 1)
         {
             var combined = new List<DetailsWrapper>();
 
@@ -145,6 +145,17 @@ namespace VainBot.Modules
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 255));
 
+            string message = null;
+
+            if (combined.Count > 25)
+            {
+                var totalPages = (int)Math.Ceiling(combined.Count / 25M);
+                if (page > totalPages)
+                    page = 1;
+
+                message = $"**Page {page} of {totalPages}**";
+            }
+
             if (user.TwitchUsernames.Count > 0)
             {
                 embed.WithTitle($"Details for {name} - click to stalk")
@@ -161,13 +172,13 @@ namespace VainBot.Modules
             }
             else
             {
-                foreach (var i in combined.OrderByDescending(x => x.LoggedAt))
+                foreach (var i in combined.OrderByDescending(x => x.LoggedAt).Skip((page - 1) * 25).Take(25))
                 {
                     embed.AddField($"{i.LoggedAt.ToString(_dtFormat)} | {_svc.GetModName(i.ModeratorId)}: {i.Type}", i.Content);
                 }
             }
 
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync(message, embed: embed.Build());
         }
 
         [Command("addalias")]
