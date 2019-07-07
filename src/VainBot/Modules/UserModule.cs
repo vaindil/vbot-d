@@ -112,6 +112,9 @@ namespace VainBot.Modules
         [Alias("notes", "note", "stalk")]
         public async Task GetNotesByTwitchUsername(string username, int page = 1)
         {
+            if (page < 1)
+                page = 1;
+
             if (username.Contains(' '))
             {
                 await ReplyAsync("Invalid username provided.");
