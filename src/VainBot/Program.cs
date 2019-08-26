@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Google.Apis.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,9 +47,6 @@ namespace VainBot
                 if (!_isDev)
                 {
                     await services.GetRequiredService<ReminderService>().InitializeAsync();
-                    await services.GetRequiredService<TwitchService>().InitializeAsync();
-                    await services.GetRequiredService<YouTubeService>().InitializeAsync();
-                    await services.GetRequiredService<TwitterService>().InitializeAsync();
                 }
             };
 
@@ -67,23 +63,12 @@ namespace VainBot
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("VainBotDiscord", "2.0"));
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
-            var googleYtSvc = new Google.Apis.YouTube.v3.YouTubeService(new BaseClientService.Initializer
-            {
-                ApplicationName = "VainBotDiscord",
-                ApiKey = _config["youtube_api_key"]
-            });
-
             return new ServiceCollection()
-                .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
-                .AddSingleton<TwitchService>()
-                .AddSingleton<YouTubeService>()
-                .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton(httpClient)
-                .AddSingleton(googleYtSvc)
                 .AddLogging(o =>
                 {
                     o.AddConsole();

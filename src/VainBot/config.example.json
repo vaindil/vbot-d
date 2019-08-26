@@ -1,12 +1,4 @@
 {
   "connection_string": "",
-  "discord_api_token": "",
-  "twitch_client_id": "",
-  "youtube_api_key": "",
-  "Twitter": {
-    "ConsumerKey": "",
-    "ConsumerSecret": "",
-    "AccessToken": "",
-    "AccessTokenSecret": ""
-  }
+  "discord_api_token": ""
 }

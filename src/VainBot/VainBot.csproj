@@ -10,7 +10,6 @@
     <PackageReference Include="Discord.Net.Commands" Version="2.1.0" />
     <PackageReference Include="Discord.Net.Core" Version="2.1.0" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.1.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
@@ -21,7 +20,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
-    <PackageReference Include="TweetinviAPI" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Configs\" />
     <Folder Include="Preconditions\" />
   </ItemGroup>
 
