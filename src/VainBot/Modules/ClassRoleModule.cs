@@ -21,56 +21,88 @@ namespace VainBot.Modules
         public async Task AssignDruid()
         {
             await AssignRoleAsync(Context.User, Context.Guild, DRUID_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Druid role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Druid role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("hunter")]
         public async Task AssignHunter()
         {
             await AssignRoleAsync(Context.User, Context.Guild, HUNTER_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Hunter role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Hunter role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("mage")]
         public async Task AssignMage()
         {
             await AssignRoleAsync(Context.User, Context.Guild, MAGE_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Mage role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Mage role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("paladin")]
         public async Task AssignPaladin()
         {
             await AssignRoleAsync(Context.User, Context.Guild, PALADIN_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Paladin role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Paladin role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("priest")]
         public async Task AssignPriest()
         {
             await AssignRoleAsync(Context.User, Context.Guild, PRIEST_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Priest role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Priest role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("rogue")]
         public async Task AssignRogue()
         {
             await AssignRoleAsync(Context.User, Context.Guild, ROGUE_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Rogue role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Rogue role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("warlock")]
         public async Task AssignWarlock()
         {
             await AssignRoleAsync(Context.User, Context.Guild, WARLOCK_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Warlock role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Warlock role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         [Command("warrior")]
         public async Task AssignWarrior()
         {
             await AssignRoleAsync(Context.User, Context.Guild, WARRIOR_ROLE_ID);
-            await ReplyAsync($"{Context.User.Mention}: Warrior role assigned.");
+            var reply = await ReplyAsync($"{Context.User.Mention}: Warrior role assigned.");
+
+            await Task.Delay(3000);
+            await Context.Message.DeleteAsync();
+            await reply.DeleteAsync();
         }
 
         private async Task AssignRoleAsync(IUser user, IGuild guild, ulong roleId)
