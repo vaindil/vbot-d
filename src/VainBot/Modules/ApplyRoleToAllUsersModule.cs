@@ -12,6 +12,7 @@ namespace VainBot.Modules
         public async Task ApplyRoleToAllUsers(IRole role)
         {
             var allUsers = (await Context.Guild.GetUsersAsync()).ToList();
+            allUsers = allUsers.Where(x => !x.RoleIds.Contains(role.Id)).ToList();
 
             var msg = await ReplyAsync("Applying role to all users, please wait...");
 
@@ -19,6 +20,9 @@ namespace VainBot.Modules
             for (var i = 0; i < allUsers.Count; i++)
             {
                 var user = allUsers[i];
+                if (user.RoleIds.Contains(role.Id))
+                    continue;
+
                 await user.AddRoleAsync(role);
                 await msg.ModifyAsync(x => x.Content = $"Applying role to all users, please wait... {i + 1} of {allUsers.Count} completed");
             }
