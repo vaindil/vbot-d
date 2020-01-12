@@ -61,7 +61,8 @@ namespace VainBot.Modules
             {
                 var channel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)s.ChannelId);
                 var isEmbedded = s.IsEmbedded ? "(embedded) " : "";
-                reply += $"{s.Id}: `{s.Username}` in {channel?.Mention ?? "(nonexistent channel)"} {isEmbedded}`{s.MessageToPost}`\n";
+                var messageToPost = s.MessageToPost.Replace("`", @"\`");
+                reply += $"{s.Id}: `{s.Username}` in {channel?.Mention ?? "(nonexistent channel)"} {isEmbedded}`{messageToPost}`\n";
 
                 if (reply.Length >= 1700)
                 {
