@@ -46,8 +46,7 @@ namespace VainBot.Modules
             foreach (var c in channels)
             {
                 var dChannel = (SocketTextChannel)await Context.Guild.GetChannelAsync((ulong)c.DiscordChannelId);
-                var discordMessageToPost = c.DiscordMessageToPost.Replace("`", @"\`");
-                reply += $"{c.Id}: `{c.Username}` in {dChannel?.Mention ?? "(nonexistent channel)"} `{discordMessageToPost}`";
+                reply += $"{c.Id}: `{c.Username}` in {dChannel?.Mention ?? "(nonexistent channel)"} `{c.DiscordMessageToPost}`";
 
                 if (reply.Length >= 1700)
                 {
