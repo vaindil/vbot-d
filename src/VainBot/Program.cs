@@ -54,6 +54,16 @@ namespace VainBot
                 }
             };
 
+            _client.UserJoined += async (user) =>
+            {
+                // add new crendor users to notifications role
+                if (user.Guild.Id == 149051954348294145)
+                {
+                    var role = user.Guild.GetRole(665991203845570614);
+                    await user.AddRoleAsync(role);
+                }
+            };
+
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
 
