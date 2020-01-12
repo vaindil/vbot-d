@@ -8,13 +8,13 @@ namespace VainBot.Modules
 {
     [Group("notifications")]
     [Alias("notification")]
-    [KalyGuild]
-    public class KalyNotificationsModule : ModuleBase
+    [CrendorGuild]
+    public class CrendorNotificationsModule : ModuleBase
     {
-        private const ulong _roleId = 534563536148627466;
+        private const ulong _roleId = 665991203845570614;
 
         [Command]
-        public async Task ToggleNotifications([Remainder]string unused = null)
+        public async Task ToggleNotifications()
         {
             var user = Context.User as SocketGuildUser;
             if (user.Roles.Any(x => x.Id == _roleId))
@@ -25,26 +25,36 @@ namespace VainBot.Modules
 
         [Command("on", RunMode = RunMode.Async)]
         [Alias("yes")]
-        public async Task NotificationsOn([Remainder]string unused = null)
+        public async Task NotificationsOn()
         {
             var role = Context.Guild.GetRole(_roleId);
             var user = Context.User as SocketGuildUser;
 
             await user.AddRoleAsync(role);
 
-            var msg = await ReplyAsync($"{Context.User.Mention}: You will now receive notifications for Kaly's streams.");
+            var msg = await ReplyAsync($"{Context.User.Mention}: You will now receive notifications for Crendor's streams.");
+
+            await Task.Delay(4000);
+
+            await Context.Message.DeleteAsync();
+            await msg.DeleteAsync();
         }
 
         [Command("off", RunMode = RunMode.Async)]
         [Alias("no")]
-        private async Task NotificationsOff([Remainder]string unused = null)
+        private async Task NotificationsOff()
         {
             var role = Context.Guild.GetRole(_roleId);
             var user = Context.User as SocketGuildUser;
 
             await user.RemoveRoleAsync(role);
 
-            var msg = await ReplyAsync($"{Context.User.Mention}: You will no longer receive notifications for Kaly's streams.");
+            var msg = await ReplyAsync($"{Context.User.Mention}: You will no longer receive notifications for Crendor's streams.");
+
+            await Task.Delay(4000);
+
+            await Context.Message.DeleteAsync();
+            await msg.DeleteAsync();
         }
     }
 }
