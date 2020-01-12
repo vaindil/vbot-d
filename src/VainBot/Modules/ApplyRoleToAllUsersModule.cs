@@ -8,7 +8,7 @@ namespace VainBot.Modules
     [RequireOwner]
     public class ApplyRoleToAllUsersModule : ModuleBase
     {
-        [Command("applyroletoall")]
+        [Command("applyroletoall", RunMode = RunMode.Async)]
         public async Task ApplyRoleToAllUsers(IRole role)
         {
             var allUsers = (await Context.Guild.GetUsersAsync()).ToList();
