@@ -287,19 +287,6 @@ namespace VainBot.Services
                     return;
                 }
 
-                // Crendor notifications
-                if (toCheck.ChannelId == 149062454402482177 && toCheck.TwitchId == "7555574")
-                {
-                    try
-                    {
-                        await _discord.GetGuild(149051954348294145).GetRole(665991203845570614).ModifyAsync(x => x.Mentionable = true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Could not toggle Crendor's role to mentionable.");
-                    }
-                }
-
                 // Kaly notifications
                 if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
                 {
@@ -322,19 +309,6 @@ namespace VainBot.Services
                 toCheck.CurrentMessageId = (long)message.Id;
 
                 toCheckUpdated.Add(toCheck);
-
-                // Crendor notifications
-                if (toCheck.ChannelId == 149062454402482177 && toCheck.TwitchId == "7555574")
-                {
-                    try
-                    {
-                        await _discord.GetGuild(149051954348294145).GetRole(665991203845570614).ModifyAsync(x => x.Mentionable = false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Could not toggle Crendor's role to not mentionable.");
-                    }
-                }
 
                 // Kaly notifications
                 if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
