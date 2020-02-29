@@ -1,5 +1,4 @@
 ﻿using Discord.Commands;
-using Discord.WebSocket;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,7 +12,10 @@ namespace VainBot.Modules
     {
         private readonly ReminderService _reminderSvc;
 
-        private readonly Regex _validDelay = new Regex("^[dhm0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private readonly Regex _validDelay =
+            new Regex(@"^(?=(?:\d+d|\d+h|\d+m))(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?$",
+                      RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
         private const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
         private const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
         private const string OverflowError = "You can't overflow me, I'm better than that.";
@@ -80,9 +82,9 @@ namespace VainBot.Modules
             if (string.IsNullOrWhiteSpace(delay))
                 throw new Exception("Delay string cannot be empty. " + UseHelpIfNeededError);
 
-            delay = delay.ToLower();
+            var match = _validDelay.Match(delay);
 
-            if (!_validDelay.IsMatch(delay))
+            if (!match.Success)
             {
                 if (delay.Contains('-'))
                     throw new Exception("Invalid delay string. Negative numbers are not allowed. " + UseHelpIfNeededError);
@@ -93,20 +95,17 @@ namespace VainBot.Modules
                 throw new Exception("Invalid delay string. " + UseHelpIfNeededError);
             }
 
-            var newDelay = delay.Replace("d", "d|").Replace("h", "h|").Replace("m", "m|");
-            var split = newDelay.Split('|');
-
-            var days = Array.Find(split, s => s.Contains('d'));
-            var hours = Array.Find(split, s => s.Contains('h'));
-            var minutes = Array.Find(split, s => s.Contains('m'));
+            var days = match.Groups[1].Value;
+            var hours = match.Groups[2].Value;
+            var minutes = match.Groups[3].Value;
 
             var target = TimeSpan.Zero;
-            if (days != null)
+            if (days != string.Empty)
             {
                 int numDays;
                 try
                 {
-                    numDays = int.Parse(days.TrimEnd('d'));
+                    numDays = int.Parse(days);
                 }
                 catch (OverflowException)
                 {
@@ -118,12 +117,13 @@ namespace VainBot.Modules
 
                 target = target.Add(TimeSpan.FromDays(numDays));
             }
-            if (hours != null)
+
+            if (hours != string.Empty)
             {
                 int numHours;
                 try
                 {
-                    numHours = int.Parse(hours.TrimEnd('h'));
+                    numHours = int.Parse(hours);
                 }
                 catch (OverflowException)
                 {
@@ -135,12 +135,13 @@ namespace VainBot.Modules
 
                 target = target.Add(TimeSpan.FromHours(numHours));
             }
-            if (minutes != null)
+
+            if (minutes != string.Empty)
             {
                 int numMinutes;
                 try
                 {
-                    numMinutes = int.Parse(minutes.TrimEnd('m'));
+                    numMinutes = int.Parse(minutes);
                 }
                 catch (OverflowException)
                 {
