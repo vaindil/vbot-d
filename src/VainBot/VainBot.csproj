@@ -22,6 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.2" />
+    <PackageReference Include="PureWebSockets" Version="3.0.0" />
     <PackageReference Include="TweetinviAPI" Version="4.0.3" />
   </ItemGroup>
 

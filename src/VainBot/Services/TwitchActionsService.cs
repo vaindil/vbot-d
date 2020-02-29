@@ -72,12 +72,12 @@ namespace VainBot.Services
             _ws.OnMessage += HandleMessageAsync;
         }
 
-        private void StateChanged(WebSocketState newState, WebSocketState oldState)
+        private void StateChanged(object sender, WebSocketState newState, WebSocketState oldState)
         {
             _logger.LogInformation($"Twitch action websocket state change: {oldState} to {newState}");
         }
 
-        private async void HandleMessageAsync(string message)
+        private async void HandleMessageAsync(object sender, string message)
         {
             var actionChannel = _discord.GetChannel(480178651837628436) as SocketTextChannel;
 
