@@ -29,7 +29,10 @@ namespace VainBot.Services
         private List<TwitchStreamToCheck> _streamsToCheck;
         private List<TwitchLiveStream> _liveStreams;
 
+        private string _oauthToken;
+
         private Timer _pollTimer;
+        private Timer _oauthRefreshTimer;
 
         const string NOGAMESETURL = "https://vaindil.xyz/misc/nogame.png";
         const ulong ROLEID = 458302101232156682;
@@ -51,6 +54,8 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            await GetTwitchTokensAsync();
+
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
@@ -65,12 +70,7 @@ namespace VainBot.Services
                 return;
             }
 
-            if (_pollTimer != null)
-            {
-                _pollTimer.Dispose();
-                _pollTimer = null;
-            }
-
+            _pollTimer?.Dispose();
             _pollTimer = new Timer(async (_) => await CheckStreamsAsync(), null, 0, 60000);
         }
 
@@ -511,6 +511,7 @@ namespace VainBot.Services
         {
             var request = new HttpRequestMessage();
             request.Headers.Add("Client-ID", _config["twitch_client_id"]);
+            request.Headers.Add("Authorization", $"OAuth {_oauthToken}");
             return request;
         }
 
@@ -559,6 +560,31 @@ namespace VainBot.Services
                 return ("-1", $"The user **{username}** does not exist.");
 
             return (users.Users[0].Id, users.Users[0].DisplayName);
+        }
+
+        /// <summary>
+        /// Gets or refreshes the current auth token.
+        /// </summary>
+        private async Task GetTwitchTokensAsync()
+        {
+            var url = "https://id.twitch.tv/oauth2/token?grant_type=client_credentials";
+            url += $"&client_id={_config["twitch_client_id"]}";
+            url += $"&client_secret={_config["twitch_client_secret"]}";
+
+            var response = await _httpClient.PostAsync(url, null);
+            var body = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError($"Error authenticating with Twitch: {body}");
+                throw new Exception();
+            }
+
+            var tokenResp = JsonConvert.DeserializeObject<TwitchTokenResponse>(body);
+            _oauthToken = tokenResp.AccessToken;
+
+            _oauthRefreshTimer?.Dispose();
+            _oauthRefreshTimer = new Timer(async (_) => await GetTwitchTokensAsync(), null,
+                TimeSpan.FromSeconds(tokenResp.ExpiresInSeconds - 600), TimeSpan.FromMilliseconds(-1));
         }
     }
 }
