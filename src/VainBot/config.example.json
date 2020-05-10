@@ -2,6 +2,7 @@
   "connection_string": "",
   "discord_api_token": "",
   "twitch_client_id": "",
+  "twitch_client_secret": "",
   "youtube_api_key": "",
   "Twitter": {
     "ConsumerKey": "",
