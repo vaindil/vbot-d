@@ -30,7 +30,6 @@ namespace VainBot.Services
         private List<TwitchLiveStream> _liveStreams;
 
         private string _oauthToken;
-        private string _refreshToken;
 
         private Timer _pollTimer;
         private Timer _oauthRefreshTimer;
@@ -593,14 +592,9 @@ namespace VainBot.Services
         /// </summary>
         private async Task GetTwitchTokensAsync()
         {
-            var url = "https://id.twitch.tv/oauth2/token";
+            var url = "https://id.twitch.tv/oauth2/token?grant_type=client_credentials";
             url += $"?client_id={_config["twitch_client_id"]}";
             url += $"&client_secret={_config["twitch_client_secret"]}";
-
-            if (_refreshToken != null)
-                url += $"&grant_type=refresh_token&refresh_token={_refreshToken}";
-            else
-                url += "&grant_type=client_credentials";
 
             var response = await _httpClient.PostAsync(url, null);
             var body = await response.Content.ReadAsStringAsync();
@@ -612,7 +606,6 @@ namespace VainBot.Services
 
             var tokenResp = JsonConvert.DeserializeObject<TwitchTokenResponse>(body);
             _oauthToken = tokenResp.AccessToken;
-            _refreshToken = tokenResp.RefreshToken;
 
             _oauthRefreshTimer?.Dispose();
             _oauthRefreshTimer = new Timer(async (_) => await GetTwitchTokensAsync(), null,
