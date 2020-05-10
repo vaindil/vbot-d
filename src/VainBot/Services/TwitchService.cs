@@ -569,7 +569,7 @@ namespace VainBot.Services
             if (_refreshToken != null)
                 url += $"&grant_type=refresh_token&refresh_token={_refreshToken}";
             else
-                url += "grant_type=client_credentials";
+                url += "&grant_type=client_credentials";
 
             var response = await _httpClient.PostAsync(url, null);
             var body = await response.Content.ReadAsStringAsync();
