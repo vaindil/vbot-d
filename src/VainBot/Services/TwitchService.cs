@@ -593,7 +593,7 @@ namespace VainBot.Services
         private async Task GetTwitchTokensAsync()
         {
             var url = "https://id.twitch.tv/oauth2/token?grant_type=client_credentials";
-            url += $"?client_id={_config["twitch_client_id"]}";
+            url += $"&client_id={_config["twitch_client_id"]}";
             url += $"&client_secret={_config["twitch_client_secret"]}";
 
             var response = await _httpClient.PostAsync(url, null);
