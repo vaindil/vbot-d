@@ -563,8 +563,8 @@ namespace VainBot.Services
         private async Task GetTwitchTokensAsync()
         {
             var url = "https://id.twitch.tv/oauth2/token";
-            url += $"?client_id=${_config["twitch_client_id"]}";
-            url += $"&client_secret=${_config["twitch_client_secret"]}";
+            url += $"?client_id={_config["twitch_client_id"]}";
+            url += $"&client_secret={_config["twitch_client_secret"]}";
 
             if (_refreshToken != null)
                 url += $"&grant_type=refresh_token&refresh_token={_refreshToken}";
