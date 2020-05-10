@@ -1,6 +1,8 @@
 [Unit]
 Description=VainBot - crendor branch
 After=network.target
+StartLimitBurst=2
+StartLimitIntervalSec=15
 
 [Service]
 Type=simple
