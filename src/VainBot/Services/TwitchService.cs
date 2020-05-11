@@ -607,6 +607,9 @@ namespace VainBot.Services
             var tokenResp = JsonConvert.DeserializeObject<TwitchTokenResponse>(body);
             _oauthToken = tokenResp.AccessToken;
 
+            if (tokenResp.ExpiresInSeconds > 2592000)
+                tokenResp.ExpiresInSeconds = 2592000;
+
             _oauthRefreshTimer?.Dispose();
             _oauthRefreshTimer = new Timer(async (_) => await GetTwitchTokensAsync(), null,
                 TimeSpan.FromSeconds(tokenResp.ExpiresInSeconds - 600), TimeSpan.FromMilliseconds(-1));
