@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using VainBot.Classes.Twitch;
@@ -536,7 +537,7 @@ namespace VainBot.Services
         {
             var request = new HttpRequestMessage();
             request.Headers.Add("Client-ID", _config["twitch_client_id"]);
-            request.Headers.Add("Authorization", $"OAuth {_oauthToken}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _oauthToken);
             return request;
         }
 
