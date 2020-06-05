@@ -3,9 +3,12 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using VainBot.Configs;
+using VainBot.Preconditions;
 
 namespace VainBot.Modules
 {
+    [CrendorGuild]
+    [CrendorMod]
     public class RestartTwitchBotModule : ModuleBase
     {
         private readonly TwitchBotRestartConfig _config;
