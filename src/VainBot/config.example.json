@@ -9,5 +9,10 @@
     "ConsumerSecret": "",
     "AccessToken": "",
     "AccessTokenSecret": ""
+  },
+  // below key may be omitted to disable the command
+  "TwitchBotRestart": {
+    "Command": "",
+    "Arguments": ""
   }
 }
