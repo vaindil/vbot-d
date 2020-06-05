@@ -14,5 +14,10 @@
     "ApiBaseUrl": "without trailing slash",
     "ApiSecret": "",
     "TwitchActionSocketUrl": "without trailing slash"
+  },
+  // below key may be omitted to disable the command
+  "TwitchBotRestart": {
+    "Command": "",
+    "Arguments": ""
   }
 }
