@@ -51,7 +51,7 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    _channels = await db.YouTubeChannelsToCheck.ToListAsync();
+                    _channels = await db.YouTubeChannelsToCheck.AsQueryable().ToListAsync();
                 }
             }
             catch (Exception ex)
@@ -98,11 +98,12 @@ namespace VainBot.Services
                     continue;
 
                 var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
-                if (channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
+                var newestPublishedAt = DateTime.Parse(newest.PublishedAt);
+                if (channel.LatestVideoUploadedAt.HasValue && newestPublishedAt <= channel.LatestVideoUploadedAt.Value)
                     continue;
 
                 channel.LatestVideoId = newest.ResourceId.VideoId;
-                channel.LatestVideoUploadedAt = newest.PublishedAt;
+                channel.LatestVideoUploadedAt = newestPublishedAt;
                 channelChanged = true;
 
                 await PostNewVideoAsync(channel, newest);
@@ -228,8 +229,9 @@ namespace VainBot.Services
                 if (playlistResponse.Items.Count > 0)
                 {
                     var newest = playlistResponse.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
+                    var newestPublishedAt = DateTime.Parse(newest.PublishedAt);
                     channel.LatestVideoId = newest.ResourceId.VideoId;
-                    channel.LatestVideoUploadedAt = newest.PublishedAt;
+                    channel.LatestVideoUploadedAt = newestPublishedAt;
                 }
 
                 return channel;
@@ -247,7 +249,7 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    var toCheck = await db.YouTubeChannelsToCheck
+                    var toCheck = await db.YouTubeChannelsToCheck.AsQueryable()
                         .FirstOrDefaultAsync(x => x.YouTubePlaylistId == channel.YouTubePlaylistId
                                                && x.DiscordChannelId == channel.DiscordChannelId);
                     if (toCheck != null)

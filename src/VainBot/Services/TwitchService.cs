@@ -60,8 +60,8 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    _streamsToCheck = await db.StreamsToCheck.ToListAsync();
-                    _liveStreams = await db.TwitchLiveStreams.ToListAsync();
+                    _streamsToCheck = await db.StreamsToCheck.AsQueryable().ToListAsync();
+                    _liveStreams = await db.TwitchLiveStreams.AsQueryable().ToListAsync();
                 }
             }
             catch (Exception ex)
@@ -471,7 +471,8 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    var toCheck = await db.StreamsToCheck.FirstOrDefaultAsync(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId);
+                    var toCheck = await db.StreamsToCheck.AsQueryable()
+                        .FirstOrDefaultAsync(x => x.TwitchId == stream.TwitchId && x.ChannelId == stream.ChannelId);
                     if (toCheck != null)
                     {
                         toCheck.IsDeleted = stream.IsDeleted;
