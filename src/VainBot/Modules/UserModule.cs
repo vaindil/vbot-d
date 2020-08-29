@@ -162,7 +162,7 @@ namespace VainBot.Modules
             if (user.TwitchUsernames.Count > 0)
             {
                 embed.WithTitle($"Details for {name} - click to stalk")
-                    .WithUrl($"https://ttv.overrustlelogs.net/Fitzyhere/{user.TwitchUsernames.Last().Username}");
+                    .WithUrl($"https://www.twitch.tv/popout/fitzyhere/viewercard/{user.TwitchUsernames.Last().Username}");
             }
             else
             {
