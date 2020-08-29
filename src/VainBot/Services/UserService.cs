@@ -38,7 +38,7 @@ namespace VainBot.Services
         {
             using (var db = Db())
             {
-                _mods = await db.Users
+                _mods = await db.Users.AsQueryable()
                     .Where(x => x.IsModerator)
                     .Select(x => new Mod(x.Id, x.DiscordId.Value, x.Aliases[0].Alias))
                     .ToListAsync();
@@ -50,7 +50,7 @@ namespace VainBot.Services
             using (var db = Db())
             {
                 var userId = (long)user.Id;
-                var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == userId)
+                var dbUser = await db.Users.AsQueryable().FirstOrDefaultAsync(x => x.DiscordId == userId)
                     ?? await CreateUserFromDiscordAsync(user);
 
                 return await GetUserByIdAsync(dbUser.Id);
@@ -65,7 +65,7 @@ namespace VainBot.Services
             {
                 User user;
 
-                var dbUsername = await db.TwitchUsernameHistories.FirstOrDefaultAsync(x => x.Username == username);
+                var dbUsername = await db.TwitchUsernameHistories.AsQueryable().FirstOrDefaultAsync(x => x.Username == username);
                 if (dbUsername != null)
                 {
                     return await GetUserByIdAsync(dbUsername.UserId);
@@ -391,7 +391,7 @@ namespace VainBot.Services
                 using (var db = Db())
                 {
                     var discordUserId = (long)discordUser.Id;
-                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUserId);
+                    var dbUser = await db.Users.AsQueryable().FirstOrDefaultAsync(x => x.DiscordId == discordUserId);
                     if (dbUser == null)
                         return;
 
@@ -404,7 +404,7 @@ namespace VainBot.Services
                 using (var db = Db())
                 {
                     var discordUserId = (long)discordUser.Id;
-                    var dbUser = await db.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUserId)
+                    var dbUser = await db.Users.AsQueryable().FirstOrDefaultAsync(x => x.DiscordId == discordUserId)
                         ?? await CreateUserFromDiscordAsync(discordUser);
 
                     dbUser.IsModerator = true;
@@ -425,11 +425,11 @@ namespace VainBot.Services
 
             using (var db = Db())
             {
-                var twitch = await db.TwitchUsernameHistories.FirstOrDefaultAsync(x => x.Username == twitchUsername);
+                var twitch = await db.TwitchUsernameHistories.AsQueryable().FirstOrDefaultAsync(x => x.Username == twitchUsername);
                 if (twitch == null)
                     return null;
 
-                var user = await db.Users.FirstOrDefaultAsync(x => x.Id == twitch.UserId);
+                var user = await db.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == twitch.UserId);
                 if (user?.DiscordId.HasValue != true)
                     return null;
 
@@ -456,7 +456,7 @@ namespace VainBot.Services
                     if (user == null)
                         return;
 
-                    actionCount = await db.ActionsTaken
+                    actionCount = await db.ActionsTaken.AsQueryable()
                         .CountAsync(x => x.UserId == user.Id && x.ActionTakenType != ActionTakenType.Unban && x.ActionTakenType != ActionTakenType.Untimeout);
 
                     if (action.Source == "Twitch")

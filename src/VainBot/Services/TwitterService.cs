@@ -62,7 +62,7 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    _twittersToCheck = await db.TwittersToCheck.ToListAsync();
+                    _twittersToCheck = await db.TwittersToCheck.AsQueryable().ToListAsync();
                 }
             }
             catch (Exception ex)
