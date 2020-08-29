@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace VainBot.Modules
 {
     [Group("stalk")]
-    [Alias("overrustle")]
+    [Alias("log", "logs")]
     public class StalkModule : ModuleBase
     {
         private readonly Regex _validUsername =
@@ -38,8 +38,8 @@ namespace VainBot.Modules
 
         private static string GenerateReply(string username, string channel)
         {
-            return $"If user `{username}` has chatted in channel `{channel}`, " +
-                $"their logs will be at https://ttv.overrustlelogs.net/{channel}/{username}.";
+            return $"Logs for user {username} in channel {channel} are at the following link. Note that the link will only work " +
+                $"for moderators of the channel. https://www.twitch.tv/popout/{channel}/viewercard/{username}";
         }
     }
 }

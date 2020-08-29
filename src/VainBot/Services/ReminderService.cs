@@ -41,7 +41,7 @@ namespace VainBot.Services
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
                 {
-                    reminders = await db.Reminders.ToListAsync();
+                    reminders = await db.Reminders.AsQueryable().ToListAsync();
                 }
             }
             catch (Exception ex)
