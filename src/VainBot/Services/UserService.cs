@@ -504,14 +504,14 @@ namespace VainBot.Services
 
             var embed = new EmbedBuilder()
                 .WithColor(color)
-                .WithTitle($"{action.Source} Action")
+                .WithTitle($"{action.Source} Action (click for logs)")
                 .WithFooter(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"))
-                .WithUrl($"https://ttv.overrustlelogs.net/Fitzyhere/{username}")
+                .WithUrl($"https://www.twitch.tv/popout/fitzyhere/viewercard/{username}")
                 .AddField("User", username, true)
                 .AddField("Action", $"{durationString} {actionString}", true)
                 .AddField("Reason", action.Reason, true)
                 .AddField("Total Violations", actionCount, true)
-                .AddField("\"Responsible\" Mod", discordMod.Mention, true)
+                .AddField("Responsible Mod", discordMod.Mention, true)
                 .AddField("Edit reason with", $"!reason {action.Id}", true)
                 .Build();
 
