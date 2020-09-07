@@ -10,6 +10,11 @@
     "AccessToken": "",
     "AccessTokenSecret": ""
   },
+  "Translation": {
+    "ApiEndpoint": "endpoint provided in Azure portal, leave the trailing slash in place",
+    "ApiRegion": "",
+    "ApiKey": ""
+  },
   // below key may be omitted to disable the command
   "TwitchBotRestart": {
     "Command": "",

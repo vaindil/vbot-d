@@ -75,6 +75,7 @@ namespace VainBot
 
             return new ServiceCollection()
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
+                .Configure<Configs.TranslationConfig>(_config.GetSection("Translation"))
                 .Configure<Configs.TwitchBotRestartConfig>(_config.GetSection("TwitchBotRestart"))
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
