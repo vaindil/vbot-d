@@ -46,6 +46,9 @@ namespace VainBot.Modules
         [Alias("tr")]
         public async Task Translate(string dest, [Remainder]string text)
         {
+            if (!(await IsTextValidAsync(text)))
+                return;
+
             await Context.Channel.TriggerTypingAsync();
 
             var (result, error) = await MakeApiCall(dest, text);
@@ -63,6 +66,9 @@ namespace VainBot.Modules
         [Alias("trfrom")]
         public async Task TranslateFrom(string source, string dest, [Remainder]string text)
         {
+            if (!(await IsTextValidAsync(text)))
+                return;
+
             await Context.Channel.TriggerTypingAsync();
 
             var (result, error) = await MakeApiCall(dest, text, source);
@@ -74,6 +80,18 @@ namespace VainBot.Modules
 
             var embed = BuildEmbed(result, text, source);
             await ReplyAsync(embed: embed);
+        }
+
+        private async Task<bool> IsTextValidAsync(string text)
+        {
+            const int maxLength = 300;
+            if (text.Length > maxLength)
+            {
+                await ReplyAsync($"Text to be translated must not be longer than {maxLength} characters.");
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<(TranslationResult Result, string Error)> MakeApiCall(string dest, string text, string source = null)
