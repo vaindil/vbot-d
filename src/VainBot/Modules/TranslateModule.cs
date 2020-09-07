@@ -31,7 +31,7 @@ namespace VainBot.Modules
         {
             await ReplyAsync("Translate text from one language to another, automatically detecting the source language: " +
                 "`![translate/tr] tolang Text to translate`\n" +
-                "Translate text, specifying the source language: `![translatefrom/trfrom] fromlang tolang Text to translate\n" +
+                "Translate text, specifying the source language: `![translatefrom/trfrom] fromlang tolang Text to translate`\n" +
                 "Examples:\n" +
                 "```\n" +
                 "!translate de This text will be translated to German, with the source automatically detected.\n" +
@@ -121,7 +121,7 @@ namespace VainBot.Modules
 
             if (result.DetectedLanguage != null)
             {
-                var score = Math.Round(result.DetectedLanguage.Score, 1);
+                var score = Math.Round(result.DetectedLanguage.Score * 100, 1);
                 embedBuilder.AddField(
                     "Source Lang (Detected)",
                     $"{result.DetectedLanguage.Language} (confidence: {score}/100)",
