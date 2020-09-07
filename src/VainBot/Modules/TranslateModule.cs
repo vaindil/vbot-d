@@ -46,6 +46,8 @@ namespace VainBot.Modules
         [Alias("tr")]
         public async Task Translate(string dest, [Remainder]string text)
         {
+            await Context.Channel.TriggerTypingAsync();
+
             var (result, error) = await MakeApiCall(dest, text);
             if (error != null)
             {
@@ -61,6 +63,8 @@ namespace VainBot.Modules
         [Alias("trfrom")]
         public async Task TranslateFrom(string source, string dest, [Remainder]string text)
         {
+            await Context.Channel.TriggerTypingAsync();
+
             var (result, error) = await MakeApiCall(dest, text, source);
             if (error != null)
             {
