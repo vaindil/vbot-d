@@ -39,7 +39,7 @@ namespace VainBot.Modules
         private static string GenerateReply(string username, string channel)
         {
             return $"Logs for user {username} in channel {channel} are at the following link. Note that the link will only work " +
-                $"for moderators of the channel. https://www.twitch.tv/popout/{channel}/viewercard/{username}";
+                $"for moderators of the channel. <https://www.twitch.tv/popout/{channel}/viewercard/{username}>";
         }
     }
 }
