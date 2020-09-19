@@ -156,7 +156,12 @@ namespace VainBot.Modules
 
             embedBuilder.AddField("To Lang", result.Translations[0].To, true);
             embedBuilder.AddField("Original Text", sourceText);
-            embedBuilder.AddField("Translated Text", result.Translations[0].Text);
+
+            var translatedText = result.Translations[0].Text;
+            if (string.IsNullOrWhiteSpace(translatedText))
+                translatedText = "(no translation returned by Azure)";
+
+            embedBuilder.AddField("Translated Text", translatedText);
 
             return embedBuilder.Build();
         }
