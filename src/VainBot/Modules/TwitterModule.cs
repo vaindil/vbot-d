@@ -72,7 +72,7 @@ namespace VainBot.Modules
                 return;
             }
 
-            var (twitterId, username) = _twitterSvc.GetUserInfo(twitterUsername);
+            var (twitterId, username) = await _twitterSvc.GetUserInfoAsync(twitterUsername);
             if (!twitterId.HasValue)
             {
                 await ReplyAsync("Twitter username does not exist.");
