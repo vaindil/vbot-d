@@ -49,6 +49,7 @@ namespace VainBot
             _client.Ready += async () =>
             {
                 await services.GetRequiredService<UserService>().InitializeAsync();
+                await services.GetRequiredService<TwitterService>().InitializeAsync();
 
                 if (!_isDev)
                 {
@@ -56,7 +57,6 @@ namespace VainBot
                     await services.GetRequiredService<ReminderService>().InitializeAsync();
                     await services.GetRequiredService<TwitchService>().InitializeAsync();
                     await services.GetRequiredService<YouTubeService>().InitializeAsync();
-                    await services.GetRequiredService<TwitterService>().InitializeAsync();
                 }
             };
 

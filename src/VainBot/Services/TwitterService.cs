@@ -74,31 +74,40 @@ namespace VainBot.Services
 
             foreach (var ttc in _twittersToCheck)
             {
-                var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(ttc.TwitterId)
+                try
                 {
-                    ExcludeReplies = true,
-                    IncludeRetweets = ttc.IncludeRetweets,
-                    SinceId = ttc.LatestTweetId,
-                    PageSize = 5
-                });
-
-                if (tweets?.Any() == true)
-                {
-                    updated = true;
-
-                    var filteredTweets = tweets.GroupBy(x => x.Id)
-                        .Select(x => x.First())
-                        .OrderBy(x => x.CreatedAt);
-
-                    ttc.LatestTweetId = filteredTweets.Last().Id;
-
-                    foreach (var tweet in filteredTweets)
+                    var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(ttc.TwitterId)
                     {
-                        ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
+                        ExcludeReplies = true,
+                        IncludeRetweets = ttc.IncludeRetweets,
+                        SinceId = ttc.LatestTweetId,
+                        PageSize = 5
+                    });
 
-                        var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
-                        await channel.SendMessageAsync(tweet.Url);
+                    _logger.LogInformation($"Found tweets: {tweets.Length}");
+
+                    if (tweets?.Any() == true)
+                    {
+                        updated = true;
+
+                        var filteredTweets = tweets.GroupBy(x => x.Id)
+                            .Select(x => x.First())
+                            .OrderBy(x => x.CreatedAt);
+
+                        ttc.LatestTweetId = filteredTweets.Last().Id;
+
+                        foreach (var tweet in filteredTweets)
+                        {
+                            ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
+
+                            var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
+                            await channel.SendMessageAsync(tweet.Url);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Exception when getting tweets: {ex.Message}");
                 }
             }
 
