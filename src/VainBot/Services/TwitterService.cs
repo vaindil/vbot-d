@@ -1,18 +1,14 @@
 ﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi;
-using Tweetinvi.Events;
-using Tweetinvi.Logic.JsonConverters;
 using Tweetinvi.Models;
 using Tweetinvi.Parameters;
 using VainBot.Classes.Twitter;
@@ -23,15 +19,16 @@ namespace VainBot.Services
 {
     public class TwitterService
     {
-        readonly DiscordSocketClient _discord;
-        readonly ILogger<TwitterService> _logger;
+        private readonly DiscordSocketClient _discord;
+        private readonly ILogger<TwitterService> _logger;
+        private readonly TwitterClient _twitterClient;
 
-        readonly TwitterConfig _config;
-        readonly IServiceProvider _provider;
+        private readonly TwitterConfig _config;
+        private readonly IServiceProvider _provider;
 
-        List<TwitterToCheck> _twittersToCheck;
+        private List<TwitterToCheck> _twittersToCheck;
 #pragma warning disable IDE0052 // Remove unread private members
-        Timer _timer;
+        private Timer _timer;
 #pragma warning restore IDE0052 // Remove unread private members
 
         public TwitterService(
@@ -46,24 +43,18 @@ namespace VainBot.Services
 
             _provider = provider;
 
-            // workaround until Tweetinvi is updated
-            // https://github.com/linvi/tweetinvi/issues/850#issuecomment-494746515
-            JsonPropertyConverterRepository.JsonConverters.Remove(typeof(Language));
-            JsonPropertyConverterRepository.JsonConverters.Add(typeof(Language), new CustomJsonLanguageConverter());
+            _twitterClient = new TwitterClient(
+                new TwitterCredentials(
+                    _config.ConsumerKey, _config.ConsumerSecret,
+                    _config.AccessToken, _config.AccessTokenSecret));
         }
 
         public async Task InitializeAsync()
         {
-            Auth.ApplicationCredentials = new TwitterCredentials(
-                _config.ConsumerKey, _config.ConsumerSecret,
-                _config.AccessToken, _config.AccessTokenSecret);
-
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    _twittersToCheck = await db.TwittersToCheck.AsQueryable().ToListAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+                _twittersToCheck = await db.TwittersToCheck.AsQueryable().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -77,31 +68,31 @@ namespace VainBot.Services
             _timer = new Timer(CheckForTweets, null, TimeSpan.Zero, TimeSpan.FromMinutes(4));
         }
 
-        async void CheckForTweets(object _)
+        private async void CheckForTweets(object _)
         {
             var updated = false;
 
             foreach (var ttc in _twittersToCheck)
             {
-                var tweets = await TimelineAsync.GetUserTimeline(new UserIdentifier(ttc.TwitterId), new UserTimelineParameters
+                var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(ttc.TwitterId)
                 {
                     ExcludeReplies = true,
-                    IncludeRTS = ttc.IncludeRetweets,
+                    IncludeRetweets = ttc.IncludeRetweets,
                     SinceId = ttc.LatestTweetId,
-                    MaximumNumberOfTweetsToRetrieve = 5
+                    PageSize = 5
                 });
 
                 if (tweets?.Any() == true)
                 {
                     updated = true;
 
-                    tweets = tweets.GroupBy(x => x.Id)
+                    var filteredTweets = tweets.GroupBy(x => x.Id)
                         .Select(x => x.First())
                         .OrderBy(x => x.CreatedAt);
 
-                    ttc.LatestTweetId = tweets.Last().Id;
+                    ttc.LatestTweetId = filteredTweets.Last().Id;
 
-                    foreach (var tweet in tweets)
+                    foreach (var tweet in filteredTweets)
                     {
                         ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
 
@@ -115,11 +106,10 @@ namespace VainBot.Services
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<VbContext>())
-                    {
-                        db.TwittersToCheck.UpdateRange(_twittersToCheck);
-                        await db.SaveChangesAsync();
-                    }
+                    using var db = _provider.GetRequiredService<VbContext>();
+
+                    db.TwittersToCheck.UpdateRange(_twittersToCheck);
+                    await db.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -133,11 +123,11 @@ namespace VainBot.Services
             if (_twittersToCheck.Any(x => x.TwitterId == toCheck.TwitterId && x.DiscordChannelId == toCheck.DiscordChannelId))
                 return true;
 
-            var latestTweets = await TimelineAsync.GetUserTimeline(new UserIdentifier(toCheck.TwitterId), new UserTimelineParameters
+            var latestTweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(toCheck.TwitterId)
             {
                 ExcludeReplies = true,
-                IncludeRTS = true,
-                MaximumNumberOfTweetsToRetrieve = 1
+                IncludeRetweets = toCheck.IncludeRetweets,
+                PageSize = 1
             });
 
             var latestTweet = latestTweets.FirstOrDefault();
@@ -173,14 +163,13 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                var t = await db.TwittersToCheck.FindAsync(id);
+                if (t != null)
                 {
-                    var t = await db.TwittersToCheck.FindAsync(id);
-                    if (t != null)
-                    {
-                        db.TwittersToCheck.Remove(t);
-                        await db.SaveChangesAsync();
-                    }
+                    db.TwittersToCheck.Remove(t);
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -194,11 +183,11 @@ namespace VainBot.Services
         /// </summary>
         /// <param name="username">Username of the account to get the ID of</param>
         /// <returns>ID and username of the account if it exists, otherwise null</returns>
-        public (long? id, string username) GetUserInfo(string username)
+        public async Task<(long? id, string username)> GetUserInfoAsync(string username)
         {
             try
             {
-                var user = User.GetUserFromScreenName(username);
+                var user = await _twitterClient.Users.GetUserAsync(username);
                 return (user.Id, user.ScreenName);
             }
             catch
@@ -212,16 +201,6 @@ namespace VainBot.Services
             return _twittersToCheck
                 .Where(x => x.DiscordGuildId == (long)guildId)
                 .ToList();
-        }
-
-        public class CustomJsonLanguageConverter : JsonLanguageConverter
-        {
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
-            {
-                return reader.Value != null
-                    ? base.ReadJson(reader, objectType, existingValue, serializer)
-                    : Language.English;
-            }
         }
     }
 }
