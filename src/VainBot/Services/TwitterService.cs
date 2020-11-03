@@ -74,13 +74,17 @@ namespace VainBot.Services
 
             foreach (var ttc in _twittersToCheck)
             {
-                var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(ttc.TwitterId)
+                var parameters = new GetUserTimelineParameters(ttc.TwitterId)
                 {
                     ExcludeReplies = true,
                     IncludeRetweets = ttc.IncludeRetweets,
-                    SinceId = ttc.LatestTweetId,
                     PageSize = 5
-                });
+                };
+
+                if (ttc.LatestTweetId > 0)
+                    parameters.SinceId = ttc.LatestTweetId;
+
+                var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(parameters);
 
                 if (tweets?.Any() == true)
                 {
