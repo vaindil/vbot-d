@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 using Google.Apis.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace VainBot
         public static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
         private DiscordSocketClient _client;
+        private DiscordRestClient _restClient = new DiscordRestClient();
         private IConfiguration _config;
         private bool _isDev;
 
@@ -37,7 +39,8 @@ namespace VainBot
             _client = new DiscordSocketClient(
                 new DiscordSocketConfig
                 {
-                    LogLevel = LogSeverity.Warning
+                    LogLevel = LogSeverity.Warning,
+                    AlwaysDownloadUsers = true
                 });
 
             var services = ConfigureServices();
@@ -53,6 +56,8 @@ namespace VainBot
                     await services.GetRequiredService<TwitterService>().InitializeAsync();
                 }
             };
+
+            await _restClient.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
 
             await _client.LoginAsync(TokenType.Bot, _config["discord_api_token"]);
             await _client.StartAsync();
@@ -77,6 +82,7 @@ namespace VainBot
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .Configure<Configs.TwitchBotRestartConfig>(_config.GetSection("TwitchBotRestart"))
                 .AddSingleton(_client)
+                .AddSingleton(_restClient)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()
