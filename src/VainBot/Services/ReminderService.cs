@@ -35,14 +35,15 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            _logger.LogInformation("Initializing reminder service");
             List<Reminder> reminders;
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    reminders = await db.Reminders.AsQueryable().ToListAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+                reminders = await db.Reminders.AsQueryable().ToListAsync();
+
+                _logger.LogInformation("reminders retrieved from DB");
             }
             catch (Exception ex)
             {
@@ -55,7 +56,6 @@ namespace VainBot.Services
                 .Select(r => _discord.GetGuild((ulong)r.GuildId))
                 .Where(r => r != null)
                 .Distinct();
-            await _discord.DownloadUsersAsync(guilds);
 
             var now = DateTimeOffset.UtcNow;
 
