@@ -17,6 +17,7 @@ namespace VainBot.Services
     {
         private readonly IServiceProvider _provider;
         private readonly DiscordSocketClient _discord;
+        private readonly DiscordRestClient _discordRest;
         private readonly TwitchService _twitchSvc;
         private readonly ILogger<UserService> _logger;
 
@@ -28,6 +29,7 @@ namespace VainBot.Services
         {
             _provider = provider;
             _discord = _provider.GetRequiredService<DiscordSocketClient>();
+            _discordRest = _provider.GetRequiredService<DiscordRestClient>();
             _twitchSvc = _provider.GetRequiredService<TwitchService>();
             _logger = logger;
 
@@ -421,7 +423,7 @@ namespace VainBot.Services
 
         public async Task<IUser> GetDiscordUserByTwitchUsername(string twitchUsername)
         {
-            long userId = 0;
+            ulong userId = 0;
 
             using (var db = Db())
             {
@@ -433,40 +435,40 @@ namespace VainBot.Services
                 if (user?.DiscordId.HasValue != true)
                     return null;
 
-                userId = user.DiscordId.Value;
+                userId = (ulong)user.DiscordId.Value;
             }
 
-            return _discord.GetUser((ulong)userId);
+            return _discord.GetUser(userId) ?? (IUser)await _discordRest.GetUserAsync(userId);
         }
 
-        public async Task SendActionMessageAsync(ActionTaken action, string username = null)
+        public async Task SendActionMessageAsync(ActionTaken action, string username = null, IUser discordMod = null)
         {
             ulong modId = 0;
             var actionCount = 0;
 
             if (username == null)
             {
-                using (var db = Db())
-                {
-                    modId = (ulong)(await db.Users.FindAsync(action.ModeratorId)).DiscordId.Value;
+                using var db = Db();
 
-                    var user = await db.Users
-                        .Include(x => x.TwitchUsernames)
-                        .FirstOrDefaultAsync(x => x.Id == action.UserId);
-                    if (user == null)
-                        return;
+                modId = (ulong)(await db.Users.FindAsync(action.ModeratorId)).DiscordId.Value;
 
-                    actionCount = await db.ActionsTaken.AsQueryable()
-                        .CountAsync(x => x.UserId == user.Id && x.ActionTakenType != ActionTakenType.Unban && x.ActionTakenType != ActionTakenType.Untimeout);
+                var user = await db.Users
+                    .Include(x => x.TwitchUsernames)
+                    .FirstOrDefaultAsync(x => x.Id == action.UserId);
+                if (user == null)
+                    return;
 
-                    if (action.Source == "Twitch")
-                        username = user.TwitchUsernames.OrderByDescending(x => x.LoggedAt).First().Username;
-                    else
-                        username = _discord.GetUser((ulong)user.DiscordId).Mention;
-                }
+                actionCount = await db.ActionsTaken.AsQueryable()
+                    .CountAsync(x => x.UserId == user.Id && x.ActionTakenType != ActionTakenType.Unban && x.ActionTakenType != ActionTakenType.Untimeout);
+
+                if (action.Source == "Twitch")
+                    username = user.TwitchUsernames.OrderByDescending(x => x.LoggedAt).First().Username;
+                else
+                    username = (_discord.GetUser((ulong)user.DiscordId) ?? (IUser)await _discordRest.GetUserAsync((ulong)user.DiscordId)).Mention;
             }
 
-            var discordMod = _discord.GetUser(modId);
+            if (discordMod == null)
+                discordMod = _discord.GetUser(modId) ?? (IUser)await _discordRest.GetUserAsync(modId);
 
             var durationString = "";
             if (action.DurationSeconds == -1)
