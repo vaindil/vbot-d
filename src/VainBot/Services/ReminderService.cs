@@ -51,12 +51,6 @@ namespace VainBot.Services
                 return;
             }
 
-            var guilds = reminders
-                .Where(r => r.GuildId.HasValue)
-                .Select(r => _discord.GetGuild((ulong)r.GuildId))
-                .Where(r => r != null)
-                .Distinct();
-
             var now = DateTimeOffset.UtcNow;
 
             for (var i = _timers.Count - 1; i >= 0; i--)
