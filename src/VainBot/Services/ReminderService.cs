@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,19 +16,22 @@ namespace VainBot.Services
 {
     public class ReminderService
     {
-        readonly DiscordSocketClient _discord;
+        private readonly DiscordSocketClient _discord;
+        private readonly DiscordRestClient _discordRest;
 
-        readonly ILogger<ReminderService> _logger;
-        readonly IServiceProvider _provider;
+        private readonly ILogger<ReminderService> _logger;
+        private readonly IServiceProvider _provider;
 
-        readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
+        private readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
 
         public ReminderService(
             DiscordSocketClient discord,
+            DiscordRestClient discordRest,
             ILogger<ReminderService> logger,
             IServiceProvider provider)
         {
             _discord = discord;
+            _discordRest = discordRest;
 
             _logger = logger;
             _provider = provider;
@@ -87,11 +91,9 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    db.Reminders.Add(reminder);
-                    await db.SaveChangesAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+                db.Reminders.Add(reminder);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -105,7 +107,7 @@ namespace VainBot.Services
         {
             var reminder = (Reminder)reminderIn;
 
-            var user = _discord.GetUser((ulong)reminder.UserId);
+            var user = (IUser)_discord.GetUser((ulong)reminder.UserId) ?? await _discordRest.GetUserAsync((ulong)reminder.UserId);
             if (user == null)
                 return;
 
@@ -154,14 +156,13 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                var thisReminder = await db.Reminders.FindAsync(reminder.Id);
+                if (thisReminder != null)
                 {
-                    var thisReminder = await db.Reminders.FindAsync(reminder.Id);
-                    if (thisReminder != null)
-                    {
-                        db.Reminders.Remove(thisReminder);
-                        await db.SaveChangesAsync();
-                    }
+                    db.Reminders.Remove(thisReminder);
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
