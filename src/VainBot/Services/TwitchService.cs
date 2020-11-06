@@ -54,15 +54,17 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            _logger.LogInformation("Initializing Twitch service");
             await GetTwitchTokensAsync();
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    _streamsToCheck = await db.StreamsToCheck.AsQueryable().ToListAsync();
-                    _liveStreams = await db.TwitchLiveStreams.AsQueryable().ToListAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                _streamsToCheck = await db.StreamsToCheck.AsQueryable().ToListAsync();
+                _liveStreams = await db.TwitchLiveStreams.AsQueryable().ToListAsync();
+
+                _logger.LogInformation("_streamsToCheck and _liveStreams initialized");
             }
             catch (Exception ex)
             {
@@ -72,6 +74,8 @@ namespace VainBot.Services
 
             _pollTimer?.Dispose();
             _pollTimer = new Timer(async (_) => await CheckStreamsAsync(), null, 0, 60000);
+
+            _logger.LogInformation("Twitch service initialization complete");
         }
 
         /// <summary>
@@ -240,15 +244,14 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    db.TwitchLiveStreams.AddRange(newlyOnline);
-                    db.TwitchLiveStreams.UpdateRange(stillOnline);
-                    db.TwitchLiveStreams.UpdateRange(newlyOffline);
-                    db.TwitchLiveStreams.RemoveRange(actuallyNewlyOffline);
+                using var db = _provider.GetRequiredService<VbContext>();
 
-                    await db.SaveChangesAsync();
-                }
+                db.TwitchLiveStreams.AddRange(newlyOnline);
+                db.TwitchLiveStreams.UpdateRange(stillOnline);
+                db.TwitchLiveStreams.UpdateRange(newlyOffline);
+                db.TwitchLiveStreams.RemoveRange(actuallyNewlyOffline);
+
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -327,11 +330,10 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    db.StreamsToCheck.UpdateRange(toCheckUpdated);
-                    await db.SaveChangesAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                db.StreamsToCheck.UpdateRange(toCheckUpdated);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -390,11 +392,10 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    db.StreamsToCheck.UpdateRange(toCheckUpdated);
-                    await db.SaveChangesAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                db.StreamsToCheck.UpdateRange(toCheckUpdated);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -514,14 +515,13 @@ namespace VainBot.Services
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                var s = await db.StreamsToCheck.FindAsync(id);
+                if (s != null)
                 {
-                    var s = await db.StreamsToCheck.FindAsync(id);
-                    if (s != null)
-                    {
-                        db.StreamsToCheck.Remove(s);
-                        await db.SaveChangesAsync();
-                    }
+                    db.StreamsToCheck.Remove(s);
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -594,6 +594,8 @@ namespace VainBot.Services
         /// </summary>
         private async Task GetTwitchTokensAsync()
         {
+            _logger.LogInformation("Beginning to get Twitch tokens");
+
             var url = "https://id.twitch.tv/oauth2/token?grant_type=client_credentials";
             url += $"&client_id={_config["twitch_client_id"]}";
             url += $"&client_secret={_config["twitch_client_secret"]}";
@@ -606,8 +608,12 @@ namespace VainBot.Services
                 throw new Exception();
             }
 
+            _logger.LogInformation("Successfully called Twitch token endpoint");
+
             var tokenResp = JsonConvert.DeserializeObject<TwitchTokenResponse>(body);
             _oauthToken = tokenResp.AccessToken;
+
+            _logger.LogInformation("Successfully set Twitch token");
 
             if (tokenResp.ExpiresInSeconds > 2592000)
                 tokenResp.ExpiresInSeconds = 2592000;
@@ -615,6 +621,8 @@ namespace VainBot.Services
             _oauthRefreshTimer?.Dispose();
             _oauthRefreshTimer = new Timer(async (_) => await GetTwitchTokensAsync(), null,
                 TimeSpan.FromSeconds(tokenResp.ExpiresInSeconds - 600), TimeSpan.FromMilliseconds(-1));
+
+            _logger.LogInformation("Finished getting Twitch token");
         }
     }
 }
