@@ -35,14 +35,15 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            _logger.LogInformation("Initializing reminder service");
             List<Reminder> reminders;
 
             try
             {
-                using (var db = _provider.GetRequiredService<VbContext>())
-                {
-                    reminders = await db.Reminders.AsQueryable().ToListAsync();
-                }
+                using var db = _provider.GetRequiredService<VbContext>();
+                reminders = await db.Reminders.AsQueryable().ToListAsync();
+
+                _logger.LogInformation("reminders retrieved from DB");
             }
             catch (Exception ex)
             {
