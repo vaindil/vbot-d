@@ -71,6 +71,7 @@ namespace VainBot.Services
         private async void CheckForTweets(object _)
         {
             var updated = false;
+            var ttcToRemove = new List<TwitterToCheck>();
 
             foreach (var ttc in _twittersToCheck)
             {
@@ -101,8 +102,34 @@ namespace VainBot.Services
                         ttc.TwitterUsername = tweet.CreatedBy.ScreenName;
 
                         var channel = _discord.GetChannel((ulong)ttc.DiscordChannelId) as SocketTextChannel;
-                        await channel.SendMessageAsync(tweet.Url);
+                        if (channel == null)
+                        {
+                            _logger.LogInformation($"Discord channel ID {ttc.DiscordChannelId} in guild {ttc.DiscordGuildId} not " +
+                                $"found to post tweets for {ttc.TwitterUsername}. Removing this account.");
+
+                            ttcToRemove.Add(ttc);
+                        }
+                        else
+                        {
+                            await channel.SendMessageAsync(tweet.Url);
+                        }
                     }
+                }
+            }
+
+            if (ttcToRemove.Count > 0)
+            {
+                _twittersToCheck.RemoveAll(x => ttcToRemove.Contains(x));
+
+                try
+                {
+                    using var db = _provider.GetRequiredService<VbContext>();
+                    db.TwittersToCheck.RemoveRange(ttcToRemove);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, "Error removing DB entries in Twitter service: check for tweets");
                 }
             }
 
