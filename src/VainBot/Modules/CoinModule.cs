@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace VainBot.Modules
 {
     [Group("coins")]
-    [Alias("coin", "btc", "eth", "ltc", "iot")]
+    [Alias("coin", "btc", "eth", "ltc", "iot", "doge", "dog", "xdg")]
     public class CoinModule : ModuleBase
     {
         readonly HttpClient _httpClient;
@@ -23,14 +23,11 @@ namespace VainBot.Modules
         public async Task GetCoins([Remainder]string unused = null)
         {
             HttpResponseMessage bfResponse;
-            HttpResponseMessage btcResponse;
-            HttpResponseMessage ethResponse;
-            HttpResponseMessage ltcResponse;
 
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api.bitfinex.com/v2/tickers?symbols=tIOTUSD,tXMRUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tIOTUSD,tXMRUSD,tDOGUSD");
             }
             catch
             {
@@ -44,60 +41,77 @@ namespace VainBot.Modules
                 return;
             }
 
-            // Bitfinex's API is terrible, they don't use key/value pairs because that would make too much sense
-            // https://bitfinex.readme.io/v2/reference#rest-public-tickers
+            // Bitfinex's API doesn't use key/value pairs because that would make too much sense
+            // https://docs.bitfinex.com/reference#rest-public-tickers
             var results = JsonConvert.DeserializeObject<List<List<object>>>(await bfResponse.Content.ReadAsStringAsync());
             var coins = ConvertToBitfinexCoins(results);
 
+            var btc = coins.Find(c => c.Symbol == "tBTCUSD");
+            var eth = coins.Find(c => c.Symbol == "tETHUSD");
+            var ltc = coins.Find(c => c.Symbol == "tLTCUSD");
+            var doge = coins.Find(c => c.Symbol == "tDOGUSD");
             var iot = coins.Find(c => c.Symbol == "tIOTUSD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
-            try
-            {
-                btcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/BTC-USD/ticker");
-                ethResponse = await _httpClient.GetAsync("https://api.gdax.com/products/ETH-USD/ticker");
-                ltcResponse = await _httpClient.GetAsync("https://api.gdax.com/products/LTC-USD/ticker");
-            }
-            catch
-            {
-                await ReplyAsync("GDAX's API crapped out. Not my fault, sorry. Try again in a few seconds.");
-                return;
-            }
-
-            if (!btcResponse.IsSuccessStatusCode || !ethResponse.IsSuccessStatusCode || !ltcResponse.IsSuccessStatusCode)
-            {
-                await ReplyAsync("GDAX's API crapped out. Not my fault, sorry. Try again in a few seconds.");
-                return;
-            }
-
-            var btc = JsonConvert.DeserializeObject<GdaxCoin>(await btcResponse.Content.ReadAsStringAsync());
-            var eth = JsonConvert.DeserializeObject<GdaxCoin>(await ethResponse.Content.ReadAsStringAsync());
-            var ltc = JsonConvert.DeserializeObject<GdaxCoin>(await ltcResponse.Content.ReadAsStringAsync());
-
-            var message = new StringBuilder();
+            var message = new StringBuilder("__Current Price | Daily Change__\n");
             message.Append("BTC: ");
-            message.Append(btc.Price.ToString("#.00#"));
+            message.Append(btc.LastPrice.ToString("0.00#"));
+            message.Append(" | ");
+            message.Append(btc.DailyChange.ToString("0.00#"));
+            //message.Append(" (");
+            //message.Append(btc.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
             message.Append("\n");
 
             message.Append("ETH: ");
-            message.Append(eth.Price.ToString("#.00#"));
+            message.Append(eth.LastPrice.ToString("0.00#"));
+            message.Append(" | ");
+            message.Append(eth.DailyChange.ToString("0.00#"));
+            //message.Append(" (");
+            //message.Append(eth.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
+            message.Append("\n");
+
+            message.Append("DGE: ");
+            // Doge is actually MDOGE with Bitfinex, so divide by 1M to get real price
+            message.Append((doge.LastPrice / 1000000).ToString("0.00000#"));
+            message.Append(" | ");
+            message.Append((doge.DailyChange / 1000000).ToString("0.00000#"));
+            //message.Append(" (");
+            //message.Append(doge.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
             message.Append("\n");
 
             message.Append("LTC: ");
-            message.Append(ltc.Price.ToString("#.00#"));
+            message.Append(ltc.LastPrice.ToString("0.00#"));
+            message.Append(" | ");
+            message.Append(ltc.DailyChange.ToString("0.00#"));
+            //message.Append(" (");
+            //message.Append(ltc.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
             message.Append("\n");
 
             message.Append("IOT: ");
-            message.Append(iot.LastPrice.ToString("#.00#"));
+            message.Append(iot.LastPrice.ToString("0.00#"));
+            message.Append(" | ");
+            message.Append(iot.DailyChange.ToString("0.00#"));
+            //message.Append(" (");
+            //message.Append(iot.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
             message.Append("\n");
 
             message.Append("XMR: ");
-            message.Append(xmr.LastPrice.ToString("#.00#"));
+            message.Append(xmr.LastPrice.ToString("0.00#"));
+            message.Append(" | ");
+            message.Append(xmr.DailyChange.ToString("0.00#"));
+            //message.Append(" (");
+            //message.Append(xmr.DailyChangePercentage.ToString("0.00#"));
+            //message.Append("%)");
 
             await ReplyAsync(message.ToString());
         }
 
-        List<BitfinexCoin> ConvertToBitfinexCoins(List<List<object>> obj)
+        private List<BitfinexCoin> ConvertToBitfinexCoins(List<List<object>> obj)
         {
             var coins = new List<BitfinexCoin>();
 
@@ -111,7 +125,7 @@ namespace VainBot.Modules
                     Ask = Convert.ToDecimal(coin[3]),
                     AskSize = Convert.ToDecimal(coin[4]),
                     DailyChange = Convert.ToDecimal(coin[5]),
-                    DailyChangePercentage = Convert.ToDecimal(coin[6]),
+                    DailyChangePercentage = Convert.ToDecimal(coin[6]) * 100,
                     LastPrice = Convert.ToDecimal(coin[7]),
                     Volume = Convert.ToDecimal(coin[8]),
                     High = Convert.ToDecimal(coin[9]),
@@ -122,17 +136,7 @@ namespace VainBot.Modules
             return coins;
         }
 
-        class GdaxCoin
-        {
-            public decimal Price { get; set; }
-            public decimal Size { get; set; }
-            public decimal Bid { get; set; }
-            public decimal Ask { get; set; }
-            public decimal Volume { get; set; }
-            public DateTime Time { get; set; }
-        }
-
-        class BitfinexCoin
+        private class BitfinexCoin
         {
             public string Symbol { get; set; }
             public decimal Bid { get; set; }
