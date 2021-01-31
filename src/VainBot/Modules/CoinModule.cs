@@ -12,7 +12,7 @@ namespace VainBot.Modules
     [Alias("coin", "btc", "eth", "ltc", "iot", "doge", "dog", "xdg", "dge")]
     public class CoinModule : ModuleBase
     {
-        readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public CoinModule(HttpClient httpClient)
         {
@@ -61,7 +61,7 @@ namespace VainBot.Modules
             //message.Append(" (");
             //message.Append(btc.DailyChangePercentage.ToString("0.00#"));
             //message.Append("%)");
-            message.Append("\n");
+            message.Append('\n');
 
             message.Append("ETH: ");
             message.Append(eth.LastPrice.ToString("0.00#"));
@@ -70,7 +70,7 @@ namespace VainBot.Modules
             //message.Append(" (");
             //message.Append(eth.DailyChangePercentage.ToString("0.00#"));
             //message.Append("%)");
-            message.Append("\n");
+            message.Append('\n');
 
             message.Append("DGE: ");
             // Doge is actually MDOGE with Bitfinex, so divide by 1M to get real price
@@ -80,7 +80,7 @@ namespace VainBot.Modules
             //message.Append(" (");
             //message.Append(doge.DailyChangePercentage.ToString("0.00#"));
             //message.Append("%)");
-            message.Append("\n");
+            message.Append('\n');
 
             message.Append("LTC: ");
             message.Append(ltc.LastPrice.ToString("0.00#"));
@@ -89,7 +89,7 @@ namespace VainBot.Modules
             //message.Append(" (");
             //message.Append(ltc.DailyChangePercentage.ToString("0.00#"));
             //message.Append("%)");
-            message.Append("\n");
+            message.Append('\n');
 
             message.Append("IOT: ");
             message.Append(iot.LastPrice.ToString("0.00#"));
@@ -98,7 +98,7 @@ namespace VainBot.Modules
             //message.Append(" (");
             //message.Append(iot.DailyChangePercentage.ToString("0.00#"));
             //message.Append("%)");
-            message.Append("\n");
+            message.Append('\n');
 
             message.Append("XMR: ");
             message.Append(xmr.LastPrice.ToString("0.00#"));
@@ -111,7 +111,7 @@ namespace VainBot.Modules
             await ReplyAsync(message.ToString());
         }
 
-        private List<BitfinexCoin> ConvertToBitfinexCoins(List<List<object>> obj)
+        private static List<BitfinexCoin> ConvertToBitfinexCoins(List<List<object>> obj)
         {
             var coins = new List<BitfinexCoin>();
 
