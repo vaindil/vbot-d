@@ -40,11 +40,14 @@ namespace VainBot.Services
         {
             using (var db = Db())
             {
-                _mods = await db.Users.AsQueryable()
+                var mods = await db.Users.AsQueryable()
                     .Include(x => x.Aliases)
                     .Where(x => x.IsModerator)
-                    .Select(x => new Mod(x.Id, x.DiscordId.Value, x.Aliases[0].Alias))
                     .ToListAsync();
+
+                _mods = mods
+                    .Select(x => new Mod(x.Id, x.DiscordId.Value, x.Aliases[0].Alias))
+                    .ToList();
             }
         }
 
