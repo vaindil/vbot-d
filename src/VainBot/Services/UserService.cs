@@ -98,6 +98,7 @@ namespace VainBot.Services
                     .Include(x => x.ModeratedAliases)
                     .Include(x => x.ModeratedNotes)
                     .AsSplitQuery()
+                    .OrderBy(x => x.Id)
                     .FirstOrDefaultAsync(x => x.Id == id);
             }
         }
