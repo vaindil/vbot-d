@@ -46,7 +46,7 @@ namespace VainBot.Services
                     .ToListAsync();
 
                 _mods = mods
-                    .Select(x => new Mod(x.Id, x.DiscordId.Value, x.Aliases[0].Alias))
+                    .ConvertAll(x => new Mod(x.Id, x.DiscordId.Value, x.Aliases[0].Alias))
                     .ToList();
             }
         }
@@ -97,6 +97,7 @@ namespace VainBot.Services
                     .Include(x => x.ModeratedActions)
                     .Include(x => x.ModeratedAliases)
                     .Include(x => x.ModeratedNotes)
+                    .AsSplitQuery()
                     .FirstOrDefaultAsync(x => x.Id == id);
             }
         }
