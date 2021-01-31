@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace VainBot.Modules
 {
     [Group("coins")]
-    [Alias("coin", "btc", "eth", "ltc", "iot", "doge", "dog", "xdg")]
+    [Alias("coin", "btc", "eth", "ltc", "iot", "doge", "dog", "xdg", "dge")]
     public class CoinModule : ModuleBase
     {
         readonly HttpClient _httpClient;
