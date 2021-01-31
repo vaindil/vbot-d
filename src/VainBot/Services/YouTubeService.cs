@@ -100,12 +100,11 @@ namespace VainBot.Services
                     continue;
 
                 var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
-                var newestPublishedAt = DateTime.Parse(newest.PublishedAt);
-                if (channel.LatestVideoUploadedAt.HasValue && newestPublishedAt <= channel.LatestVideoUploadedAt.Value)
+                if (channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
                     continue;
 
                 channel.LatestVideoId = newest.ResourceId.VideoId;
-                channel.LatestVideoUploadedAt = newestPublishedAt;
+                channel.LatestVideoUploadedAt = newest.PublishedAt;
                 channelChanged = true;
 
                 await PostNewVideoAsync(channel, newest);
@@ -236,9 +235,8 @@ namespace VainBot.Services
                 if (playlistResponse.Items.Count > 0)
                 {
                     var newest = playlistResponse.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
-                    var newestPublishedAt = DateTime.Parse(newest.PublishedAt);
                     channel.LatestVideoId = newest.ResourceId.VideoId;
-                    channel.LatestVideoUploadedAt = newestPublishedAt;
+                    channel.LatestVideoUploadedAt = newest.PublishedAt;
                 }
 
                 return channel;
