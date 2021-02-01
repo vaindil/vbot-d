@@ -1,4 +1,9 @@
-﻿namespace VainBot
+﻿using Discord;
+using Discord.Commands;
+using System;
+using System.Threading.Tasks;
+
+namespace VainBot
 {
     public static class Extensions
     {
@@ -32,6 +37,25 @@
         public static string ToOrdinal(this int num)
         {
             return ToOrdinal((long)num);
+        }
+
+        // tweaked from Discord.Addons.Interactive
+        // https://github.com/foxbot/Discord.Addons.Interactive/blob/8eccd40d05c054b2304d9e5ef6e2fe340df528be/Discord.Addons.Interactive/InteractiveService.cs#L83
+        public static async Task<IUserMessage> ReplyAndDeleteAsync(
+            this SocketCommandContext context,
+            string content, bool isTTS = false,
+            Embed embed = null,
+            TimeSpan? timeout = null,
+            RequestOptions options = null)
+        {
+            timeout ??= TimeSpan.FromSeconds(5);
+
+            var message = await context.Channel.SendMessageAsync(content, isTTS, embed, options).ConfigureAwait(false);
+            _ = Task.Delay(timeout.Value)
+                .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            return message;
         }
     }
 }

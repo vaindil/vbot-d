@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VainBot.Classes.Users;
+using VainBot.Infrastructure;
 using VainBot.Preconditions;
 using VainBot.Services;
 
@@ -271,7 +272,7 @@ namespace VainBot.Modules
             foreach (var alias in aliases.OrderBy(x => x.Alias))
             {
                 sb.Append(alias.Alias);
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             var msg = sb.ToString().TrimEnd('\n');
@@ -411,9 +412,9 @@ namespace VainBot.Modules
         public async Task EditReason(int id, [Remainder]string reason)
         {
             if (await _svc.UpdateReasonAsync(id, reason))
-                await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
+                await Context.ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
             else
-                await ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
+                await Context.ReplyAndDeleteAsync("Reason updated successfully.", timeout: TimeSpan.FromSeconds(5));
 
             await Task.Delay(5000);
             await Context.Message.DeleteAsync();
@@ -425,7 +426,7 @@ namespace VainBot.Modules
         {
             if (await _svc.DeleteActionAsync(id, Context.User))
             {
-                await ReplyAndDeleteAsync("Action deleted successfully.");
+                await Context.ReplyAndDeleteAsync("Action deleted successfully.");
 
                 await Task.Delay(5000);
                 await Context.Message.DeleteAsync();
@@ -460,7 +461,7 @@ namespace VainBot.Modules
         //    await ReplyAsync("Action added successfully.");
         //}
 
-        private string GetValidActionTypes()
+        private static string GetValidActionTypes()
         {
             var validTypes = "";
             foreach (ActionTakenType t in Enum.GetValues(typeof(ActionTakenType)))
