@@ -109,10 +109,12 @@ namespace VainBot.Services
                 if (response.Items.Count == 0)
                     continue;
 
+                var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
+
+                _logger.LogInformation($"Newest video: {newest.Title}, published at {newest.PublishedAt}");
                 _logger.LogInformation("Determining if new YT video exists");
 
-                var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
-                if (channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
+                if (channel.LatestVideoUploadedAt.HasValue && channel.LatestVideoId != newest.ResourceId.VideoId && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
                 {
                     _logger.LogInformation("No new video, continuing");
                     continue;
