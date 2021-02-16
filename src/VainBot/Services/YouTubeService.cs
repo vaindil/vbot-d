@@ -114,7 +114,7 @@ namespace VainBot.Services
                 _logger.LogInformation($"Newest video: {newest.Title}, published at {newest.PublishedAt}");
                 _logger.LogInformation("Determining if new YT video exists");
 
-                if (channel.LatestVideoUploadedAt.HasValue && channel.LatestVideoId != newest.ResourceId.VideoId && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
+                if ((channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value) || channel.LatestVideoId == newest.ResourceId.VideoId)
                 {
                     _logger.LogInformation("No new video, continuing");
                     continue;
@@ -136,6 +136,8 @@ namespace VainBot.Services
                     {
                         db.YouTubeChannelsToCheck.UpdateRange(_channels);
                         await db.SaveChangesAsync();
+
+                        _logger.LogInformation("DB updated for YT");
                     }
                 }
                 catch (Exception ex)
