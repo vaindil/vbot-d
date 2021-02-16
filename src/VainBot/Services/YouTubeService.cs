@@ -49,6 +49,8 @@ namespace VainBot.Services
 
         public async Task InitializeAsync()
         {
+            _logger.LogInformation("Initializing YT channels");
+
             try
             {
                 using (var db = _provider.GetRequiredService<VbContext>())
@@ -69,10 +71,14 @@ namespace VainBot.Services
             }
 
             _pollTimer = new Timer(async (_) => await CheckYouTubeAsync(), null, 0, 600000);
+
+            _logger.LogInformation($"YT service initialized, checking {_channels.Count} YT channels");
         }
 
         public async Task CheckYouTubeAsync()
         {
+            _logger.LogInformation("Checking YT channels");
+
             if (_channels == null || _channels.Count == 0)
                 return;
 
@@ -86,6 +92,8 @@ namespace VainBot.Services
 
                 PlaylistItemListResponse response;
 
+                _logger.LogInformation($"About to check YT API for channel {channel.Username}");
+
                 try
                 {
                     response = await request.ExecuteAsync();
@@ -96,13 +104,21 @@ namespace VainBot.Services
                     continue;
                 }
 
+                _logger.LogInformation("Channel checked successfully");
+
                 if (response.Items.Count == 0)
                     continue;
 
+                _logger.LogInformation("Determining if new YT video exists");
+
                 var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
                 if (channel.LatestVideoUploadedAt.HasValue && newest.PublishedAt <= channel.LatestVideoUploadedAt.Value)
+                {
+                    _logger.LogInformation("No new video, continuing");
                     continue;
+                }
 
+                _logger.LogInformation($"New video posted: {newest.Title}");
                 channel.LatestVideoId = newest.ResourceId.VideoId;
                 channel.LatestVideoUploadedAt = newest.PublishedAt;
                 channelChanged = true;
@@ -129,45 +145,61 @@ namespace VainBot.Services
 
         public async Task PostNewVideoAsync(YouTubeChannelToCheck channel, PlaylistItemSnippet video)
         {
-            if (!(_discord.GetChannel((ulong)channel.DiscordChannelId) is SocketTextChannel discordChannel))
+            try
             {
-                await RemoveChannelByIdAsync(channel.Id);
-                _logger.LogError($"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
-                    $"for YouTube channel {channel.Username} ({channel.YouTubeChannelId}).");
-                return;
-            }
+                _logger.LogInformation("Posting new video, getting Discord channel");
 
-            var role = discordChannel.Guild.GetRole(ROLEID);
-            await role.ModifyAsync(x => x.Mentionable = true);
-
-            var newMsg = await discordChannel.SendMessageAsync(
-                $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
-
-            await role.ModifyAsync(x => x.Mentionable = false);
-
-            if (channel.IsDeleted)
-            {
-                if (channel.DiscordMessageId.HasValue)
+                if (_discord.GetChannel((ulong)channel.DiscordChannelId) is not SocketTextChannel discordChannel)
                 {
-                    var oldMsg = await discordChannel.GetMessageAsync((ulong)channel.DiscordMessageId.Value);
-                    if (oldMsg != null)
-                        await oldMsg.DeleteAsync();
+                    await RemoveChannelByIdAsync(channel.Id);
+                    _logger.LogError($"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
+                        $"for YouTube channel {channel.Username} ({channel.YouTubeChannelId}).");
+                    return;
                 }
 
-                channel.DiscordMessageId = (long)newMsg.Id;
+                _logger.LogInformation("Found channel, getting role");
+                var role = discordChannel.Guild.GetRole(ROLEID);
 
-                try
+                _logger.LogInformation("Found role, making it mentionable");
+                await role.ModifyAsync(x => x.Mentionable = true);
+
+                _logger.LogInformation("Posting message");
+                var newMsg = await discordChannel.SendMessageAsync(
+                    $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
+
+                _logger.LogInformation("Message posted, making role unmentionable");
+                await role.ModifyAsync(x => x.Mentionable = false);
+
+                _logger.LogInformation("Role made unmentionable");
+
+                if (channel.IsDeleted)
                 {
-                    using (var db = _provider.GetRequiredService<VbContext>())
+                    if (channel.DiscordMessageId.HasValue)
                     {
-                        db.YouTubeChannelsToCheck.Update(channel);
-                        await db.SaveChangesAsync();
+                        var oldMsg = await discordChannel.GetMessageAsync((ulong)channel.DiscordMessageId.Value);
+                        if (oldMsg != null)
+                            await oldMsg.DeleteAsync();
+                    }
+
+                    channel.DiscordMessageId = (long)newMsg.Id;
+
+                    try
+                    {
+                        using (var db = _provider.GetRequiredService<VbContext>())
+                        {
+                            db.YouTubeChannelsToCheck.Update(channel);
+                            await db.SaveChangesAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogCritical(ex, "Error updating database in YouTube service: post new video");
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogCritical(ex, "Error updating database in YouTube service: post new video");
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error posting new YT video");
             }
         }
 
