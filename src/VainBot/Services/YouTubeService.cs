@@ -111,8 +111,8 @@ namespace VainBot.Services
 
                 var newest = response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).First();
 
-                _logger.LogInformation("Top 4 videos in descending order of published date:");
-                foreach (var item in response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt).Take(4))
+                _logger.LogInformation("All videos in descending order of published date:");
+                foreach (var item in response.Items.Select(i => i.Snippet).OrderByDescending(s => s.PublishedAt))
                 {
                     _logger.LogInformation($"Title: {item.Title} | Published At: {item.PublishedAt} | ID: {item.ResourceId.VideoId}");
                 }
