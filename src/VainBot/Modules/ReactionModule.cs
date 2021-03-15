@@ -35,6 +35,13 @@ namespace VainBot.Modules
             await ReplyWithReactionAsync("catLick.gif");
         }
 
+        [Command("catLickScuffed")]
+        [Alias("lickScuffed")]
+        public async Task CatLickScuffed([Remainder] string _ = null)
+        {
+            await ReplyWithReactionAsync("catLickScuffed.gif");
+        }
+
         private async Task ReplyWithReactionAsync(string filename)
         {
             await ReplyAsync(_baseUrl + filename);
