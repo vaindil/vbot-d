@@ -36,7 +36,7 @@ namespace VainBot.Modules
         }
 
         [Command("catLickScuffed")]
-        [Alias("lickScuffed")]
+        [Alias("lickScuffed", "scuffedLick")]
         public async Task CatLickScuffed([Remainder] string _ = null)
         {
             await ReplyWithReactionAsync("catLickScuffed.gif");
