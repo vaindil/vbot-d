@@ -58,18 +58,18 @@ namespace VainBot.Modules
             message.Append(btc.LastPrice.ToString("0.00#"));
             message.Append(" | ");
             message.Append(btc.DailyChange.ToString("0.00#"));
-            //message.Append(" (");
-            //message.Append(btc.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(btc.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
             message.Append('\n');
 
             message.Append("ETH: ");
             message.Append(eth.LastPrice.ToString("0.00#"));
             message.Append(" | ");
             message.Append(eth.DailyChange.ToString("0.00#"));
-            //message.Append(" (");
-            //message.Append(eth.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(eth.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
             message.Append('\n');
 
             message.Append("DGE: ");
@@ -77,36 +77,36 @@ namespace VainBot.Modules
             message.Append((doge.LastPrice / 1000000).ToString("0.00000#"));
             message.Append(" | ");
             message.Append((doge.DailyChange / 1000000).ToString("0.00000#"));
-            //message.Append(" (");
-            //message.Append(doge.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(doge.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
             message.Append('\n');
 
             message.Append("LTC: ");
             message.Append(ltc.LastPrice.ToString("0.00#"));
             message.Append(" | ");
             message.Append(ltc.DailyChange.ToString("0.00#"));
-            //message.Append(" (");
-            //message.Append(ltc.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(ltc.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
             message.Append('\n');
 
             message.Append("IOT: ");
             message.Append(iot.LastPrice.ToString("0.00#"));
             message.Append(" | ");
             message.Append(iot.DailyChange.ToString("0.00#"));
-            //message.Append(" (");
-            //message.Append(iot.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(iot.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
             message.Append('\n');
 
             message.Append("XMR: ");
             message.Append(xmr.LastPrice.ToString("0.00#"));
             message.Append(" | ");
             message.Append(xmr.DailyChange.ToString("0.00#"));
-            //message.Append(" (");
-            //message.Append(xmr.DailyChangePercentage.ToString("0.00#"));
-            //message.Append("%)");
+            message.Append(" (");
+            message.Append(xmr.DailyChangePercentage.ToString("0.00#"));
+            message.Append("%)");
 
             await ReplyAsync(message.ToString());
         }
