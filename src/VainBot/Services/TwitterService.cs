@@ -85,7 +85,16 @@ namespace VainBot.Services
                 if (ttc.LatestTweetId > 0)
                     parameters.SinceId = ttc.LatestTweetId;
 
-                var tweets = await _twitterClient.Timelines.GetUserTimelineAsync(parameters);
+                ITweet[] tweets;
+                try
+                {
+                    tweets = await _twitterClient.Timelines.GetUserTimelineAsync(parameters);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, $"Error getting Twitter timeline for user {ttc.TwitterUsername}");
+                    continue;
+                }
 
                 if (tweets?.Any() == true)
                 {
@@ -154,12 +163,21 @@ namespace VainBot.Services
             if (_twittersToCheck.Any(x => x.TwitterId == toCheck.TwitterId && x.DiscordChannelId == toCheck.DiscordChannelId))
                 return true;
 
-            var latestTweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(toCheck.TwitterId)
+            ITweet[] latestTweets;
+            try
             {
-                ExcludeReplies = true,
-                IncludeRetweets = toCheck.IncludeRetweets,
-                PageSize = 1
-            });
+                latestTweets = await _twitterClient.Timelines.GetUserTimelineAsync(new GetUserTimelineParameters(toCheck.TwitterId)
+                {
+                    ExcludeReplies = true,
+                    IncludeRetweets = toCheck.IncludeRetweets,
+                    PageSize = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, $"Error adding new Twitter account for user {toCheck.TwitterUsername}");
+                return false;
+            }
 
             var latestTweet = latestTweets.FirstOrDefault();
             if (latestTweet != null)
@@ -221,8 +239,9 @@ namespace VainBot.Services
                 var user = await _twitterClient.Users.GetUserAsync(username);
                 return (user.Id, user.ScreenName);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error getting user info for Twitter user {username}");
                 return (null, null);
             }
         }
