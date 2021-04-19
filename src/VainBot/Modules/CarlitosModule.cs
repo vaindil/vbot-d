@@ -11,7 +11,7 @@ namespace VainBot.Modules
         [Alias("carlos", "david", "globes")]
         public async Task Carlitos([Remainder]string _ = null)
         {
-            await ReplyAsync("<:Bedge:833494776137121834><:thought1:833494788174249985> Carlitos getting owned by globes <:thought2:833494796156272652>");
+            await ReplyAsync("<:Bedge:833494776137121834> <:thought1:833494788174249985> Carlitos getting owned by globes <:thought2:833494796156272652>");
         }
     }
 }
