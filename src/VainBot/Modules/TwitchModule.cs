@@ -65,7 +65,7 @@ namespace VainBot.Modules
 
                 if (reply.Length >= 1700)
                 {
-                    reply.TrimEnd('\\', 'n');
+                    reply = reply.TrimEnd('\\', 'n');
 
                     await ReplyAsync(reply);
                     reply = "";
@@ -73,7 +73,7 @@ namespace VainBot.Modules
                 }
             }
 
-            reply.TrimEnd('\\', 'n');
+            reply = reply.TrimEnd('\\', 'n');
 
             if (reply?.Length == 0 && !multiMessage)
                 reply = "No streams are being checked on this server.";
