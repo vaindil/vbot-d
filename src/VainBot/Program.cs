@@ -46,7 +46,7 @@ namespace VainBot
             var services = ConfigureServices();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            _client.Ready += async () =>
+            _client.Connected += async () =>
             {
                 if (!_isDev)
                 {
