@@ -46,8 +46,10 @@ namespace VainBot
             var services = ConfigureServices();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            _client.Connected += async () =>
+            _client.Ready += async () =>
             {
+                services.GetRequiredService<ILogger<Program>>().LogInformation("Ready event fired");
+
                 if (!_isDev)
                 {
                     await services.GetRequiredService<ReminderService>().InitializeAsync();
