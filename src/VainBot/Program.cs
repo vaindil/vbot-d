@@ -51,6 +51,8 @@ namespace VainBot
 
             _client.Ready += async () =>
             {
+                services.GetRequiredService<ILogger<Program>>().LogInformation("Ready event fired");
+
                 await services.GetRequiredService<UserService>().InitializeAsync();
                 await services.GetRequiredService<YouTubeService>().InitializeAsync();
 

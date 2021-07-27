@@ -28,6 +28,13 @@ namespace VainBot.Modules
             await ReplyWithReactionAsync("agathaWink.gif");
         }
 
+        [Command("whoasked")]
+        [Alias("askers", "wa", "who")]
+        public async Task WhoAsked([Remainder] string _ = null)
+        {
+            await ReplyWithReactionAsync("wa.mp4");
+        }
+
         [Command("catLick")]
         [Alias("lick")]
         public async Task CatLick([Remainder] string _ = null)

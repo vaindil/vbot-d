@@ -12,12 +12,12 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="2.0.0" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.3.0" />
-    <PackageReference Include="Discord.Net.Core" Version="2.3.0" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.3.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.50.0.2232" />
+	  <PackageReference Include="Discord.Net.Commands" Version="2.4.0" />
+	  <PackageReference Include="Discord.Net.Core" Version="2.4.0" />
+	  <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
+	  <PackageReference Include="Google.Apis.YouTube.v3" Version="1.51.0.2294" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
@@ -25,9 +25,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
-    <PackageReference Include="PureWebSockets" Version="2.4.4" />
-    <PackageReference Include="TweetinviAPI" Version="5.0.3" />
+	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
+	<PackageReference Include="PureWebSockets" Version="2.4.4" />
+    <PackageReference Include="TweetinviAPI" Version="5.0.4" />
   </ItemGroup>
 
   <ItemGroup>
