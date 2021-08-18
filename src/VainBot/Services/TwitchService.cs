@@ -295,14 +295,7 @@ namespace VainBot.Services
                 // Kaly notifications
                 if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
                 {
-                    try
-                    {
-                        await _discord.GetGuild(258507766669377536).GetRole(534563536148627466).ModifyAsync(x => x.Mentionable = true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Could not toggle Kaly's role to mentionable.");
-                    }
+                    await SetKaylRoleMentionable(true);
                 }
 
                 _logger.LogInformation($"About to send Twitch live message | ID: {toCheck.Id} | Twitch name: {toCheck.Username} | " +
@@ -324,6 +317,7 @@ namespace VainBot.Services
                         await RemoveStreamByIdAsync(toCheck.Id);
                     }
 
+                    await SetKaylRoleMentionable(false);
                     return;
                 }
 
@@ -334,14 +328,7 @@ namespace VainBot.Services
                 // Kaly notifications
                 if (toCheck.ChannelId == 269567108839374848 && toCheck.TwitchId == "63108809")
                 {
-                    try
-                    {
-                        await _discord.GetGuild(258507766669377536).GetRole(534563536148627466).ModifyAsync(x => x.Mentionable = false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Could not toggle Kaly's role to not mentionable.");
-                    }
+                    await SetKaylRoleMentionable(false);
                 }
             }
 
@@ -640,6 +627,18 @@ namespace VainBot.Services
                 TimeSpan.FromSeconds(tokenResp.ExpiresInSeconds - 600), TimeSpan.FromMilliseconds(-1));
 
             _logger.LogInformation("Finished getting Twitch token");
+        }
+
+        private async Task SetKaylRoleMentionable(bool mentionable)
+        {
+            try
+            {
+                await _discord.GetGuild(258507766669377536).GetRole(534563536148627466).ModifyAsync(x => x.Mentionable = mentionable);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Could not toggle Kaly's role to mentionable = {mentionable}.");
+            }
         }
     }
 }
