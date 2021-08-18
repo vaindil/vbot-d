@@ -317,7 +317,7 @@ namespace VainBot.Services
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError(ex, $"Exception when trying to send video for Twitch channel {toCheck.Username} to Discord channel {toCheck.ChannelId}");
+                    _logger.LogError(ex, $"Exception when trying to send stream for Twitch channel {toCheck.Username} to Discord channel {toCheck.ChannelId}");
                     if (ex.DiscordCode == 50013)
                     {
                         _logger.LogError("Bot does not have permission to post, removing Twitch entry.");
