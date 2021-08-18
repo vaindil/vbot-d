@@ -127,7 +127,7 @@ namespace VainBot.Services
                             }
                             catch (HttpException ex)
                             {
-                                _logger.LogError(ex, $"Exception when trying to send video for Twitter account {ttc.TwitterUsername} to " +
+                                _logger.LogError(ex, $"Exception when trying to send tweet for Twitter account {ttc.TwitterUsername} to " +
                                     $"Discord channel {ttc.DiscordChannelId}");
                                 if (ex.DiscordCode == 50013)
                                 {
