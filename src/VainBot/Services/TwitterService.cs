@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord.Net;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -120,7 +121,20 @@ namespace VainBot.Services
                         }
                         else
                         {
-                            await channel.SendMessageAsync(tweet.Url);
+                            try
+                            {
+                                await channel.SendMessageAsync(tweet.Url);
+                            }
+                            catch (HttpException ex)
+                            {
+                                _logger.LogError(ex, $"Exception when trying to send video for Twitter account {ttc.TwitterUsername} to " +
+                                    $"Discord channel {ttc.DiscordChannelId}");
+                                if (ex.DiscordCode == 50013)
+                                {
+                                    _logger.LogError("Bot does not have permission to post, removing Twitter entry.");
+                                    ttcToRemove.Add(ttc);
+                                }
+                            }
                         }
                     }
                 }
