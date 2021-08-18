@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -287,15 +288,31 @@ namespace VainBot.Services
 
                 if (!(_discord.GetChannel((ulong)toCheck.ChannelId) is SocketTextChannel channel))
                 {
-                    await RemoveStreamByIdAsync(toCheck.Id);
                     _logger.LogError($"Channel does not exist: {toCheck.ChannelId} in guild {toCheck.GuildId} for streamer {toCheck.Username}");
+                    await RemoveStreamByIdAsync(toCheck.Id);
                     return;
                 }
 
                 var role = channel.Guild.GetRole(ROLEID);
                 await role.ModifyAsync(x => x.Mentionable = true);
 
-                var message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
+                RestUserMessage message;
+                try
+                {
+                    message = await channel.SendMessageAsync(toCheck.MessageToPost, embed: embed);
+                }
+                catch (HttpException ex)
+                {
+                    _logger.LogError(ex, $"Exception when trying to send video for Twitch channel {toCheck.Username} to Discord channel {toCheck.ChannelId}");
+                    if (ex.DiscordCode == 50013)
+                    {
+                        _logger.LogError("Bot does not have permission to post, removing Twitch entry.");
+                        await RemoveStreamByIdAsync(toCheck.Id);
+                    }
+
+                    await role.ModifyAsync(x => x.Mentionable = false);
+                    return;
+                }
 
                 toCheck.CurrentMessageId = (long)message.Id;
                 toCheckUpdated.Add(toCheck);

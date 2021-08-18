@@ -1,4 +1,6 @@
-﻿using Discord.WebSocket;
+﻿using Discord.Net;
+using Discord.Rest;
+using Discord.WebSocket;
 using Google.Apis.YouTube.v3.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -155,9 +157,9 @@ namespace VainBot.Services
 
                 if (_discord.GetChannel((ulong)channel.DiscordChannelId) is not SocketTextChannel discordChannel)
                 {
-                    await RemoveChannelByIdAsync(channel.Id);
                     _logger.LogError($"Discord channel does not exist: {channel.DiscordChannelId} in guild {channel.DiscordGuildId} " +
                         $"for YouTube channel {channel.Username} ({channel.YouTubeChannelId}).");
+                    await RemoveChannelByIdAsync(channel.Id);
                     return;
                 }
 
@@ -168,8 +170,24 @@ namespace VainBot.Services
                 await role.ModifyAsync(x => x.Mentionable = true);
 
                 _logger.LogInformation("Posting message");
-                var newMsg = await discordChannel.SendMessageAsync(
-                    $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
+                RestUserMessage newMsg;
+                try
+                {
+                    newMsg = await discordChannel.SendMessageAsync(
+                        $"{channel.DiscordMessageToPost} | https://www.youtube.com/watch?v={video.ResourceId.VideoId}");
+                }
+                catch (HttpException ex)
+                {
+                    _logger.LogError(ex, $"Exception when trying to send video for YouTube channel {channel.Username} to Discord channel {channel.DiscordChannelId}");
+                    if (ex.DiscordCode == 50013)
+                    {
+                        _logger.LogError("Bot does not have permission to post, removing YouTube entry.");
+                        await RemoveChannelByIdAsync(channel.Id);
+                    }
+
+                    await role.ModifyAsync(x => x.Mentionable = false);
+                    return;
+                }
 
                 _logger.LogInformation("Message posted, making role unmentionable");
                 await role.ModifyAsync(x => x.Mentionable = false);
