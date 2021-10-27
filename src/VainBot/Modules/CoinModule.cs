@@ -27,7 +27,7 @@ namespace VainBot.Modules
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIBUSD,tXMRUSD,tDOGUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:USD,tXMRUSD,tDOGUSD");
             }
             catch
             {
@@ -50,7 +50,7 @@ namespace VainBot.Modules
             var eth = coins.Find(c => c.Symbol == "tETHUSD");
             var ltc = coins.Find(c => c.Symbol == "tLTCUSD");
             var doge = coins.Find(c => c.Symbol == "tDOGUSD");
-            var shib = coins.Find(c => c.Symbol == "tSHIBUSD");
+            var shib = coins.Find(c => c.Symbol == "tSHIB:USD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
             var message = new StringBuilder("__Current Price | Daily Change__\n");
