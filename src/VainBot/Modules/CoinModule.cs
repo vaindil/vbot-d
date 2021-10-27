@@ -27,7 +27,7 @@ namespace VainBot.Modules
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tIOTUSD,tXMRUSD,tDOGUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:UST,tXMRUSD,tDOGUSD");
             }
             catch
             {
@@ -92,9 +92,9 @@ namespace VainBot.Modules
             message.Append('\n');
 
             message.Append("SHIB: ");
-            message.Append(shib.LastPrice.ToString("0.00#"));
+            message.Append(shib.LastPrice.ToString("0.00000000#"));
             message.Append(" | ");
-            message.Append(shib.DailyChange.ToString("0.00#"));
+            message.Append(shib.DailyChange.ToString("0.00000000#"));
             message.Append(" (");
             message.Append(shib.DailyChangePercentage.ToString("0.00#"));
             message.Append("%)");
