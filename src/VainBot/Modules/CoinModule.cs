@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace VainBot.Modules
 {
     [Group("coins")]
-    [Alias("coin", "btc", "eth", "ltc", "iot", "doge", "dog", "xdg", "dge")]
+    [Alias("coin", "btc", "eth", "ltc", "shib", "doge", "dog", "xdg", "dge")]
     public class CoinModule : ModuleBase
     {
         private readonly HttpClient _httpClient;
@@ -27,7 +27,7 @@ namespace VainBot.Modules
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tIOTUSD,tXMRUSD,tDOGUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:USD,tXMRUSD,tDOGUSD");
             }
             catch
             {
@@ -50,7 +50,7 @@ namespace VainBot.Modules
             var eth = coins.Find(c => c.Symbol == "tETHUSD");
             var ltc = coins.Find(c => c.Symbol == "tLTCUSD");
             var doge = coins.Find(c => c.Symbol == "tDOGUSD");
-            var iot = coins.Find(c => c.Symbol == "tIOTUSD");
+            var shib = coins.Find(c => c.Symbol == "tSHIB:USD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
             var message = new StringBuilder("__Current Price | Daily Change__\n");
@@ -91,12 +91,12 @@ namespace VainBot.Modules
             message.Append("%)");
             message.Append('\n');
 
-            message.Append("IOT: ");
-            message.Append(iot.LastPrice.ToString("0.00#"));
+            message.Append("SHIB: ");
+            message.Append(shib.LastPrice.ToString("0.00#"));
             message.Append(" | ");
-            message.Append(iot.DailyChange.ToString("0.00#"));
+            message.Append(shib.DailyChange.ToString("0.00#"));
             message.Append(" (");
-            message.Append(iot.DailyChangePercentage.ToString("0.00#"));
+            message.Append(shib.DailyChangePercentage.ToString("0.00#"));
             message.Append("%)");
             message.Append('\n');
 
