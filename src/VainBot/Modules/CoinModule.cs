@@ -92,9 +92,9 @@ namespace VainBot.Modules
             message.Append('\n');
 
             message.Append("SHIB: ");
-            message.Append(shib.LastPrice.ToString("0.00#"));
+            message.Append(shib.LastPrice.ToString("0.00000000#"));
             message.Append(" | ");
-            message.Append(shib.DailyChange.ToString("0.00#"));
+            message.Append(shib.DailyChange.ToString("0.00000000#"));
             message.Append(" (");
             message.Append(shib.DailyChangePercentage.ToString("0.00#"));
             message.Append("%)");
