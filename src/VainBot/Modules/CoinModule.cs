@@ -27,7 +27,7 @@ namespace VainBot.Modules
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:UST,tXMRUSD,tDOGUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:USD,tXMRUSD,tDOGUSD");
             }
             catch
             {
