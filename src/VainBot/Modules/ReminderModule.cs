@@ -43,7 +43,7 @@ namespace VainBot.Modules
 
         [Command]
         [Priority(1)]
-        public async Task Invalid([Remainder]string blah)
+        public async Task Invalid([Remainder]string _)
         {
             await ReplyAsync("Invalid command. " + UseHelpIfNeededError);
         }
@@ -69,12 +69,23 @@ namespace VainBot.Modules
                 return;
             }
 
-            await _reminderSvc.CreateReminderAsync(
-                Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
+            // await _reminderSvc.CreateReminderAsync(
+            //     Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
-            await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimeString}).");
+
+            var reply = $"{Context.Message.Author.Mention}: ";
+
+            if (Context.Message.Author.Id == 159120017399611402 && (
+                message.Contains("tax", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("irs", StringComparison.OrdinalIgnoreCase)))
+            {
+                reply += "Have you considered maybe, oh I dunno, actually doing your taxes instead of endlessly putting it off every year? ";
+            }
+
+            reply += $"Reminder set for {delay} from now ({finalTimeString}).";
+            await ReplyAsync(reply);
         }
 
         private TimeSpan ParseDelay(string delay)
