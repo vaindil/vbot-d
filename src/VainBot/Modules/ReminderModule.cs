@@ -69,8 +69,8 @@ namespace VainBot.Modules
                 return;
             }
 
-            // await _reminderSvc.CreateReminderAsync(
-            //     Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
+            await _reminderSvc.CreateReminderAsync(
+                Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
