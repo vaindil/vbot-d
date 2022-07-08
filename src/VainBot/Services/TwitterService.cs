@@ -1,4 +1,5 @@
-﻿using Discord.Net;
+﻿using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,7 +130,7 @@ namespace VainBot.Services
                             {
                                 _logger.LogError(ex, $"Exception when trying to send tweet for Twitter account {ttc.TwitterUsername} to " +
                                     $"Discord channel {ttc.DiscordChannelId}");
-                                if (ex.DiscordCode == 50013)
+                                if (ex.DiscordCode == DiscordErrorCode.InsufficientPermissions)
                                 {
                                     _logger.LogError("Bot does not have permission to post, removing Twitter entry.");
                                     ttcToRemove.Add(ttc);

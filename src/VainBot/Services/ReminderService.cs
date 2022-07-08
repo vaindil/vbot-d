@@ -22,7 +22,7 @@ namespace VainBot.Services
         private readonly ILogger<ReminderService> _logger;
         private readonly IServiceProvider _provider;
 
-        private readonly List<TimerWrapper> _timers = new List<TimerWrapper>();
+        private readonly List<TimerWrapper> _timers = new();
 
         public ReminderService(
             DiscordSocketClient discord,
@@ -133,21 +133,21 @@ namespace VainBot.Services
 
             if (!reminder.GuildId.HasValue)
             {
-                var channel = await user.GetOrCreateDMChannelAsync();
-                if (channel == null)
-                {
-                    _logger.LogInformation($"Could not send reminder to user {reminder.UserId} via DM, DM could not be created." +
-                        $"Message: {reminder.Message}");
+                var channel = await user.CreateDMChannelAsync();
 
+                try
+                {
+                    await channel.SendMessageAsync(user.Mention, embed: embed);
+                }
+                catch
+                {
                     await FinalizeReminderAsync(reminder);
                     return;
                 }
-
-                await channel.SendMessageAsync(user.Mention, embed: embed);
             }
             else
             {
-                if (!(_discord.GetChannel((ulong)reminder.ChannelId) is SocketTextChannel channel))
+                if (_discord.GetChannel((ulong)reminder.ChannelId) is not SocketTextChannel channel)
                 {
                     _logger.LogInformation($"Could not send reminder to user {reminder.UserId} in channel {reminder.ChannelId}, " +
                         $"guild {reminder.GuildId}. Channel does not exist. Message: {reminder.Message}");

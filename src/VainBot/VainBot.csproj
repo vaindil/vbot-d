@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <CodeAnalysisRuleSet>..\..\VainBot.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -12,20 +12,20 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="2.0.0" />
-	  <PackageReference Include="Discord.Net.Commands" Version="2.4.0" />
-	  <PackageReference Include="Discord.Net.Core" Version="2.4.0" />
-	  <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
-	  <PackageReference Include="Google.Apis.YouTube.v3" Version="1.51.0.2294" />
+	<PackageReference Include="Discord.Net.Commands" Version="3.7.2" />
+	<PackageReference Include="Discord.Net.Core" Version="3.7.2" />
+	<PackageReference Include="Discord.Net.WebSocket" Version="3.7.2" />
+	<PackageReference Include="Google.Apis.YouTube.v3" Version="1.57.0.2735" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
+	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.5" />
 	<PackageReference Include="PureWebSockets" Version="2.4.4" />
     <PackageReference Include="TweetinviAPI" Version="5.0.4" />
   </ItemGroup>

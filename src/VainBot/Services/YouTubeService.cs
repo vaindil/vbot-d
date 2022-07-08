@@ -1,4 +1,5 @@
-﻿using Discord.Net;
+﻿using Discord;
+using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket;
 using Google.Apis.YouTube.v3.Data;
@@ -179,7 +180,7 @@ namespace VainBot.Services
                 catch (HttpException ex)
                 {
                     _logger.LogError(ex, $"Exception when trying to send video for YouTube channel {channel.Username} to Discord channel {channel.DiscordChannelId}");
-                    if (ex.DiscordCode == 50013)
+                    if (ex.DiscordCode == DiscordErrorCode.InsufficientPermissions)
                     {
                         _logger.LogError("Bot does not have permission to post, removing YouTube entry.");
                         await RemoveChannelByIdAsync(channel.Id);
