@@ -27,7 +27,7 @@ namespace VainBot.Modules
             await Context.Channel.TriggerTypingAsync();
             try
             {
-                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:USD,tXMRUSD,tDOGUSD");
+                bfResponse = await _httpClient.GetAsync("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD,tETHUSD,tLTCUSD,tSHIB:USD,tXMRUSD,tDOGE:USD");
             }
             catch
             {
@@ -49,7 +49,7 @@ namespace VainBot.Modules
             var btc = coins.Find(c => c.Symbol == "tBTCUSD");
             var eth = coins.Find(c => c.Symbol == "tETHUSD");
             var ltc = coins.Find(c => c.Symbol == "tLTCUSD");
-            var doge = coins.Find(c => c.Symbol == "tDOGUSD");
+            var doge = coins.Find(c => c.Symbol == "tDOGE:USD");
             var shib = coins.Find(c => c.Symbol == "tSHIB:USD");
             var xmr = coins.Find(c => c.Symbol == "tXMRUSD");
 
@@ -73,10 +73,9 @@ namespace VainBot.Modules
             message.Append('\n');
 
             message.Append("DGE: ");
-            // Doge is actually MDOGE with Bitfinex, so divide by 1M to get real price
-            message.Append((doge.LastPrice / 1000000).ToString("0.00000#"));
+            message.Append(doge.LastPrice.ToString("0.00000#"));
             message.Append(" | ");
-            message.Append((doge.DailyChange / 1000000).ToString("0.00000#"));
+            message.Append(doge.DailyChange.ToString("0.00000#"));
             message.Append(" (");
             message.Append(doge.DailyChangePercentage.ToString("0.00#"));
             message.Append("%)");
