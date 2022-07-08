@@ -23,7 +23,7 @@ namespace VainBot
         public static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
         private DiscordSocketClient _client;
-        private DiscordRestClient _restClient = new DiscordRestClient();
+        private readonly DiscordRestClient _restClient = new();
         private IConfiguration _config;
         private bool _isDev;
 
