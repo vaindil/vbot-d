@@ -43,7 +43,8 @@ namespace VainBot
                 new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Warning,
-                    AlwaysDownloadUsers = true
+                    AlwaysDownloadUsers = true,
+                    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent | GatewayIntents.GuildMembers
                 });
 
             var services = ConfigureServices();
