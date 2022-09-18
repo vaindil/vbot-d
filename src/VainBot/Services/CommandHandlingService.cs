@@ -41,14 +41,16 @@ namespace VainBot.Services
         async Task MessageReceived(SocketMessage rawMessage)
         {
             // ignore system messages and other bots
-            if (!(rawMessage is SocketUserMessage message))
-                return;
-            if (message.Source != MessageSource.User)
+            if (rawMessage is not SocketUserMessage message)
                 return;
 
             int argPos = 0;
-            if (!message.HasCharPrefix(_prefix, ref argPos))
+            if (!(message.HasCharPrefix(_prefix, ref argPos) ||
+                message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) ||
+                message.Author.IsBot)
+            {
                 return;
+            }
 
             var context = new SocketCommandContext(_discord, message);
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
