@@ -9,7 +9,7 @@ namespace VainBot.Modules
         [Alias("contexto")]
         public async Task Wordle([Remainder]string _ = null)
         {
-            await ReplyAsync("<https://www.nytimes.com/games/wordle/index.html> || <https://scoredle.com> || <https://contexto.me>");
+            await ReplyAsync("<https://www.nytimes.com/games/wordle/index.html> | <https://scoredle.com> | <https://contexto.me>");
         }
     }
 }
