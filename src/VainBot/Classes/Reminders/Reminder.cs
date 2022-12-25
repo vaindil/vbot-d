@@ -19,5 +19,12 @@ namespace VainBot.Classes.Reminders
         public long? GuildId { get; set; }
 
         public string Message { get; set; }
+
+        /// <summary>
+        /// If false, this reminder has already fired and is no longer active. Records are kept in case
+        /// the user snoozes the reminder.
+        /// alter table reminder add column is_active boolean not null default true;
+        /// </summary>
+        public bool IsActive { get; set; }
     }
 }
