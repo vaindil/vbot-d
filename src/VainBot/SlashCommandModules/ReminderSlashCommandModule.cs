@@ -92,7 +92,7 @@ namespace VainBot.SlashCommandModules
             }
 
             var reminderUserId = _reminderSvc.GetReminderUserId(reminderId);
-            if (reminderUserId.HasValue && reminderUserId != Context.User.Id)
+            if (!reminderUserId.HasValue || reminderUserId.Value != Context.User.Id)
             {
                 await RespondAsync("Only the person who created the reminder can snooze it.", ephemeral: true);
                 return;
