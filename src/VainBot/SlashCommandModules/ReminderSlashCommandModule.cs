@@ -84,6 +84,19 @@ namespace VainBot.SlashCommandModules
         {
             const string errMsg = "Error occurred when trying to snooze reminder.";
             var interaction = (SocketMessageComponent)Context.Interaction;
+            if (!int.TryParse(reminderIdString, out int reminderId))
+            {
+                await RespondAsync(text: errMsg, ephemeral: true);
+                _logger.LogError($"Couldn't parse reminder ID: {reminderIdString} | {interaction.Message.GetJumpUrl()}");
+                return;
+            }
+
+            var reminderUserId = _reminderSvc.GetReminderUserId(reminderId);
+            if (reminderUserId.HasValue && reminderUserId != Context.User.Id)
+            {
+                await RespondAsync("Only the person who created the reminder can snooze it.", ephemeral: true);
+                return;
+            }
 
             if (selections.Length != 1)
             {
@@ -92,10 +105,10 @@ namespace VainBot.SlashCommandModules
                 return;
             }
 
-            if (!int.TryParse(reminderIdString, out int reminderId) || !int.TryParse(selections[0], out int snoozeMinutes))
+            if (!int.TryParse(selections[0], out int snoozeMinutes))
             {
                 await RespondAsync(text: errMsg, ephemeral: true);
-                _logger.LogError($"Couldn't parse reminder ID or snooze reminder selection: {reminderIdString} | {selections[0]} | {interaction.Message.GetJumpUrl()}");
+                _logger.LogError($"Couldn't parse snooze reminder selection: {selections[0]} | {interaction.Message.GetJumpUrl()}");
                 return;
             }
 
