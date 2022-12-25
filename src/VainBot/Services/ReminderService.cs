@@ -240,13 +240,22 @@ namespace VainBot.Services
             return null;
         }
 
+        public ulong? GetReminderUserId(int reminderId)
+        {
+            var timer = _timers.Find(x => x.ReminderId == reminderId);
+            if (timer != null)
+                return (ulong)timer.UserId;
+            else
+                return null;
+        }
+
         private static MessageComponent BuildSnoozeMenu(int reminderId)
         {
             var menuBuilder = new SelectMenuBuilder()
                 .WithCustomId($"{SNOOZE_REMINDER_ID}:{reminderId}")
                 .WithMinValues(1)
                 .WithMaxValues(1)
-                .WithPlaceholder("Time to snooze for")
+                .WithPlaceholder("Snooze reminder?")
 #if DEBUG
                 .AddOption("Immediate (testing only)", "1")
 #endif
@@ -316,6 +325,7 @@ namespace VainBot.Services
                 _timers.Add(
                     new TimerWrapper(
                         reminder.Id,
+                        reminder.UserId,
                         new Timer(CreateTimer, reminder, maxTimeSpan, TimeSpan.FromMilliseconds(-1))));
             }
             else
@@ -323,19 +333,23 @@ namespace VainBot.Services
                 _timers.Add(
                     new TimerWrapper(
                         reminder.Id,
+                        reminder.UserId,
                         new Timer(async (e) => await SendReminderAsync(e), reminder, timeSpan, TimeSpan.FromMilliseconds(-1))));
             }
         }
 
         private class TimerWrapper
         {
-            public TimerWrapper(int reminderId, Timer timer)
+            public TimerWrapper(int reminderId, long userId, Timer timer)
             {
                 ReminderId = reminderId;
+                UserId = userId;
                 Timer = timer;
             }
 
             public int ReminderId { get; set; }
+
+            public long UserId { get; set; }
 
             public Timer Timer { get; set; }
         }
