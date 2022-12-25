@@ -4,6 +4,7 @@
   "twitch_client_id": "",
   "twitch_client_secret": "",
   "youtube_api_key": "",
+  "test_guild_id": 0,
   "Twitter": {
     "ConsumerKey": "",
     "ConsumerSecret": "",

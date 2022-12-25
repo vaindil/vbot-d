@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Google.Apis.Services;
@@ -36,7 +37,7 @@ namespace VainBot
                 .AddJsonFile("config.json")
                 .Build();
 
-            _isDev = Environment.GetEnvironmentVariable("VB_DEV") != null;
+            _isDev = IsDebug();
 
             _client = new DiscordSocketClient(
                 new DiscordSocketConfig
@@ -47,15 +48,16 @@ namespace VainBot
                 });
 
             var services = ConfigureServices();
+            await services.GetRequiredService<InteractionHandler>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
             _client.Ready += async () =>
             {
                 services.GetRequiredService<ILogger<Program>>().LogInformation("Ready event fired");
+                await services.GetRequiredService<ReminderService>().InitializeAsync();
 
                 if (!_isDev)
                 {
-                    await services.GetRequiredService<ReminderService>().InitializeAsync();
                     await services.GetRequiredService<TwitchService>().InitializeAsync();
                     await services.GetRequiredService<YouTubeService>().InitializeAsync();
                     await services.GetRequiredService<TwitterService>().InitializeAsync();
@@ -89,6 +91,8 @@ namespace VainBot
                 .Configure<Configs.TwitchBotRestartConfig>(_config.GetSection("TwitchBotRestart"))
                 .AddSingleton(_client)
                 .AddSingleton(_restClient)
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                .AddSingleton<InteractionHandler>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<TwitchService>()
@@ -107,6 +111,15 @@ namespace VainBot
                 .AddSingleton(_config)
                 .AddDbContext<VbContext>(o => o.UseNpgsql(_config["connection_string"]), ServiceLifetime.Transient)
                 .BuildServiceProvider();
+        }
+
+        public static bool IsDebug()
+        {
+            #if DEBUG
+                return true;
+            #else
+                return false;
+            #endif
         }
     }
 }

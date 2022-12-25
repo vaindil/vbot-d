@@ -27,10 +27,16 @@ namespace VainBot.Services
 
             _discord.MessageReceived += MessageReceived;
 
-            if (Environment.GetEnvironmentVariable("VB_DEV") != null)
+            if (Program.IsDebug())
+            {
                 _prefix = '+';
+                _logger.LogInformation($"debug mode, command prefix is {_prefix}");
+            }
             else
+            {
                 _prefix = '!';
+                _logger.LogInformation($"release mode, command prefix is {_prefix}");
+            }
         }
 
         public async Task InitializeAsync()
