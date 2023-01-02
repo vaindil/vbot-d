@@ -95,19 +95,6 @@ namespace VainBot.SlashCommandModules
         {
             const string errMsg = "Error occurred when trying to snooze reminder.";
             var interaction = (SocketMessageComponent)Context.Interaction;
-            if (!int.TryParse(reminderIdString, out int reminderId))
-            {
-                await RespondAsync(text: errMsg, ephemeral: true);
-                _logger.LogError($"Couldn't parse reminder ID: {reminderIdString} | {interaction.Message.GetJumpUrl()}");
-                return;
-            }
-
-            var reminderUserId = _reminderSvc.GetReminderUserId(reminderId);
-            if (!reminderUserId.HasValue || reminderUserId.Value != Context.User.Id)
-            {
-                await RespondAsync("Only the person who created the reminder can snooze it.", ephemeral: true);
-                return;
-            }
 
             if (!int.TryParse(reminderIdString, out int reminderId))
             {
