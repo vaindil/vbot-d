@@ -27,7 +27,14 @@ namespace VainBot.Modules
 
         [Command]
         [Alias("help")]
-        [Priority(3)]
+        public async Task UseSlashCommand([Remainder] string blah)
+        {
+            await ReplyAsync("Please use the /reminder slash command for reminders. Thanks!");
+        }
+
+        // [Command]
+        // [Alias("help")]
+        // [Priority(3)]
         public async Task Help()
         {
             await ReplyAsync("Get a reminder in a certain amount of time.\n" +
@@ -41,16 +48,16 @@ namespace VainBot.Modules
                 "```");
         }
 
-        [Command]
-        [Priority(1)]
-        public async Task Invalid([Remainder]string _)
+        // [Command]
+        // [Priority(1)]
+        public async Task Invalid([Remainder] string blah)
         {
             await ReplyAsync("Invalid command. " + UseHelpIfNeededError);
         }
 
-        [Command]
-        [Priority(2)]
-        public async Task CreateReminder(string delay, [Remainder]string message)
+        // [Command]
+        // [Priority(2)]
+        public async Task CreateReminder(string delay, [Remainder] string message)
         {
             if (message.Length > 500)
             {
@@ -74,18 +81,7 @@ namespace VainBot.Modules
 
             var finalTime = DateTime.UtcNow.Add(delayTs);
             var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
-
-            var reply = $"{Context.Message.Author.Mention}: ";
-
-            if (Context.Message.Author.Id == 159120017399611402 && (
-                message.Contains("tax", StringComparison.OrdinalIgnoreCase) ||
-                message.Contains("irs", StringComparison.OrdinalIgnoreCase)))
-            {
-                reply += "Have you considered maybe, oh I dunno, actually doing your taxes instead of endlessly putting it off every year? ";
-            }
-
-            reply += $"Reminder set for {delay} from now ({finalTimeString}).";
-            await ReplyAsync(reply);
+            await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimeString}).");
         }
 
         private TimeSpan ParseDelay(string delay)
@@ -101,7 +97,7 @@ namespace VainBot.Modules
                     throw new Exception("Invalid delay string. Negative numbers are not allowed. " + UseHelpIfNeededError);
 
                 if (delay.Contains('.'))
-                    throw new Exception("Invalid delay string. Decimals are not allowed. " +  UseHelpIfNeededError);
+                    throw new Exception("Invalid delay string. Decimals are not allowed. " + UseHelpIfNeededError);
 
                 throw new Exception("Invalid delay string. " + UseHelpIfNeededError);
             }
