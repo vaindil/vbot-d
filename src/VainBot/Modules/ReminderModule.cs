@@ -27,7 +27,14 @@ namespace VainBot.Modules
 
         [Command]
         [Alias("help")]
-        [Priority(3)]
+        public async Task UseSlashCommand([Remainder] string blah)
+        {
+            await ReplyAsync("Please use the /reminder slash command for reminders. Thanks!");
+        }
+
+        // [Command]
+        // [Alias("help")]
+        // [Priority(3)]
         public async Task Help()
         {
             await ReplyAsync("Get a reminder in a certain amount of time.\n" +
@@ -41,15 +48,15 @@ namespace VainBot.Modules
                 "```");
         }
 
-        [Command]
-        [Priority(1)]
+        // [Command]
+        // [Priority(1)]
         public async Task Invalid([Remainder]string blah)
         {
             await ReplyAsync("Invalid command. " + UseHelpIfNeededError);
         }
 
-        [Command]
-        [Priority(2)]
+        // [Command]
+        // [Priority(2)]
         public async Task CreateReminder(string delay, [Remainder]string message)
         {
             if (message.Length > 500)
