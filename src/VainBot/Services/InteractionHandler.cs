@@ -14,7 +14,7 @@ namespace VainBot.Services
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _config;
         private readonly ILogger<InteractionHandler> _logger;
 
         public InteractionHandler(
@@ -27,7 +27,7 @@ namespace VainBot.Services
             _client = client;
             _interactionService = interactionService;
             _services = services;
-            _configuration = config;
+            _config = config;
             _logger = logger;
         }
 
@@ -44,7 +44,7 @@ namespace VainBot.Services
         {
             if (Program.IsDebug())
             {
-                await _interactionService.RegisterCommandsToGuildAsync(_configuration.GetValue<ulong>("test_guild_id"), true);
+                await _interactionService.RegisterCommandsToGuildAsync(_config.GetValue<ulong>("test_guild_id"), true);
                 _logger.LogInformation("debug mode, registered guild commands");
             }
             else

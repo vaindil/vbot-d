@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using VainBot.Services;
 
@@ -30,9 +29,21 @@ namespace VainBot.SlashCommandModules
             [MinValue(0), MaxValue(1051200), Summary(description: "Number of minutes in the future to set the reminder")] int minutes,
             [MinLength(1), MaxLength(500), Summary(description: "The message to remind you about")] string message)
         {
+            if (days < 0 && hours < 0 && minutes < 0)
+            {
+                await RespondAsync("You must provide at least one time value (days, hours, or minutes).", ephemeral: true);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(message))
             {
-                await RespondAsync("The message cannot be blank.");
+                await RespondAsync("The message cannot be blank.", ephemeral: true);
+                return;
+            }
+
+            if (message.Length > 500)
+            {
+                await RespondAsync("The message cannot be longer than 500 characters.", ephemeral: true);
                 return;
             }
 
@@ -44,7 +55,7 @@ namespace VainBot.SlashCommandModules
             {
                 if (!_allowImmediateReminder)
                 {
-                    await RespondAsync("You can't set a reminder for right now, that defeats the purpose.");
+                    await RespondAsync("You can't set a reminder for right now, that defeats the purpose.", ephemeral: true);
                     return;
                 }
                 else
@@ -55,7 +66,7 @@ namespace VainBot.SlashCommandModules
 
             if (delayTs.TotalMinutes > 1051200)
             {
-                await RespondAsync("I don't think you need a reminder more than two years in the future.");
+                await RespondAsync("I don't think you need a reminder more than two years in the future.", ephemeral: true);
                 return;
             }
 
@@ -84,6 +95,7 @@ namespace VainBot.SlashCommandModules
         {
             const string errMsg = "Error occurred when trying to snooze reminder.";
             var interaction = (SocketMessageComponent)Context.Interaction;
+
             if (!int.TryParse(reminderIdString, out int reminderId))
             {
                 await RespondAsync(text: errMsg, ephemeral: true);
@@ -94,7 +106,7 @@ namespace VainBot.SlashCommandModules
             var reminderUserId = _reminderSvc.GetReminderUserId(reminderId);
             if (!reminderUserId.HasValue || reminderUserId.Value != Context.User.Id)
             {
-                await RespondAsync("Only the person who created the reminder can snooze it.", ephemeral: true);
+                await RespondAsync("You can't snooze someone else's reminder.", ephemeral: true);
                 return;
             }
 
@@ -119,7 +131,7 @@ namespace VainBot.SlashCommandModules
             var fireAt = await _reminderSvc.SnoozeReminderByIdAsync(reminderId, snoozeFor);
             if (fireAt.HasValue)
             {
-                await RespondAsync($"Snoozed reminder until {BuildFinalTimeString(fireAt.Value)}.");
+                await RespondAsync($"Snoozed reminder until {BuildFinalTimeString(fireAt.Value)}. This overrides any previous snoozes you may have set.");
             }
             else
             {
