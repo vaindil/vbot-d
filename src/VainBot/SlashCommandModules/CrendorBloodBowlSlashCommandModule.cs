@@ -18,7 +18,7 @@ namespace VainBot.SlashCommandModules
         private const ulong CRENBOWL_NEWS_ID = 780478051627565086;
         private const string CRENBOWL_NEWS_NAME = "Crenbowl News";
 
-        [SlashCommand("lfg", $"Toggle the \"{BLOOD_BOWL_LFG_NAME}\" role to be pinged when people are looking to play")]
+        [SlashCommand("lfg", $"Toggle the \"{BLOOD_BOWL_LFG_NAME}\" role for yourself to be pinged when people are looking to play")]
         public async Task ToggleLfgRoleAsync()
         {
             await ToggleRoleAsync(BLOOD_BOWL_LFG_ID, BLOOD_BOWL_LFG_NAME);
