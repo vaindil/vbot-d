@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using VainBot.SlashCommandModules;
 
 namespace VainBot.Services
 {
@@ -16,6 +17,8 @@ namespace VainBot.Services
         private readonly IServiceProvider _services;
         private readonly IConfiguration _config;
         private readonly ILogger<InteractionHandler> _logger;
+
+        private const ulong CRENDOR_GUILD_ID = 149051954348294145;
 
         public InteractionHandler(
             DiscordSocketClient client,
@@ -44,6 +47,7 @@ namespace VainBot.Services
         {
             if (Program.IsDebug())
             {
+                await _interactionService.AddModulesToGuildAsync(CRENDOR_GUILD_ID, true, new ModuleInfo[0]);
                 await _interactionService.RegisterCommandsToGuildAsync(_config.GetValue<ulong>("test_guild_id"), true);
                 _logger.LogInformation("debug mode, registered guild commands");
             }
@@ -51,6 +55,10 @@ namespace VainBot.Services
             {
                 await _interactionService.RegisterCommandsGloballyAsync(true);
                 _logger.LogInformation("release mode, registered global commands");
+
+                var crendorModule = _interactionService.GetModuleInfo<CrendorBloodBowlSlashCommandModule>();
+                await _interactionService.AddModulesToGuildAsync(CRENDOR_GUILD_ID, true, crendorModule);
+                _logger.LogInformation("registered Crendor guild module");
             }
         }
 
