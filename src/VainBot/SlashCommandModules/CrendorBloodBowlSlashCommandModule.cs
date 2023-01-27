@@ -1,15 +1,11 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace VainBot.SlashCommandModules
 {
     [DontAutoRegister]
-    [Group("blood-bowl", "Commands for handling Crendor Blood Bowl roles")]
     public class CrendorBloodBowlSlashCommandModule : InteractionModuleBase<SocketInteractionContext>
     {
         private const ulong BLOOD_BOWL_LFG_ID = 780458904328208395;
@@ -18,14 +14,14 @@ namespace VainBot.SlashCommandModules
         private const ulong CRENBOWL_NEWS_ID = 780478051627565086;
         private const string CRENBOWL_NEWS_NAME = "Crenbowl News";
 
-        [SlashCommand("lfg", $"Toggle the \"{BLOOD_BOWL_LFG_NAME}\" role for yourself to be pinged when people are looking to play")]
+        [SlashCommand("blood-bowl-lfg", $"Toggle the \"{BLOOD_BOWL_LFG_NAME}\" role for yourself to be pinged when people are looking to play")]
         public async Task ToggleLfgRoleAsync()
         {
             await ToggleRoleAsync(BLOOD_BOWL_LFG_ID, BLOOD_BOWL_LFG_NAME);
         }
 
         [SlashCommand(
-            "news",
+            "crenbowl-news",
             $"Toggle the \"{CRENBOWL_NEWS_NAME}\" role for yourself to be pinged with Crenbowl League news")]
         public async Task ToggleNewsRoleAsync()
         {
