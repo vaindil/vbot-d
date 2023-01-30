@@ -177,7 +177,11 @@ namespace VainBot.Services
 
                 try
                 {
-                    await channel.SendMessageAsync(user.Mention, embed: embed);
+                    await channel.SendMessageAsync(
+                        user.Mention,
+                        embed: embed,
+                        messageReference: messageReference,
+                        components: BuildSnoozeMenu(reminder.Id));
                 }
                 catch
                 {
