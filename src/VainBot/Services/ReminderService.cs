@@ -244,13 +244,19 @@ namespace VainBot.Services
             return null;
         }
 
-        public ulong? GetReminderUserId(int reminderId)
+        public async Task<Reminder> GetReminderByIdAsync(int reminderId)
         {
-            var timer = _timers.Find(x => x.ReminderId == reminderId);
-            if (timer != null)
-                return (ulong)timer.UserId;
-            else
+            try
+            {
+                using var db = _provider.GetRequiredService<VbContext>();
+
+                return await db.Reminders.FindAsync(reminderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error getting reminder in reminder service");
                 return null;
+            }
         }
 
         private static MessageComponent BuildSnoozeMenu(int reminderId)
