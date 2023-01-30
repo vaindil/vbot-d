@@ -279,8 +279,8 @@ namespace VainBot.Services
                 if (stream == null)
                     continue;
 
-                _logger.LogInformation($"Stream newly live | ID: {toCheck.Id} | Twitch name: {stream.TwitchDisplayName}" +
-                    $" | channel: {toCheck.ChannelId} | embedded: {toCheck.IsEmbedded}");
+                // _logger.LogInformation($"Stream newly live | ID: {toCheck.Id} | Twitch name: {stream.TwitchDisplayName}" +
+                //     $" | channel: {toCheck.ChannelId} | embedded: {toCheck.IsEmbedded}");
 
                 Embed embed = null;
                 if (toCheck.IsEmbedded)
@@ -295,6 +295,11 @@ namespace VainBot.Services
 
                 var role = channel.Guild.GetRole(ROLEID);
                 await role.ModifyAsync(x => x.Mentionable = true);
+
+                // _logger.LogInformation($"About to send Twitch live message | ID: {toCheck.Id} | Twitch name: {toCheck.Username} | " +
+                //     $"Guild: {toCheck.GuildId} | DChannel: {toCheck.ChannelId} | IsEmbedded: {toCheck.IsEmbedded}");
+
+                // _logger.LogInformation($"Actual channel for the previous: channel {channel.Id} | guild {channel.Guild?.Id}");
 
                 RestUserMessage message;
                 try
