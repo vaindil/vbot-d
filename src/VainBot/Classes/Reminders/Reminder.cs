@@ -25,6 +25,6 @@ namespace VainBot.Classes.Reminders
         /// the user snoozes the reminder.
         /// alter table reminder add column is_active boolean not null default true;
         /// </summary>
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
