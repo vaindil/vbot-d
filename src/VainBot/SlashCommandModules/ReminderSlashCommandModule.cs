@@ -103,8 +103,15 @@ namespace VainBot.SlashCommandModules
                 return;
             }
 
-            var reminderUserId = _reminderSvc.GetReminderUserId(reminderId);
-            if (!reminderUserId.HasValue || reminderUserId.Value != Context.User.Id)
+            var reminder = await _reminderSvc.GetReminderByIdAsync(reminderId);
+            if (reminder == null)
+            {
+                await RespondAsync(text: errMsg, ephemeral: true);
+                _logger.LogError($"Reminder was null when snoozing: {reminderId}");
+                return;
+            }
+
+            if ((ulong)reminder.UserId != Context.User.Id)
             {
                 await RespondAsync("You can't snooze someone else's reminder.", ephemeral: true);
                 return;
