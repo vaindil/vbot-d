@@ -67,7 +67,8 @@ namespace VainBot
                     await services.GetRequiredService<TwitchActionsService>().InitializeAsync();
                     await services.GetRequiredService<ReminderService>().InitializeAsync();
                     await services.GetRequiredService<TwitchService>().InitializeAsync();
-                    await services.GetRequiredService<TwitterService>().InitializeAsync();
+                    await services.GetRequiredService<YouTubeService>().InitializeAsync();
+                    // await services.GetRequiredService<TwitterService>().InitializeAsync();
                 }
             };
 
