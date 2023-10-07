@@ -147,7 +147,7 @@ namespace VainBot.SlashCommandModules
         }
 
         private static string BuildFinalTimeString(DateTimeOffset fireAt) =>
-            fireAt.ToString("HH:mm") + " on " + fireAt.ToString("yyyy-MM-dd") + " UTC";
+           TimestampTag.FromDateTimeOffset(fireAt, TimestampTagStyles.LongDateTime).ToString();
 
         private static string BuildDelayString(int days, int hours, int minutes)
         {
