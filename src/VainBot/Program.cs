@@ -51,6 +51,19 @@ namespace VainBot
             await services.GetRequiredService<InteractionHandler>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
+            _client.ChannelUpdated += async (SocketChannel socketOrig, SocketChannel socketUpdated) =>
+            {
+                if (socketOrig is SocketTextChannel orig && orig.Guild.Id == 149051954348294145)
+                {
+                    var updated = (SocketTextChannel)socketUpdated;
+                    if (orig.Position != updated.Position)
+                    {
+                        var logChannel = (SocketTextChannel)_client.GetChannel(657690245667618876);
+                        await logChannel.SendMessageAsync($"Detected channel update: {orig.Name} moved from position {orig.Position} to {updated.Position}");
+                    }
+                }
+            };
+
             _client.Ready += async () =>
             {
                 services.GetRequiredService<ILogger<Program>>().LogInformation("Ready event fired");
