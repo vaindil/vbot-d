@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -79,9 +80,9 @@ namespace VainBot.Modules
             await _reminderSvc.CreateReminderAsync(
                 Context.Message.Author.Id, Context.Channel.Id, Context.Message.Id, Context.Guild?.Id, message, delayTs);
 
-            var finalTime = DateTime.UtcNow.Add(delayTs);
-            var finalTimeString = finalTime.ToString("HH:mm") + " on " + finalTime.ToString("yyyy-MM-dd") + " UTC";
-            await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimeString}).");
+            var finalTime = DateTimeOffset.UtcNow.Add(delayTs);
+            var finalTimestamp = TimestampTag.FromDateTimeOffset(finalTime, TimestampTagStyles.LongDateTime);
+            await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimestamp}).");
         }
 
         private TimeSpan ParseDelay(string delay)
