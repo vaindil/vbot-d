@@ -51,7 +51,7 @@ namespace VainBot
             await services.GetRequiredService<InteractionHandler>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            _client.ChannelUpdated += async (SocketChannel socketOrig, SocketChannel socketUpdated) =>
+            _client.ChannelUpdated += async (socketOrig, socketUpdated) =>
             {
                 if (socketOrig is SocketTextChannel orig && orig.Guild.Id == 149051954348294145)
                 {
@@ -68,6 +68,7 @@ namespace VainBot
             {
                 services.GetRequiredService<ILogger<Program>>().LogInformation("Ready event fired");
                 await services.GetRequiredService<ReminderService>().InitializeAsync();
+                await services.GetRequiredService<SmugboardService>().InitializeAsync();
 
                 if (!_isDev)
                 {
@@ -102,6 +103,7 @@ namespace VainBot
                 .Configure<Configs.TwitterConfig>(_config.GetSection("Twitter"))
                 .Configure<Configs.TranslationConfig>(_config.GetSection("Translation"))
                 .Configure<Configs.TwitchBotRestartConfig>(_config.GetSection("TwitchBotRestart"))
+                .Configure<Configs.SmugboardConfig>(_config.GetSection("Smugboard"))
                 .AddSingleton(_client)
                 .AddSingleton(_restClient)
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
@@ -112,6 +114,7 @@ namespace VainBot
                 .AddSingleton<YouTubeService>()
                 .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
+                .AddSingleton<SmugboardService>()
                 .AddSingleton(httpClient)
                 .AddSingleton(googleYtSvc)
                 .AddLogging(o =>

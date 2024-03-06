@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VainBot.Classes;
 using VainBot.Classes.Reminders;
+using VainBot.Classes.Smugboard;
 using VainBot.Classes.Twitch;
 using VainBot.Classes.Twitter;
 using VainBot.Classes.YouTube;
@@ -19,6 +20,7 @@ namespace VainBot.Infrastructure
         public DbSet<YouTubeChannelToCheck> YouTubeChannelsToCheck { get; set; }
         public DbSet<TwitterToCheck> TwittersToCheck { get; set; }
         public DbSet<Reminder> Reminders { get; set; }
+        public DbSet<SmugboardMessage> SmugboardMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -105,6 +107,14 @@ namespace VainBot.Infrastructure
                 e.Property(r => r.GuildId).HasColumnName("guild_id");
                 e.Property(r => r.Message).HasColumnName("message").IsRequired();
                 e.Property(r => r.IsActive).HasColumnName("is_active").IsRequired();
+            });
+
+            modelBuilder.Entity<SmugboardMessage>(e =>
+            {
+                e.ToTable("smugboard_message");
+                e.HasKey(r => r.MessageId);
+
+                e.Property(s => s.MessageId).HasColumnName("message_id");
             });
         }
     }

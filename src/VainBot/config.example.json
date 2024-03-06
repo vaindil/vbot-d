@@ -16,6 +16,10 @@
     "ApiRegion": "",
     "ApiKey": ""
   },
+  "Smugboard": {
+    "PostInChannelId": 0,
+    "InsideCategoryId": 0
+  },
   // below key may be omitted to disable the command
   "TwitchBotRestart": {
     "Command": "",
