@@ -22,7 +22,7 @@ namespace VainBot.SlashCommandModules
         }
 
         [SlashCommand("reminder", "Set a reminder for some time in the future")]
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         public async Task CreateReminder(
             [MinValue(0), MaxValue(730), Summary(description: "Number of days in the future to set the reminder")] int days,
             [MinValue(0), MaxValue(17520), Summary(description: "Number of hours in the future to set the reminder")] int hours,
@@ -81,7 +81,7 @@ namespace VainBot.SlashCommandModules
 
 #if DEBUG
         [SlashCommand("immediatereminder", "Fires a reminder immediately")]
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [RequireOwner]
         public async Task ImmediateReminder()
         {
