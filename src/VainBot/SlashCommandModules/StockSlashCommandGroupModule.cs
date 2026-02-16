@@ -36,7 +36,6 @@ namespace VainBot.SlashCommandModules
                 .Fields(
                     Field.Symbol,
                     Field.LongName,
-                    Field.FullExchangeName,
                     Field.MarketState,
                     Field.Currency,
                     Field.Market,
@@ -57,11 +56,11 @@ namespace VainBot.SlashCommandModules
 
             var record = fullResponse[symbol.ToUpper()];
             var embed = new EmbedBuilder()
-                .WithTitle($"Stock info for {record.Symbol} (market is {record.MarketState.ToLower()})")
+                .WithTitle($"Stock info for {record.Symbol}")
                 .WithUrl($"https://finance.yahoo.com/quote/{symbol}/");
 
             if (record.Fields.ContainsKey("LongName") && record.Fields.ContainsKey("FullExchangeName"))
-                embed.WithFooter($"{record.LongName} | {record.FullExchangeName}");
+                embed.WithFooter($"{record.LongName} | {(record.MarketState == "OPEN" ? GreenCircle() : RedCircle())} Market is {record.MarketState.ToLower()}");
 
             // if market is open: open, current
             if (record.MarketState == "OPEN")
@@ -73,10 +72,10 @@ namespace VainBot.SlashCommandModules
             else
             {
                 if (ContainsCloseKeys(record.Fields))
-                    embed.AddField("Last Close", $"{record.RegularMarketPreviousClose} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)");
+                    embed.AddField("Last Close", $"{record.RegularMarketPreviousClose} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)", inline: true);
 
                 if (ContainsPostMarketKeys(record.Fields))
-                    embed.AddField("After Hours", $"{record.PostMarketPrice} ({Math.Round(record.PostMarketChange, 2)}, {Math.Round(record.PostMarketChangePercent, 2)}%)");
+                    embed.AddField("After Hours", $"{record.PostMarketPrice} ({Math.Round(record.PostMarketChange, 2)}, {Math.Round(record.PostMarketChangePercent, 2)}%)", inline: true);
             }
 
             if (embed.Fields.Count == 0)
@@ -86,6 +85,16 @@ namespace VainBot.SlashCommandModules
             }
 
             await RespondAsync(embeds: [embed.Build()]);
+        }
+
+        private static string GreenCircle()
+        {
+            return new Emoji("\uD83D\uDFE2").ToString();
+        }
+
+        private static string RedCircle()
+        {
+            return new Emoji("\uD83D\uDD34").ToString();
         }
 
         private static bool ContainsRegularMarketKeys(IReadOnlyDictionary<string, dynamic> fields)
