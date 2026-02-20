@@ -60,10 +60,10 @@ namespace VainBot.SlashCommandModules
                 .WithUrl($"https://finance.yahoo.com/quote/{symbol}/");
 
             if (record.Fields.ContainsKey("LongName") && record.Fields.ContainsKey("FullExchangeName"))
-                embed.WithFooter($"{record.LongName} | {(record.MarketState == "OPEN" ? GreenCircle() : RedCircle())} Market is {record.MarketState.ToLower()}");
+                embed.WithFooter($"{record.LongName} | {(record.MarketState == "REGULAR" ? GreenCircle() : RedCircle())} Market is {record.MarketState.ToLower()}");
 
             // if market is open: open, current
-            if (record.MarketState == "OPEN")
+            if (record.MarketState == "REGULAR")
             {
                 if (ContainsRegularMarketKeys(record.Fields))
                     embed.AddField("Current price", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)})");
