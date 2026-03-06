@@ -24,12 +24,12 @@ namespace VainBot.SlashCommandModules
         [SlashCommand("reminder", "Set a reminder for some time in the future")]
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         public async Task CreateReminder(
-            [MinValue(0), MaxValue(730), Summary(description: "Number of days in the future to set the reminder")] int days,
-            [MinValue(0), MaxValue(17520), Summary(description: "Number of hours in the future to set the reminder")] int hours,
-            [MinValue(0), MaxValue(1051200), Summary(description: "Number of minutes in the future to set the reminder")] int minutes,
-            [MinLength(1), MaxLength(500), Summary(description: "The message to remind you about")] string message)
+            [MinLength(1), MaxLength(500), Summary(description: "The message to remind you about")] string message,
+            [MinValue(1), MaxValue(730), Summary(description: "Number of days in the future to set the reminder")] int days = 0,
+            [MinValue(1), MaxValue(17520), Summary(description: "Number of hours in the future to set the reminder")] int hours = 0,
+            [MinValue(1), MaxValue(1051200), Summary(description: "Number of minutes in the future to set the reminder")] int minutes = 0)
         {
-            if (days < 0 && hours < 0 && minutes < 0)
+            if (days <= 0 && hours <= 0 && minutes <= 0)
             {
                 await RespondAsync("You must provide at least one time value (days, hours, or minutes).", ephemeral: true);
                 return;
@@ -86,7 +86,7 @@ namespace VainBot.SlashCommandModules
         public async Task ImmediateReminder()
         {
             _allowImmediateReminder = true;
-            await CreateReminder(0, 0, 0, "immediate reminder");
+            await CreateReminder("immediate reminder", 0, 0, 0);
         }
 #endif
 
