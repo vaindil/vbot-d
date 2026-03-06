@@ -9,13 +9,9 @@ namespace VainBot.Modules
 {
     [Group("reminder")]
     [Alias("remindme", "remind")]
-    public class ReminderModule : ModuleBase
+    public partial class ReminderModule : ModuleBase
     {
         private readonly ReminderService _reminderSvc;
-
-        private readonly Regex _validDelay =
-            new Regex(@"^(?=(?:\d+d|\d+h|\d+m))(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?$",
-                      RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private const string UseHelpIfNeededError = "Use `!reminder help` if you need it.";
         private const string TooFarIntoFutureError = "I don't think you need a reminder more than two years into the future.";
@@ -28,17 +24,11 @@ namespace VainBot.Modules
 
         [Command]
         [Alias("help")]
-        public async Task UseSlashCommand([Remainder] string blah)
-        {
-            await ReplyAsync("Please use the /reminder slash command for reminders. Thanks!");
-        }
-
-        // [Command]
-        // [Alias("help")]
-        // [Priority(3)]
+        [Priority(3)]
         public async Task Help()
         {
-            await ReplyAsync("Get a reminder in a certain amount of time.\n" +
+            await ReplyAsync("**Try using /reminder instead!**\n" +
+                "Get a reminder in a certain amount of time.\n" +
                 "Example: `!reminder 12h5m My message here`\n" +
                 "You can specify a combination of days, hours, and minutes. Valid examples include:\n" +
                 "```\n" +
@@ -49,16 +39,16 @@ namespace VainBot.Modules
                 "```");
         }
 
-        // [Command]
-        // [Priority(1)]
-        public async Task Invalid([Remainder] string blah)
+        [Command]
+        [Priority(1)]
+        public async Task Invalid([Remainder]string blah)
         {
             await ReplyAsync("Invalid command. " + UseHelpIfNeededError);
         }
 
-        // [Command]
-        // [Priority(2)]
-        public async Task CreateReminder(string delay, [Remainder] string message)
+        [Command]
+        [Priority(2)]
+        public async Task CreateReminder(string delay, [Remainder]string message)
         {
             if (message.Length > 500)
             {
@@ -85,12 +75,12 @@ namespace VainBot.Modules
             await ReplyAsync($"{Context.Message.Author.Mention}: Reminder set for {delay} from now ({finalTimestamp}).");
         }
 
-        private TimeSpan ParseDelay(string delay)
+        private static TimeSpan ParseDelay(string delay)
         {
             if (string.IsNullOrWhiteSpace(delay))
                 throw new Exception("Delay string cannot be empty. " + UseHelpIfNeededError);
 
-            var match = _validDelay.Match(delay);
+            var match = ValidDelayRegex().Match(delay);
 
             if (!match.Success)
             {
@@ -170,5 +160,8 @@ namespace VainBot.Modules
 
             return target;
         }
+
+        [GeneratedRegex(@"^(?=(?:\d+d|\d+h|\d+m))(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex ValidDelayRegex();
     }
 }

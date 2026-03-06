@@ -1,30 +1,43 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using YahooFinanceApi;
 
 namespace VainBot.SlashCommandModules
 {
     [Group("stock", "Stock market info")]
-    public class StockSlashCommandGroupModule(ILogger<StockSlashCommandGroupModule> _logger) : InteractionModuleBase<SocketInteractionContext>
+    public class StockSlashCommandGroupModule() : InteractionModuleBase<SocketInteractionContext>
     {
-        // overview of the markets for today
-        // /stock today
-        //[SlashCommand("overview", "Overall market info")]
-        //[CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        //public async Task StockMarketOverview()
-        //{
-        //    var markets = new[] { "^DJI" };
-        //    var quotes = await Yahoo.Symbols(markets)
-        //        .Fields(Field.Symbol, Field.Market, Field.RegularMarketOpen, Field.RegularMarketPreviousClose, Field.MarketState)
-        //        .QueryAsync();
+        // overview of the markets
+        // /stock index
+        [SlashCommand("index", "Info for Dow, S&P 500, and NASDAQ")]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        public async Task StockMarketOverview()
+        {
+            var markets = new[] { "^DJI", "^GSPC", "^IXIC" };
+            var fullResponse = await Yahoo.Symbols(markets)
+                .Fields(Fields)
+                .QueryAsync();
 
-        //    // build embed
-        //    await RespondAsync("Queried", ephemeral: true);
-        //}
+            if (fullResponse.Count != 3)
+            {
+                await RespondAsync("Error contacting Yahoo Finance, please try again.", ephemeral: true);
+                return;
+            }
+
+            var embed = new EmbedBuilder()
+                .WithTitle($"Stock index info")
+                .WithUrl("https://finance.yahoo.com/markets/")
+                .WithFooter(MarketStateString(fullResponse.Values.First().MarketState));
+
+            foreach (var records in fullResponse.Values)
+                AddFieldsToEmbed(embed, records, true);
+
+            await RespondAsync(embeds: [embed.Build()]);
+        }
 
         // specific stock info
         // /stock price <symbol>
@@ -33,19 +46,7 @@ namespace VainBot.SlashCommandModules
         public async Task StockMarketPrice([MinLength(1), Summary(description: "Symbol to look up")]string symbol)
         {
             var fullResponse = await Yahoo.Symbols([symbol])
-                .Fields(
-                    Field.Symbol,
-                    Field.LongName,
-                    Field.MarketState,
-                    Field.Currency,
-                    Field.Market,
-                    Field.RegularMarketOpen,
-                    Field.RegularMarketChange,
-                    Field.RegularMarketChangePercent,
-                    Field.RegularMarketPreviousClose,
-                    Field.PostMarketPrice,
-                    Field.PostMarketChange,
-                    Field.PostMarketChangePercent)
+                .Fields(Fields)
                 .QueryAsync();
 
             if (fullResponse.Count != 1)
@@ -60,23 +61,9 @@ namespace VainBot.SlashCommandModules
                 .WithUrl($"https://finance.yahoo.com/quote/{symbol}/");
 
             if (record.Fields.ContainsKey("LongName") && record.Fields.ContainsKey("FullExchangeName"))
-                embed.WithFooter($"{record.LongName} | {(record.MarketState == "REGULAR" ? GreenCircle() : RedCircle())} Market is {record.MarketState.ToLower()}");
+                embed.WithFooter($"{record.LongName} | {MarketStateString(record.MarketState)}");
 
-            // if market is open: open, current
-            if (record.MarketState == "REGULAR")
-            {
-                if (ContainsRegularMarketKeys(record.Fields))
-                    embed.AddField("Current price", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)");
-            }
-            // if market is closed: last close (w/ % change) and current after-hours prices (w/ % change)
-            else
-            {
-                if (ContainsCloseKeys(record.Fields))
-                    embed.AddField("Last Close", $"{record.RegularMarketPreviousClose} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)", inline: true);
-
-                if (ContainsPostMarketKeys(record.Fields))
-                    embed.AddField("After Hours", $"{record.PostMarketPrice} ({Math.Round(record.PostMarketChange, 2)}, {Math.Round(record.PostMarketChangePercent, 2)}%)", inline: true);
-            }
+            AddFieldsToEmbed(embed, record, false);
 
             if (embed.Fields.Count == 0)
             {
@@ -87,14 +74,50 @@ namespace VainBot.SlashCommandModules
             await RespondAsync(embeds: [embed.Build()]);
         }
 
-        private static string GreenCircle()
+        private static void AddFieldsToEmbed(EmbedBuilder embed, Security record, bool multiSymbol)
         {
-            return new Emoji("\uD83D\uDFE2").ToString();
+            var nameTitle = "";
+            if (multiSymbol && !string.IsNullOrEmpty(record.ShortName))
+                nameTitle = $" ({record.ShortName})";
+
+            // if market is open: open, current
+            if (record.MarketState == "REGULAR")
+            {
+                if (ContainsRegularMarketKeys(record.Fields))
+                    embed.AddField($"Current price{nameTitle}", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)})");
+            }
+            // if market is closed: last close (w/ % change) and current after-hours prices (w/ % change)
+            else
+            {
+                if (ContainsCloseKeys(record.Fields))
+                    embed.AddField($"Last Close{nameTitle}", $"{record.RegularMarketPrice} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)", inline: !multiSymbol);
+
+                // fields are not accurate and i can't find a replacement
+                //if (ContainsPostMarketKeys(record.Fields))
+                //    embed.AddField($"After Hours{nameTitle}", $"{record.PostMarketPrice} ({Math.Round(record.PostMarketChange, 2)}, {Math.Round(record.PostMarketChangePercent, 2)}%)", inline: !multiSymbol);
+            }
         }
 
-        private static string RedCircle()
+        private static readonly Field[] Fields = [
+            Field.Symbol,
+            Field.ShortName,
+            Field.LongName,
+            Field.MarketState,
+            Field.Market,
+            Field.RegularMarketOpen,
+            Field.RegularMarketChange,
+            Field.RegularMarketChangePercent,
+            Field.PostMarketPrice,
+            Field.PostMarketChange,
+            Field.PostMarketChangePercent
+        ];
+
+        private static string MarketStateString(string marketState)
         {
-            return new Emoji("\uD83D\uDD34").ToString();
+            if (marketState == "REGULAR")
+                return $"{new Emoji("\uD83D\uDFE2")} Market is open";
+            else
+                return $"{new Emoji("\uD83D\uDD34")} Market is closed";
         }
 
         private static bool ContainsRegularMarketKeys(IReadOnlyDictionary<string, dynamic> fields)
@@ -108,7 +131,7 @@ namespace VainBot.SlashCommandModules
         private static bool ContainsCloseKeys(IReadOnlyDictionary<string, dynamic> fields)
         {
             return
-                fields.ContainsKey("RegularMarketPreviousClose") &&
+                fields.ContainsKey("RegularMarketPrice") &&
                 fields.ContainsKey("RegularMarketChange") &&
                 fields.ContainsKey("RegularMarketChangePercent");
         }
