@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,7 @@ using YahooFinanceApi;
 namespace VainBot.SlashCommandModules
 {
     [Group("stock", "Stock market info")]
-    public class StockSlashCommandGroupModule(ILogger<StockSlashCommandGroupModule> _logger) : InteractionModuleBase<SocketInteractionContext>
+    public class StockSlashCommandGroupModule() : InteractionModuleBase<SocketInteractionContext>
     {
         // overview of the markets
         // /stock index
