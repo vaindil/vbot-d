@@ -81,7 +81,7 @@ namespace VainBot.SlashCommandModules
                 nameTitle = $" ({record.ShortName})";
 
             // if market is open: open, current
-            if (record.MarketState == "OPEN")
+            if (record.MarketState == "REGULAR")
             {
                 if (ContainsRegularMarketKeys(record.Fields))
                     embed.AddField($"Current price{nameTitle}", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)})");
@@ -114,7 +114,7 @@ namespace VainBot.SlashCommandModules
 
         private static string MarketStateString(string marketState)
         {
-            if (marketState == "OPEN")
+            if (marketState == "REGULAR")
                 return $"{new Emoji("\uD83D\uDFE2")} Market is open";
             else
                 return $"{new Emoji("\uD83D\uDD34")} Market is closed";
