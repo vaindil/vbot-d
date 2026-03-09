@@ -277,7 +277,8 @@ namespace VainBot.Services
                 .AddOption("8 hours", "480")
                 .AddOption("1 day", "1440")
                 .AddOption("2 days", "2880")
-                .AddOption("1 week", "10080");
+                .AddOption("1 week", "10080")
+                .AddOption("30 days", "2592000");
 
             return new ComponentBuilder()
                 .WithSelectMenu(menuBuilder)
@@ -365,3 +366,4 @@ namespace VainBot.Services
         }
     }
 }
+
