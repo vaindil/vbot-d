@@ -84,7 +84,7 @@ namespace VainBot.SlashCommandModules
             if (record.MarketState == "REGULAR")
             {
                 if (ContainsRegularMarketKeys(record.Fields))
-                    embed.AddField($"Current price{nameTitle}", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)})");
+                    embed.AddField($"Current price{nameTitle}", $"{record.RegularMarketOpen} ({Math.Round(record.RegularMarketChange, 2)}, {Math.Round(record.RegularMarketChangePercent, 2)}%)");
             }
             // if market is closed: last close (w/ % change) and current after-hours prices (w/ % change)
             else
