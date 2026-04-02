@@ -1,8 +1,6 @@
 [Unit]
 Description=VainBot - crendor branch
 After=network.target
-StartLimitBurst=2
-StartLimitIntervalSec=15
 
 [Service]
 Type=simple
@@ -10,6 +8,7 @@ User=vbot-d-crendor
 WorkingDirectory=/home/vbot-d-crendor/bot
 ExecStart=/usr/bin/dotnet /home/vbot-d-crendor/bot/VainBot.dll
 Restart=on-failure
+RestartSec=15
 
 [Install]
 WantedBy=multi-user.target
