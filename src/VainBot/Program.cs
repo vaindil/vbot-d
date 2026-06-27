@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.Rest;
@@ -111,6 +111,7 @@ namespace VainBot
                 .AddSingleton<YouTubeService>()
                 .AddSingleton<TwitterService>()
                 .AddSingleton<ReminderService>()
+                .AddSingleton<FriendTimeService>()
                 .AddSingleton(httpClient)
                 .AddSingleton(googleYtSvc)
                 .AddLogging(o =>
