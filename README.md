@@ -2,6 +2,10 @@
 
 This is a Discord bot that I use on a few servers for various tasks. It's built with [Discord.Net](https://github.com/RogueException/Discord.Net). The name `VainBot-Discord` annoys me so the repo is named `vbot-d`.
 
+## Privacy
+
+No personal data is stored or used for any sort of training. The bot can read messages, but only to process commands. Your data is never persisted anywhere or used outside of the bot.
+
 ## Features
 
 - Twitch stream notifications
