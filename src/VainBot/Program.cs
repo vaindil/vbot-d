@@ -44,7 +44,7 @@ namespace VainBot
                 {
                     LogLevel = LogSeverity.Warning,
                     AlwaysDownloadUsers = true,
-                    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent | GatewayIntents.GuildMembers
+                    GatewayIntents = GatewayIntents.AllUnprivileged
                 });
 
             var services = ConfigureServices();
